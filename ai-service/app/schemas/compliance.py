@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Dict
 from pydantic import BaseModel, Field
 
 
@@ -22,6 +22,11 @@ class RequirementType(str, Enum):
     DATE_EXPIRY = "date_expiry"
     DOCUMENT_PRESENCE = "document_presence"
     TEXT_QUALITATIVE = "text_qualitative"
+    CERTIFICATION = "certification"
+    DELIVERY = "delivery"
+    QUALITY = "quality"
+    COMMERCIAL = "commercial"
+    LEGAL = "legal"
 
 
 class RequirementParseRequest(BaseModel):
@@ -32,12 +37,12 @@ class RequirementParseRequest(BaseModel):
 class ExtractedRequirement(BaseModel):
     requirement_id: str
     tender_id: str
-    category: str = Field(description="Category: Technical, Financial, Eligibility, Legal, etc.")
+    category: str = Field(description="Category: Technical, Financial, Eligibility, Experience, Certification, Legal, Documentary, Delivery, Quality, Commercial")
     text_raw: str
     type: RequirementType
-    operator: Optional[str] = Field(default=None, description="Operators: >=, <=, ==, contains")
-    threshold: Optional[float] = Field(default=None, description="Numeric threshold value if applicable")
-    unit: Optional[str] = Field(default=None, description="Unit: Cr, Lakh, %, Years, units/day, etc.")
+    operator: Optional[str] = Field(default=None)
+    threshold: Optional[float] = Field(default=None)
+    unit: Optional[str] = Field(default=None)
     mandatory: bool = True
     source_page: int = 1
 
@@ -51,6 +56,7 @@ class DocumentParseRequest(BaseModel):
 class ExtractedEvidence(BaseModel):
     evidence_id: str
     bid_id: str
+    requirement_id: Optional[str] = None
     document_id: str
     document_name: str
     page: int
@@ -89,7 +95,56 @@ class ContradictionFlag(BaseModel):
     flag_id: str
     bid_id: str
     requirement_id: Optional[str] = None
-    source_a: Citation
-    source_b: Citation
+    document_a: str
+    document_b: str
+    value_a: Optional[float] = None
+    value_b: Optional[float] = None
+    page_a: Optional[int] = None
+    page_b: Optional[int] = None
     description: str
     severity: str = "HIGH"
+
+
+class JobStatus(BaseModel):
+    job_id: str
+    status: str  # QUEUED / PROCESSING / COMPLETED / FAILED
+    progress: int = Field(default=0, ge=0, le=100)
+    filename: Optional[str] = None
+    pages_processed: int = 0
+    chunks_indexed: int = 0
+    error: Optional[str] = None
+
+
+class ForgeryAnalysisRequest(BaseModel):
+    bid_id: str
+    filename: str
+
+
+class CopilotQueryRequest(BaseModel):
+    tender_id: str = "TND-PUMP-001"
+    bid_id: str = "BID-APEX-001"
+    question: str
+    max_results: int = 5
+
+
+class CopilotQueryResponse(BaseModel):
+    answer: str
+    source_results: List[str]  # requirement IDs used as sources
+    confidence: float
+    disclaimer: str = "Answer is grounded in verified compliance results only."
+    model_used: Optional[str] = "qwen2.5:3b (Local AI)"
+    citations: Optional[List[Dict[str, Any]]] = None
+
+
+class DebarmentCheckRequest(BaseModel):
+    company_name: str
+    gstin: Optional[str] = None
+    pan: Optional[str] = None
+    director_names: Optional[List[str]] = None
+
+
+class DebarmentResult(BaseModel):
+    status: str  # CLEAR / FLAGGED
+    matched_entries: List[str] = []
+    risk_level: str = "NONE"  # NONE / LOW / HIGH
+    message: str

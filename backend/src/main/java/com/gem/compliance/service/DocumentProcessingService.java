@@ -32,6 +32,11 @@ public class DocumentProcessingService {
 
     @Transactional
     public DocumentUploadResponse processDocumentUpload(String filename, String fileType, byte[] content, String bidId) {
+        return processDocumentUpload(filename, fileType, content, bidId, null);
+    }
+
+    @Transactional
+    public DocumentUploadResponse processDocumentUpload(String filename, String fileType, byte[] content, String bidId, String tenderId) {
         String docId = "DOC-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         String jobId = "JOB-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         String checksum = calculateSHA256(content);
@@ -40,6 +45,7 @@ public class DocumentProcessingService {
         Document doc = Document.builder()
                 .id(docId)
                 .bidId(bidId)
+                .tenderId(tenderId)
                 .filename(filename)
                 .fileType(fileType)
                 .fileSizeBytes((long) content.length)
@@ -81,10 +87,16 @@ public class DocumentProcessingService {
 
     private void extractAndPersistDocumentRequirements(Document doc, byte[] content) {
         String textContent = new String(content);
-        List<Tender> tenders = tenderRepository.findAll();
-        if (tenders.isEmpty()) return;
+        Tender tender = null;
+        if (doc.getTenderId() != null) {
+            tender = tenderRepository.findById(doc.getTenderId()).orElse(null);
+        }
+        if (tender == null) {
+            List<Tender> tenders = tenderRepository.findAll();
+            if (!tenders.isEmpty()) tender = tenders.get(0);
+        }
+        if (tender == null) return;
 
-        Tender tender = tenders.get(0);
         List<Requirement> reqs = new ArrayList<>();
 
         if (textContent.contains("turnover") || textContent.contains("Financial")) {

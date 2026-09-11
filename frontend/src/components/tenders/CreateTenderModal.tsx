@@ -40,7 +40,61 @@ export const CreateTenderModal: React.FC<CreateTenderModalProps> = ({
     setError(null);
 
     try {
-      // 1. Create Tender in Backend
+      let initialRequirements = [
+        {
+          reqCode: 'REQ-001',
+          category: 'Financial',
+          rawText: 'Bidder must have minimum ₹100 crore annual turnover for previous 3 years.',
+          reqType: 'NUMERIC_THRESHOLD',
+          operator: '>=',
+          threshold: 100.0,
+          unit: 'Cr',
+          isMandatory: true,
+          sourcePage: 1
+        },
+        {
+          reqCode: 'REQ-002',
+          category: 'Eligibility',
+          rawText: 'Valid GST Registration Certificate & PAN Card must be submitted.',
+          reqType: 'DOCUMENT_PRESENCE',
+          isMandatory: true,
+          sourcePage: 1
+        }
+      ];
+
+      // Run real AI PDF extraction if PDF file is provided
+      if (file) {
+        const aiFormData = new FormData();
+        aiFormData.append('file', file);
+        aiFormData.append('tender_id', tenderNumber);
+        const aiUrl = import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:8000';
+        try {
+          const aiRes = await fetch(`${aiUrl}/api/v1/ai/tender/upload-pdf`, {
+            method: 'POST',
+            body: aiFormData,
+          });
+          if (aiRes.ok) {
+            const aiData = await aiRes.json();
+            if (aiData.requirements && aiData.requirements.length > 0) {
+              initialRequirements = aiData.requirements.map((r: any) => ({
+                reqCode: r.requirement_id || r.req_code || 'REQ-AI',
+                category: r.category || 'General',
+                rawText: r.text_raw || r.raw_text || '',
+                reqType: r.type || 'NUMERIC_THRESHOLD',
+                operator: r.operator || '>=',
+                threshold: r.threshold !== null ? r.threshold : undefined,
+                unit: r.unit || undefined,
+                isMandatory: r.mandatory !== undefined ? r.mandatory : true,
+                sourcePage: r.source_page || 1,
+              }));
+            }
+          }
+        } catch (aiErr) {
+          console.warn('AI extraction fallback:', aiErr);
+        }
+      }
+
+      // 1. Create Tender in Backend with extracted requirements
       const tenderPayload = {
         tenderNumber,
         title,
@@ -48,27 +102,7 @@ export const CreateTenderModal: React.FC<CreateTenderModalProps> = ({
         category,
         estimatedValue: parseFloat(estimatedValue) || 50000000,
         description,
-        requirements: [
-          {
-            reqCode: 'REQ-001',
-            category: 'Financial',
-            rawText: 'Bidder must have minimum ₹100 crore annual turnover for previous 3 years.',
-            reqType: 'NUMERIC_THRESHOLD',
-            operator: '>=',
-            threshold: 100.0,
-            unit: 'Cr',
-            isMandatory: true,
-            sourcePage: 1
-          },
-          {
-            reqCode: 'REQ-002',
-            category: 'Eligibility',
-            rawText: 'Valid GST Registration Certificate & PAN Card must be submitted.',
-            reqType: 'DOCUMENT_PRESENCE',
-            isMandatory: true,
-            sourcePage: 1
-          }
-        ]
+        requirements: initialRequirements,
       };
 
       const tenderRes = await fetch(`${API_BASE_URL}/tenders`, {
@@ -80,16 +114,22 @@ export const CreateTenderModal: React.FC<CreateTenderModalProps> = ({
         body: JSON.stringify(tenderPayload),
       });
 
+      let createdTenderId = tenderNumber;
       if (!tenderRes.ok) {
         const errData = await tenderRes.json().catch(() => ({}));
         throw new Error(errData.message || `Failed to create tender: HTTP ${tenderRes.status}`);
+      } else {
+        const createdData = await tenderRes.json().catch(() => null);
+        if (createdData && createdData.id) {
+          createdTenderId = createdData.id;
+        }
       }
 
       // 2. Upload Attachment Document if provided
       if (file) {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('bidId', 'BID-A-01');
+        formData.append('tenderId', createdTenderId);
 
         await fetch(`${API_BASE_URL}/documents/upload`, {
           method: 'POST',

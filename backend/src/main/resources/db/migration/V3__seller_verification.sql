@@ -58,4 +58,5 @@ INSERT INTO sellers (id, organization_name, cin_or_pan, gstin, udyam_registratio
 ('SLR-DS-D', 'Vortex Corp (Lapsed GST / Tax Default)', 'AAACV4444M', '27DDDDD4444D1Z4', 'UDYAM-MH-03-0099887', NULL, 'BIS-LIC-11223', 'MH/MUM/445566', '801, Bandra Kurla Complex, Mumbai, Maharashtra', 'Heavy Machinery', false, 45.00, 'HIGH_RISK'),
 ('SLR-DS-E', 'MicroTech Supplies (Udyam Benefit Misrepresentation)', 'AAACM7777P', '06EEEEE7777E1Z1', 'UDYAM-HR-04-0044556', 'DPIIT11223', NULL, 'HR/GGN/778899', 'Sector 18, Gurugram, Haryana', 'Electronics & IT', false, 58.50, 'HIGH_RISK'),
 ('SLR-DS-F', 'Zenith Enterprises (Inconsistent Financial Audit)', 'AAACZ3333R', '03FFFFF3333F1Z7', 'UDYAM-PB-05-0066778', NULL, NULL, 'PB/LDH/334455', 'GT Road, Ludhiana, Punjab', 'Manufacturing', false, 62.00, 'HIGH_RISK'),
-('SLR-DS-G', 'Bharat Heavy Pumps Ltd (Pending Audit)', 'AAACB1111S', '10GGGGG1111G1Z3', 'UDYAM-BR-06-0011223', NULL, 'BIS-LIC-88990', 'BR/PAT/556677', 'Boring Road, Patna, Bihar', 'Pumping Systems', false, 84.00, 'PENDING_VERIFICATION');
+('SLR-DS-G', 'Bharat Heavy Pumps Ltd (Pending Audit)', 'AAACB1111S', '10GGGGG1111G1Z3', 'UDYAM-BR-06-0011223', NULL, 'BIS-LIC-88990', 'BR/PAT/556677', 'Boring Road, Patna, Bihar', 'Pumping Systems', false, 84.00, 'PENDING_VERIFICATION')
+;

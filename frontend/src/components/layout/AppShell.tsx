@@ -16,8 +16,13 @@ import {
   LogOut,
   UserCheck,
   ShieldAlert,
-  Users
+  Users,
+  Zap,
+  BarChart3,
+  Link2,
+  UploadCloud
 } from 'lucide-react';
+
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -36,58 +41,79 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       case 'SYSTEM_ADMIN':
         return [
           { label: 'Admin Dashboard', path: '/', icon: LayoutDashboard },
-          { label: 'Seller Risk Queue', path: '/sellers', icon: UserCheck },
           { label: 'Tenders & Specifications', path: '/tenders', icon: FileText },
           { label: 'Compliance Matrix', path: '/compliance', icon: CheckCircle2 },
-          { label: 'Human Review Queue', path: '/reviews', icon: AlertTriangle },
+          { label: 'Multi-Bidder Compare', path: '/compare', icon: Users },
+          { label: 'Procurement Copilot', path: '/copilot', icon: Zap },
+          { label: 'Seller Verification Queue', path: '/sellers', icon: UserCheck },
+          { label: 'Review & Overrides Queue', path: '/reviews', icon: AlertTriangle },
           { label: 'Compliance Reports', path: '/reports', icon: ClipboardList },
-          { label: 'System Audit Trail', path: '/audit', icon: ShieldCheck },
+          { label: 'Procurement Analytics', path: '/analytics', icon: BarChart3 },
+          { label: 'Blockchain Audit Trail', path: '/audit', icon: Link2 },
+          { label: 'Vendor Ingestion Test', path: '/bids/upload', icon: UploadCloud },
         ];
       case 'PROCUREMENT_OFFICER':
         return [
           { label: 'Procurement Dashboard', path: '/', icon: LayoutDashboard },
           { label: 'Tenders & Specifications', path: '/tenders', icon: FileText },
-          { label: 'Seller Verification Queue', path: '/sellers', icon: UserCheck },
           { label: 'Compliance Matrix', path: '/compliance', icon: CheckCircle2 },
-          { label: 'Review & Overrides', path: '/reviews', icon: AlertTriangle },
+          { label: 'Multi-Bidder Compare', path: '/compare', icon: Users },
+          { label: 'Procurement Copilot', path: '/copilot', icon: Zap },
+          { label: 'Seller Verification Queue', path: '/sellers', icon: UserCheck },
+          { label: 'Review & Overrides Queue', path: '/reviews', icon: AlertTriangle },
           { label: 'Compliance Reports', path: '/reports', icon: ClipboardList },
-          { label: 'Audit Log History', path: '/audit', icon: ShieldCheck },
+          { label: 'Procurement Analytics', path: '/analytics', icon: BarChart3 },
+          { label: 'Blockchain Audit Trail', path: '/audit', icon: Link2 },
         ];
       case 'COMPLIANCE_REVIEWER':
         return [
           { label: 'Reviewer Dashboard', path: '/', icon: LayoutDashboard },
-          { label: 'Review Queue & Overrides', path: '/reviews', icon: AlertTriangle },
-          { label: 'Seller Verification Queue', path: '/sellers', icon: UserCheck },
+          { label: 'Tenders & Specifications', path: '/tenders', icon: FileText },
           { label: 'Compliance Matrix', path: '/compliance', icon: CheckCircle2 },
-          { label: 'Tenders View', path: '/tenders', icon: FileText },
+          { label: 'Multi-Bidder Compare', path: '/compare', icon: Users },
+          { label: 'Procurement Copilot', path: '/copilot', icon: Zap },
+          { label: 'Seller Verification Queue', path: '/sellers', icon: UserCheck },
+          { label: 'Review & Overrides Queue', path: '/reviews', icon: AlertTriangle },
           { label: 'Compliance Reports', path: '/reports', icon: ClipboardList },
-          { label: 'Audit Trail', path: '/audit', icon: ShieldCheck },
+          { label: 'Procurement Analytics', path: '/analytics', icon: BarChart3 },
+          { label: 'Blockchain Audit Trail', path: '/audit', icon: Link2 },
         ];
       case 'VIEWER':
       case 'AUDITOR':
         return [
           { label: 'Auditor Dashboard', path: '/', icon: LayoutDashboard },
-          { label: 'Audit Trail Logs', path: '/audit', icon: ShieldCheck },
-          { label: 'Seller Risk Queue', path: '/sellers', icon: UserCheck },
-          { label: 'Compliance Reports', path: '/reports', icon: ClipboardList },
-          { label: 'Tenders Directory', path: '/tenders', icon: FileText },
+          { label: 'Tenders & Specifications', path: '/tenders', icon: FileText },
           { label: 'Compliance Matrix', path: '/compliance', icon: CheckCircle2 },
+          { label: 'Multi-Bidder Compare', path: '/compare', icon: Users },
+          { label: 'Audited Copilot Inquiries', path: '/copilot', icon: Zap },
+          { label: 'Seller Verification Queue', path: '/sellers', icon: UserCheck },
+          { label: 'Review & Override Logs', path: '/reviews', icon: AlertTriangle },
+          { label: 'Compliance Reports', path: '/reports', icon: ClipboardList },
+          { label: 'Procurement Analytics', path: '/analytics', icon: BarChart3 },
+          { label: 'Blockchain Audit Trail', path: '/audit', icon: Link2 },
         ];
       case 'BIDDER_VENDOR':
       case 'BIDDER':
         return [
-          { label: 'Vendor Portal Dashboard', path: '/', icon: LayoutDashboard },
-          { label: 'Active Tenders & Bids', path: '/tenders', icon: FileText },
+          { label: 'Vendor Dashboard', path: '/', icon: LayoutDashboard },
+          { label: 'Browse Active Tenders', path: '/tenders', icon: FileText },
+          { label: 'Submit Bid Dossier', path: '/bids/upload', icon: UploadCloud },
+          { label: 'My Compliance Status', path: '/compliance', icon: CheckCircle2 },
+          { label: 'My Compliance Report', path: '/reports', icon: ClipboardList },
+          { label: 'My Vendor Verification', path: '/sellers', icon: UserCheck },
         ];
       default:
         return [
           { label: 'Dashboard', path: '/', icon: LayoutDashboard },
-          { label: 'Tenders', path: '/tenders', icon: FileText },
-          { label: 'Seller Queue', path: '/sellers', icon: UserCheck },
+          { label: 'Tenders & Specifications', path: '/tenders', icon: FileText },
           { label: 'Compliance Matrix', path: '/compliance', icon: CheckCircle2 },
+          { label: 'Multi-Bidder Compare', path: '/compare', icon: Users },
+          { label: 'Procurement Copilot', path: '/copilot', icon: Zap },
+          { label: 'Blockchain Audit Trail', path: '/audit', icon: Link2 },
         ];
     }
   };
+
 
   const navItems = getNavItems();
 

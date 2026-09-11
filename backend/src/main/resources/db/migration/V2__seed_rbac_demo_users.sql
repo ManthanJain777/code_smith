@@ -8,7 +8,4 @@ INSERT INTO users (id, organization_id, email, password_hash, full_name, role, i
 ('USR-DEMO-REV', 'ORG-001', 'reviewer.demo@gembid.local', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07xd00DMxs.AQubh4a', 'Anita Sharma (Compliance Reviewer Demo)', 'COMPLIANCE_REVIEWER', true),
 ('USR-DEMO-AUD', 'ORG-001', 'auditor.demo@gembid.local', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07xd00DMxs.AQubh4a', 'Vikram Sethi (Auditor Demo)', 'VIEWER', true),
 ('USR-DEMO-BID', 'ORG-001', 'bidder.demo@gembid.local', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07xd00DMxs.AQubh4a', 'Apex Pumps Vendor Representative', 'BIDDER_VENDOR', true)
-ON CONFLICT (id) DO NOTHING;
-
--- Also ensure initial seed accounts match Password123!
-UPDATE users SET password_hash = '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07xd00DMxs.AQubh4a' WHERE email IN ('officer@gem.gov.in', 'admin@gem.gov.in', 'auditor@gem.gov.in');
+;

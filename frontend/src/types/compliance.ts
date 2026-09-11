@@ -5,7 +5,7 @@ export type ComplianceStatus =
   | 'UNVERIFIED'
   | 'NOT_APPLICABLE';
 
-export type VerificationMethod = 'DETERMINISTIC' | 'AI_LANGUAGE' | 'HYBRID' | 'deterministic' | 'ai_language' | 'hybrid';
+export type VerificationMethod = 'deterministic' | 'ai_language' | 'hybrid';
 
 export interface Requirement {
   id: string;
@@ -25,6 +25,7 @@ export interface Tender {
   id: string;
   organizationId: string;
   tenderNumber: string;
+  tenderReferenceNumber?: string;
   title: string;
   description: string;
   issuingAuthority: string;
@@ -33,17 +34,20 @@ export interface Tender {
   status: string;
   createdBy: string;
   createdAt: string;
+  closingDate?: string;
   requirements: Requirement[];
 }
 
-export interface EvidenceItem {
+export interface Bid {
   id: string;
-  documentName?: string;
-  pageNumber: number;
-  rawSnippet: string;
-  extractedValue?: number;
-  extractedUnit?: string;
-  confidence: number;
+  tenderId: string;
+  bidderName: string;
+  gstin: string;
+  cin?: string;
+  pan?: string;
+  status: string;
+  submittedAt: string;
+  riskScore?: number;
 }
 
 export interface ComplianceResult {
@@ -52,26 +56,14 @@ export interface ComplianceResult {
   requirementCode: string;
   requirementText: string;
   category: string;
-  tenderId?: string;
-  tenderNumber?: string;
   bidId: string;
-  bidderName?: string;
-  isMandatory?: boolean;
-  reqType?: string;
   status: ComplianceStatus;
   verificationMethod: VerificationMethod;
   reasoning: string;
   confidence: number;
-  expectedValue?: string;
-  actualValue?: string;
-  sourceDocument?: string;
-  sourcePage?: number;
-  riskLevel?: 'HIGH' | 'MEDIUM' | 'LOW';
-  contradictionFlag?: boolean;
-  evidenceIds?: string;
+  evidenceIds: string;
   reviewStatus: 'PENDING' | 'APPROVED' | 'OVERRIDDEN';
   createdAt: string;
-  evidenceList?: EvidenceItem[];
 }
 
 export interface AuditLog {
@@ -84,6 +76,9 @@ export interface AuditLog {
   resourceId: string;
   timestamp: string;
   details?: string;
+  performedBy?: string;
+  entityType?: string;
+  entityId?: string;
 }
 
 export interface HumanReviewRequest {
@@ -91,4 +86,16 @@ export interface HumanReviewRequest {
   reviewerId: string;
   finalStatus: ComplianceStatus;
   reviewerNote?: string;
+}
+
+export interface Contradiction {
+  id: string;
+  bidId: string;
+  requirementId?: string;
+  documentA: string;
+  documentB: string;
+  pageA?: number;
+  pageB?: number;
+  description: string;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 }

@@ -21,17 +21,18 @@ public class DocumentController {
 
     @PostMapping(value = "/upload", consumes = "multipart/form-data")
     @PreAuthorize("hasAnyAuthority('PROCUREMENT_OFFICER', 'SYSTEM_ADMIN', 'BIDDER_VENDOR', 'ROLE_PROCUREMENT_OFFICER', 'ROLE_SYSTEM_ADMIN', 'ROLE_BIDDER_VENDOR')")
-    @Operation(summary = "Upload bidder document", description = "Uploads PDF/DOCX tender or bidder document, calculates checksum hash, and creates processing job.")
+    @Operation(summary = "Upload tender or bidder document", description = "Uploads PDF/DOCX tender or bidder document, calculates checksum hash, and creates processing job.")
     public ResponseEntity<DocumentUploadResponse> uploadDocument(
             @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "bidId", defaultValue = "BID-A-01") String bidId
+            @RequestParam(value = "bidId", required = false) String bidId,
+            @RequestParam(value = "tenderId", required = false) String tenderId
     ) {
         try {
             String filename = file.getOriginalFilename() != null ? file.getOriginalFilename() : "document.pdf";
             String fileType = file.getContentType() != null ? file.getContentType() : "application/pdf";
             byte[] bytes = file.getBytes();
 
-            DocumentUploadResponse response = documentProcessingService.processDocumentUpload(filename, fileType, bytes, bidId);
+            DocumentUploadResponse response = documentProcessingService.processDocumentUpload(filename, fileType, bytes, bidId, tenderId);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

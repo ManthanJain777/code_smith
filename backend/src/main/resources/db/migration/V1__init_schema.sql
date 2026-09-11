@@ -142,32 +142,32 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 );
 
 -- Initial Seed Data for GeM Procurement Officer Demo
-INSERT INTO organizations (id, name, code) VALUES ('ORG-001', 'Ministry of Public Procurement', 'GEM-ORG-01') ON CONFLICT DO NOTHING;
+INSERT INTO organizations (id, name, code) VALUES ('ORG-001', 'Ministry of Public Procurement', 'GEM-ORG-01') ;
 
 INSERT INTO users (id, organization_id, email, password_hash, full_name, role) VALUES 
 ('USR-ADMIN-01', 'ORG-001', 'admin@gem.gov.in', '$2a$10$wE1qS5z7dG0m1Z2X3Y4Z5.N7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2', 'System Administrator', 'SYSTEM_ADMIN'),
 ('USR-PROC-01', 'ORG-001', 'officer@gem.gov.in', '$2a$10$wE1qS5z7dG0m1Z2X3Y4Z5.N7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2', 'Rajesh Kumar (Procurement Officer)', 'PROCUREMENT_OFFICER'),
 ('USR-REV-01', 'ORG-001', 'auditor@gem.gov.in', '$2a$10$wE1qS5z7dG0m1Z2X3Y4Z5.N7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2', 'Anita Sharma (Auditor)', 'COMPLIANCE_REVIEWER')
-ON CONFLICT DO NOTHING;
+;
 
 -- Canonical Worked Demo Tender
 INSERT INTO tenders (id, organization_id, tender_number, title, description, issuing_authority, category, estimated_value, status, created_by) VALUES
 ('TND-001', 'ORG-001', 'GEM/2026/B/90124', 'Supply & Installation of High-Efficiency Water Pumps', 'Procurement of industrial-grade centrifugal pumps for public infrastructure.', 'Central Water Commission', 'Industrial Equipment', 50000000.00, 'IN_EVALUATION', 'USR-PROC-01')
-ON CONFLICT DO NOTHING;
+;
 
 INSERT INTO requirements (id, tender_id, req_code, category, raw_text, req_type, operator, threshold, unit, is_mandatory, source_page) VALUES
 ('REQ-001', 'TND-001', 'REQ-001', 'Financial', 'Bidder must have minimum ₹100 crore annual turnover for each of the previous 3 financial years.', 'NUMERIC_THRESHOLD', '>=', 100.00, 'Cr', true, 1),
 ('REQ-002', 'TND-001', 'REQ-002', 'Eligibility', 'Valid GST Registration Certificate & PAN Card must be submitted.', 'DOCUMENT_PRESENCE', '==', NULL, NULL, true, 2),
 ('REQ-003', 'TND-001', 'REQ-003', 'Technical', 'Pump operational efficiency shall not be less than 85%.', 'NUMERIC_THRESHOLD', '>=', 85.00, '%', true, 3),
 ('REQ-004', 'TND-001', 'REQ-004', 'Experience', 'Minimum 5 years of experience supplying government entities.', 'NUMERIC_THRESHOLD', '>=', 5.00, 'Years', true, 4)
-ON CONFLICT DO NOTHING;
+;
 
 INSERT INTO bidders (id, organization_name, cin_or_pan, gstin, is_debarred) VALUES
 ('BDR-001', 'Apex Pumps & Motors Pvt Ltd', 'AAACA1234F', '07AAAAA0000A1Z5', false),
 ('BDR-002', 'Vortex Heavy Engineering Corp', 'AAACB5678G', '08BBBBB1111B1Z2', false)
-ON CONFLICT DO NOTHING;
+;
 
 INSERT INTO bids (id, tender_id, bidder_id, bid_number, overall_status) VALUES
 ('BID-A-01', 'TND-001', 'BDR-001', 'BID-APEX-2026-01', 'EVALUATION_IN_PROGRESS'),
 ('BID-B-01', 'TND-001', 'BDR-002', 'BID-VORTEX-2026-02', 'EVALUATION_IN_PROGRESS')
-ON CONFLICT DO NOTHING;
+;

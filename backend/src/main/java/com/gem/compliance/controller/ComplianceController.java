@@ -22,24 +22,10 @@ public class ComplianceController {
     private final ComplianceService complianceService;
 
     @GetMapping("/compliance/bid/{bidId}")
-    @PreAuthorize("hasAnyAuthority('PROCUREMENT_OFFICER', 'COMPLIANCE_REVIEWER', 'SYSTEM_ADMIN', 'VIEWER', 'ROLE_PROCUREMENT_OFFICER', 'ROLE_COMPLIANCE_REVIEWER', 'ROLE_SYSTEM_ADMIN', 'ROLE_VIEWER')")
+    @PreAuthorize("hasAnyAuthority('PROCUREMENT_OFFICER', 'COMPLIANCE_REVIEWER', 'SYSTEM_ADMIN', 'AUDITOR', 'BIDDER_VENDOR', 'BIDDER', 'VIEWER', 'ROLE_PROCUREMENT_OFFICER', 'ROLE_COMPLIANCE_REVIEWER', 'ROLE_SYSTEM_ADMIN', 'ROLE_AUDITOR', 'ROLE_BIDDER_VENDOR', 'ROLE_BIDDER', 'ROLE_VIEWER')")
     @Operation(summary = "Get compliance matrix for a bid", description = "Retrieves all 5-state compliance verification results for a given bid ID.")
-    public ResponseEntity<List<ComplianceResultDTO>> getComplianceResultsByBid(@PathVariable String bidId) {
+    public ResponseEntity<List<ComplianceResultDTO>> getComplianceResults(@PathVariable String bidId) {
         return ResponseEntity.ok(complianceService.getResultsByBidId(bidId));
-    }
-
-    @GetMapping("/compliance/tender/{tenderId}")
-    @PreAuthorize("hasAnyAuthority('PROCUREMENT_OFFICER', 'COMPLIANCE_REVIEWER', 'SYSTEM_ADMIN', 'VIEWER', 'ROLE_PROCUREMENT_OFFICER', 'ROLE_COMPLIANCE_REVIEWER', 'ROLE_SYSTEM_ADMIN', 'ROLE_VIEWER')")
-    @Operation(summary = "Get compliance matrix for a tender", description = "Retrieves all compliance verification results across all bids for a given tender ID.")
-    public ResponseEntity<List<ComplianceResultDTO>> getComplianceResultsByTender(@PathVariable String tenderId) {
-        return ResponseEntity.ok(complianceService.getResultsByTenderId(tenderId));
-    }
-
-    @GetMapping("/reviews/queue")
-    @PreAuthorize("hasAnyAuthority('PROCUREMENT_OFFICER', 'COMPLIANCE_REVIEWER', 'SYSTEM_ADMIN', 'VIEWER', 'ROLE_PROCUREMENT_OFFICER', 'ROLE_COMPLIANCE_REVIEWER', 'ROLE_SYSTEM_ADMIN', 'ROLE_VIEWER')")
-    @Operation(summary = "Get prioritized procurement officer review queue", description = "Returns prioritized queue of compliance exceptions requiring human procurement decision.")
-    public ResponseEntity<List<ComplianceResultDTO>> getReviewQueue(@RequestParam(required = false) String tenderId) {
-        return ResponseEntity.ok(complianceService.getPrioritizedReviewQueue(tenderId));
     }
 
     @PostMapping("/reviews/override")

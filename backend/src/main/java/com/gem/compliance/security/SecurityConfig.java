@@ -46,12 +46,15 @@ public class SecurityConfig {
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/health").permitAll()
                 // Explicit Public Auth Endpoint for Dev/Demo Token Generation
                 .requestMatchers("/api/v1/auth/**").permitAll()
-                // Protected Business APIs Require Valid JWT Authentication
+                // Protected Business APIs Require Authentication
                 .requestMatchers("/api/v1/tenders/**").authenticated()
+                .requestMatchers("/api/v1/bids/**").authenticated()
                 .requestMatchers("/api/v1/compliance/**").authenticated()
-                .requestMatchers("/api/v1/reviews/**").authenticated()
-                .requestMatchers("/api/v1/audit/**").authenticated()
-                .requestMatchers("/api/v1/sellers/**").authenticated()
+                .requestMatchers("/api/v1/reviews/**").hasAnyAuthority("PROCUREMENT_OFFICER", "COMPLIANCE_REVIEWER", "SYSTEM_ADMIN", "ROLE_PROCUREMENT_OFFICER", "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN")
+                .requestMatchers("/api/v1/audit/**").hasAnyAuthority(
+                    "PROCUREMENT_OFFICER", "COMPLIANCE_REVIEWER", "SYSTEM_ADMIN", "AUDITOR", "VIEWER",
+                    "ROLE_PROCUREMENT_OFFICER", "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN", "ROLE_AUDITOR", "ROLE_VIEWER"
+                )
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -62,7 +65,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedOriginPatterns(List.of(
+            "http://localhost:[*]",
+            "http://127.0.0.1:[*]",
+            "https://*.gembid.local",
+            "https://*.gov.in"
+        ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

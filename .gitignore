@@ -28,3 +28,6 @@ code_smith.zip
 .DS_Store
 Thumbs.db
 .env
+.agents/
+*.pdf
+ai-service/data/

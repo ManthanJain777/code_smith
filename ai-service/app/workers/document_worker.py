@@ -77,7 +77,8 @@ class DocumentJobWorker:
                             document_name=filename,
                             page=page["page_number"],
                             text=line_clean,
-                            extracted_value=val
+                            extracted_value=val,
+                            bid_id=bid_id
                         )
                         chunk_counter += 1
 
@@ -88,3 +89,26 @@ class DocumentJobWorker:
         except Exception as e:
             job["status"] = "FAILED"
             job["error"] = str(e)
+
+    @classmethod
+    def ensure_demo_indexed(cls):
+        """Auto-indexes synthetic demo documents into the global vector store if empty."""
+        if len(cls._global_vector_index.chunks) > 0:
+            return
+        import os
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        demo_dir = os.path.join(base_dir, "demo_docs")
+        if not os.path.exists(demo_dir):
+            return
+
+        for fname in os.listdir(demo_dir):
+            if fname.endswith(".pdf"):
+                fpath = os.path.join(demo_dir, fname)
+                try:
+                    with open(fpath, "rb") as f:
+                        fbytes = f.read()
+                    bid_id = "BID-APEX-001" if "Apex" in fname else ("TND-PUMP-001" if "TND" in fname else "BID-GFL-001")
+                    cls.create_job(fname, fbytes, bid_id)
+                except Exception:
+                    pass
+

@@ -1,0 +1,40 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "E:\\code_smith\\blockchain\\contracts\\ComplianceAuditLedger.sol": {
+      "lastModificationDate": 1789100528992,
+      "contentHash": "78ffb133ae1f5489f76769705e0f6987",
+      "sourceName": "contracts/ComplianceAuditLedger.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "ComplianceAuditLedger"
+      ]
+    }
+  }
+}
