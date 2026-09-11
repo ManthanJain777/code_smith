@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Send, ShieldCheck, FileText, AlertCircle, User, Bot, Sparkles, Briefcase, Building2, Zap, Lock } from 'lucide-react';
+import { Send, ShieldCheck, FileText, AlertCircle, User, Bot, Sparkles, Briefcase, Building2, Zap, Lock, ShieldAlert } from 'lucide-react';
 import { apiService } from '../services/api';
 import { useAuth } from '../context/AuthProvider';
 import { ComplianceResult, Tender, Bid } from '../types/compliance';
@@ -69,6 +69,23 @@ export const CopilotPage: React.FC = () => {
           ],
           confidence: 0.96,
           modelUsed: 'GeM Procurement Domain Engine',
+        },
+        {
+          id: 'audit-q3',
+          role: 'user',
+          text: 'What human overrides were recorded for this evaluation?',
+          timestamp: '2026-09-11T09:25:00Z',
+        },
+        {
+          id: 'audit-a3',
+          role: 'copilot',
+          text: '1 human override recorded: REQ-TECH-002 (Pump Efficiency) — Procurement Officer marked COMPLIANT with justification: "Vendor provided corrected ISO 9906 test certificate; efficiency at BEP confirmed at 88.4%, meeting ≥ 85% threshold." Override anchored on blockchain: Block #10043.',
+          timestamp: '2026-09-11T09:25:04Z',
+          sources: [
+            { reqCode: 'REQ-TECH-002', status: 'COMPLIANT', document: 'ISO_9906_Test_Certificate.pdf', page: 2, reasoning: 'Human override with documented justification.' }
+          ],
+          confidence: 1.0,
+          modelUsed: 'Audit Replay Engine',
         }
       ];
     } else if (isReviewer) {
@@ -76,16 +93,25 @@ export const CopilotPage: React.FC = () => {
         {
           id: 'intro',
           role: 'copilot',
-          text: 'Welcome, Compliance Reviewer. I assist with human-in-the-loop verification, cross-referencing document snippets, and verifying compliance exception justifications. All answers are strictly grounded in submitted evidence dossiers.',
+          text: 'Welcome to your Compliance Exception Assistant. Scoped strictly to exception review items and flagged requirements in your queue. Cross-bidder comparison is restricted to maintain unbiased evaluation.',
           timestamp: new Date().toISOString(),
         }
       ];
-    } else if (isAdmin) {
+    } else if (isAdmin || role === 'PROCUREMENT_OFFICER') {
       return [
         {
           id: 'intro',
           role: 'copilot',
-          text: 'Welcome, System Administrator. GeM Procurement Intelligence Copilot is active with full audit inspection and zero-hallucination grounding. Live EVM on-chain anchoring is monitored.',
+          text: 'Welcome to the Procurement Committee Copilot. Unrestricted query access across all evaluated requirements, submitted bidder evidence dossiers, and statutory registries. All responses are strictly grounded in verified facts.',
+          timestamp: new Date().toISOString(),
+        }
+      ];
+    } else if (isBidder) {
+      return [
+        {
+          id: 'intro',
+          role: 'copilot',
+          text: 'This is your Bid Compliance Assistant. I can help you understand why requirements were flagged, identify what documents you need to submit to achieve compliance, and check your statutory certificate expiry.',
           timestamp: new Date().toISOString(),
         }
       ];
@@ -94,7 +120,7 @@ export const CopilotPage: React.FC = () => {
       {
         id: 'intro',
         role: 'copilot',
-        text: 'Welcome to the Procurement Officer Copilot. I only answer questions strictly grounded in verified compliance results and extracted evidence from submitted documents. I will never guess or hallucinate information.',
+        text: 'Welcome to the Procurement Committee Copilot. Unrestricted query access across all evaluated requirements and submitted bidder evidence dossiers.',
         timestamp: new Date().toISOString(),
       }
     ];
@@ -103,6 +129,18 @@ export const CopilotPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>(getInitialMessages);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [transcripts, setTranscripts] = useState<any[]>([]);
+  const [transcriptsLoading, setTranscriptsLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (isAuditor) {
+      setTranscriptsLoading(true);
+      apiService.getCopilotTranscript()
+        .then(data => setTranscripts(data))
+        .catch(err => console.warn('Failed to load copilot transcripts:', err))
+        .finally(() => setTranscriptsLoading(false));
+    }
+  }, [isAuditor]);
 
   useEffect(() => {
     async function loadTenders() {
@@ -123,6 +161,22 @@ export const CopilotPage: React.FC = () => {
     if (!selectedTenderId) return;
     async function loadBids() {
       try {
+        if (isBidder) {
+          const myBids: Bid[] = [
+            {
+              id: 'BID-APEX-001',
+              tenderId: selectedTenderId,
+              bidderName: 'Apex Pumps & Motors Private Limited',
+              submissionDate: new Date().toISOString(),
+              totalAmount: 145000000,
+              complianceScore: 78,
+              status: 'UNDER_REVIEW'
+            }
+          ];
+          setBids(myBids);
+          setSelectedBidId('BID-APEX-001');
+          return;
+        }
         const tenderBids = await apiService.getBidsForTender(selectedTenderId);
         setBids(tenderBids);
         if (tenderBids.length > 0) {
@@ -135,18 +189,37 @@ export const CopilotPage: React.FC = () => {
       }
     }
     loadBids();
-  }, [selectedTenderId]);
+  }, [selectedTenderId, isBidder]);
 
   const activeBid = bids.find(b => b.id === selectedBidId);
-  const bidderDisplayName = activeBid ? activeBid.bidderName : 'Apex Pumps';
+  const bidderDisplayName = isBidder ? 'Apex Pumps & Motors Pvt Ltd' : (activeBid ? activeBid.bidderName : 'Apex Pumps');
 
-  const sampleQuestions = [
-    `Which requirements is ${bidderDisplayName} non-compliant with?`,
-    'What evidence was found for technical pump efficiency?',
-    'Why is FY2025 turnover flagged or unverified?',
-    'Are there any contradictions across the submitted documents?',
-    `What is the overall risk assessment for ${selectedBidId || 'this bidder'}?`,
-  ];
+  // Role-scoped sample questions — Auditor has none (read-only transcripts feed),
+  // Reviewer sees exception-focused queries, Officer/Admin see full committee queries,
+  // Bidder sees vendor self-service inquiries.
+  const sampleQuestions: string[] = isAuditor
+    ? []
+    : isReviewer
+    ? [
+        'Why is requirement REQ-001 flagged for exception review?',
+        'What evidence supports the financial turnover requirement?',
+        'Explain contradiction between CA Certificate and Balance Sheet.',
+        'Show extracted snippet and calculation for pump efficiency.',
+      ]
+    : isBidder
+    ? [
+        'Why is my financial turnover requirement flagged as non-compliant?',
+        'What document do I need to fix my technical efficiency compliance?',
+        'Is my ISO 9001 quality certificate about to expire?',
+        'How can I improve my compliance readiness score?',
+      ]
+    : [
+        'Why is FY2025 turnover flagged as non-compliant?',
+        'What is the overall risk assessment and weighted formula breakdown for this bid?',
+        'Are there any cross-document contradictions detected?',
+        'What evidence was extracted for technical pump efficiency?',
+        'Show debarment and blacklist check outcomes across all bidders.',
+      ];
 
   const sendMessage = async (text?: string) => {
     const question = text || input.trim();
@@ -167,7 +240,9 @@ export const CopilotPage: React.FC = () => {
       let answerText = '';
       let answerSources: any[] = [];
       let answerConf = 0.98;
-      let modelUsed = 'GeM Procurement Intelligence Copilot';
+      let modelUsed = isBidder ? 'Bidder Compliance Engine' : 'GeM Procurement Intelligence Copilot';
+
+      const queryBidId = isBidder ? 'BID-APEX-001' : (selectedBidId || 'BID-APEX-001');
 
       try {
         const aiRes = await fetch(`${aiUrl}/api/v1/ai/copilot/query`, {
@@ -175,7 +250,10 @@ export const CopilotPage: React.FC = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             question,
-            bid_id: selectedBidId || 'BID-APEX-001',
+            bid_id: queryBidId,
+            role: role,
+            user_name: user?.fullName || user?.email || 'Procurement Officer',
+            tender_id: selectedTenderId,
             max_results: 5
           })
         });
@@ -184,7 +262,7 @@ export const CopilotPage: React.FC = () => {
           if (aiData.answer && aiData.answer.length > 10) {
             answerText = aiData.answer;
             answerConf = aiData.confidence || 0.96;
-            modelUsed = aiData.model_used || 'GeM Procurement Intelligence Copilot';
+            modelUsed = aiData.model_used || (isBidder ? 'Bidder Compliance Engine' : 'GeM Procurement Intelligence Copilot');
             answerSources = (aiData.citations || []).map((c: any) => ({
               reqCode: c.requirement_id || 'EVD-AI',
               status: 'VERIFIED',
@@ -199,7 +277,7 @@ export const CopilotPage: React.FC = () => {
       }
 
       if (!answerText) {
-        const results = await apiService.getComplianceResults(selectedBidId || 'BID-APEX-001').catch(() => []);
+        const results = await apiService.getComplianceResults(queryBidId).catch(() => []);
         const response = synthesizeAnswer(question, results, bidderDisplayName);
         answerText = response.answer;
         answerSources = response.sources;
@@ -279,7 +357,7 @@ export const CopilotPage: React.FC = () => {
     if (qLower.includes('turnover') || qLower.includes('financial') || qLower.includes('fy2025')) {
       const finReq = results.find(r => r.requirementCode === 'REQ-001' || r.category === 'Financial');
       return {
-        answer: `**Financial Review (${bidder})**:\n\n• **Requirement**: ${finReq?.requirementText || 'Annual Turnover Requirement'}\n• **Status**: ${finReq?.status || 'NON_COMPLIANT'}\n• **Variance**: The CA Turnover Certificate certified FY24-25 turnover at ₹112.40 Cr, but the Audited Balance Sheet reports ₹94.00 Cr revenue from operations.\n• **Conclusion**: The requirement of ₹100.00 Cr is failed on audited financials alone. Requires officer determination.`,
+        answer: `**Financial Review (${bidder})**:\n\n• **Requirement**: ${finReq?.requirementText || 'Annual Turnover Requirement'}\n• **Status**: ${finReq?.status || 'NON_COMPLIANT'}\n• **Variance**: The CA Turnover Certificate certified FY24-25 turnover at ₹112.40 Cr, but the Audited Balance Sheet reports ₹94.00 Cr revenue from operations.\n• **Conclusion**: The requirement of ₹100.00 Cr is not met on audited financials alone. Requires officer determination.`,
         sources: [{
           reqCode: finReq?.requirementCode || 'REQ-001',
           status: finReq?.status || 'NON_COMPLIANT',
@@ -308,7 +386,7 @@ export const CopilotPage: React.FC = () => {
       const riskScore = nonCompCount > 0 ? 65 : (unverifiedCount > 0 ? 35 : 10);
 
       return {
-        answer: `**Comprehensive Risk Summary for ${bidder} (${selectedBidId})**:\n\n• **Calculated Risk Score**: ${riskScore}/100 (${riskScore > 50 ? 'HIGH RISK' : 'LOW RISK'})\n• **Compliant Requirements**: ${results.filter(r => r.status === 'COMPLIANT').length}/${results.length}\n• **Non-Compliant Items**: ${nonCompCount}\n• **Debarment Check**: PASS (Ministry of Finance blacklists checked — clear)\n• **Recommendation**: Withhold technical award until turnover contradiction is resolved.`,
+        answer: `**Comprehensive Risk Summary for ${bidder} (${selectedBidId})**:\n\n• **Calculated Risk Score**: ${riskScore}/100 (${riskScore > 50 ? 'HIGH RISK' : 'LOW RISK'})\n• **Compliant Requirements**: ${results.filter(r => r.status === 'COMPLIANT').length}/${results.length}\n• **Non-Compliant Items**: ${nonCompCount}\n• **Debarment Check**: COMPLIANT (Ministry of Finance blacklists checked — clear)\n• **Recommendation**: Withhold technical award until turnover contradiction is resolved.`,
         sources: [],
         confidence: 0.92,
       };
@@ -346,26 +424,36 @@ export const CopilotPage: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-slate-500 shrink-0" />
-            <span className="font-bold text-slate-500 uppercase">Target Bidder:</span>
-            <select
-              value={selectedBidId}
-              onChange={(e) => setSelectedBidId(e.target.value)}
-              className="bg-slate-50 border border-slate-300 rounded px-2.5 py-1 font-semibold text-slate-800 outline-none"
-            >
-              {bids.map(b => (
-                <option key={b.id} value={b.id}>{b.bidderName} ({b.id})</option>
-              ))}
-              {bids.length === 0 && <option value="">No bids available</option>}
-            </select>
-          </div>
+          {isBidder ? (
+            <div className="flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span className="font-bold text-slate-500 uppercase">My Organization:</span>
+              <span className="bg-emerald-50 text-emerald-800 border border-emerald-300 font-semibold px-2.5 py-1 rounded">
+                Apex Pumps & Motors Pvt Ltd (BID-APEX-001)
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-slate-500 shrink-0" />
+              <span className="font-bold text-slate-500 uppercase">Target Bidder:</span>
+              <select
+                value={selectedBidId}
+                onChange={(e) => setSelectedBidId(e.target.value)}
+                className="bg-slate-50 border border-slate-300 rounded px-2.5 py-1 font-semibold text-slate-800 outline-none"
+              >
+                {bids.map(b => (
+                  <option key={b.id} value={b.id}>{b.bidderName} ({b.id})</option>
+                ))}
+                {bids.length === 0 && <option value="">No bids available</option>}
+              </select>
+            </div>
+          )}
         </div>
 
         <button
           type="button"
           onClick={clearChat}
-          className="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-1 rounded border border-slate-300 text-slate-700 transition"
+          className="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-1 rounded border border-slate-300 text-slate-700 transition cursor-pointer"
         >
           Clear Chat
         </button>
@@ -375,6 +463,8 @@ export const CopilotPage: React.FC = () => {
       <div className={`rounded-2xl p-4 mb-3 text-white shadow-lg ${
         isAuditor 
           ? 'bg-gradient-to-r from-teal-950 via-slate-900 to-indigo-950 border border-teal-500/30' 
+          : isBidder
+          ? 'bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 border border-emerald-500/30'
           : 'bg-gradient-to-r from-purple-900 to-indigo-950'
       }`}>
         <div className="flex items-center justify-between gap-3">
@@ -382,146 +472,208 @@ export const CopilotPage: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <Sparkles className="w-4 h-4 text-amber-300" />
               <span className="text-xs font-semibold uppercase tracking-wider text-purple-200">
-                {isAuditor ? 'Auditor Vigilance Replay' : isReviewer ? 'Compliance Reviewer Copilot' : isAdmin ? 'System Administrator Copilot' : 'Procurement Copilot'}
+                {isAuditor ? 'Vigilance Query Transcript' : isReviewer ? 'Compliance Exception Assistant' : isBidder ? 'My Bid Compliance Assistant' : 'Procurement Committee Copilot'}
               </span>
               <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full">
                 Zero-Hallucination Guard Active
               </span>
               <span className="text-[10px] bg-purple-500/30 text-purple-200 border border-purple-400/40 px-2 py-0.5 rounded-full flex items-center gap-1 font-mono">
-                <Zap className="w-3 h-3 text-amber-300" /> GeM Procurement Intelligence Engine
+                <Zap className="w-3 h-3 text-amber-300" /> {isBidder ? 'Vendor Self-Service Support' : isAuditor ? 'GFR Rule 173 Vigilance Log' : 'GeM Procurement Intelligence Engine'}
               </span>
               {isAuditor && (
                 <span className="text-[10px] bg-amber-500/30 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded-full flex items-center gap-1 font-mono font-bold">
-                  <Lock className="w-3 h-3 text-amber-300" /> Read-Only Audit
+                  <Lock className="w-3 h-3 text-amber-300" /> Read-Only Vigilance Oversight
                 </span>
               )}
             </div>
             <h1 className="text-lg font-bold">
-              {isAuditor ? 'Audited Committee Inquiries & Evidence Ledger' : isReviewer ? 'Review & Overrides Evidence Dossier Support' : isAdmin ? 'GeM Procurement Intelligence Engine Console' : 'Auditable Committee Decision Support'}
+              {isAuditor ? 'Vigilance Query Transcript' : isReviewer ? 'Compliance Exception Assistant' : isBidder ? 'My Bid Compliance Assistant' : 'Procurement Committee Copilot'}
             </h1>
             <p className="text-xs text-purple-200 mt-0.5">
               {isAuditor 
-                ? `Inspecting auditable inquiry transcripts for ${bidderDisplayName}. Interactive query submission is locked for independent oversight.`
-                : `Querying live verification dossiers for ${bidderDisplayName}. Strictly grounded in verified evidence.`}
+                ? 'Chronological oversight stream of all queries asked by Procurement Committee members. Interactive query submission is locked under GFR 2017 standards.'
+                : isBidder
+                ? `Assisting ${bidderDisplayName} with requirement readiness, document explanations, and compliance evidence.`
+                : isReviewer
+                ? `Assisting exception review for assigned bid queue (${selectedBidId}). Strictly grounded in submitted evidence dossiers.`
+                : `Unrestricted query access across tender requirements, all evaluated bidders, and statutory evidence dossiers.`}
             </p>
           </div>
         </div>
 
-        {/* Suggested Queries / Audited Inquiries */}
-        <div className="mt-3">
-          <span className="text-[11px] font-semibold text-purple-300 uppercase tracking-wider block mb-1.5">
-            {isAuditor ? 'Audited Inquiry Transcripts:' : 'Suggested Committee Queries:'}
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {sampleQuestions.map(q => (
-              <button
-                key={q}
-                onClick={() => isAuditor ? null : sendMessage(q)}
-                disabled={isAuditor}
-                className={`text-xs px-3 py-1 rounded-full transition text-left ${
-                  isAuditor 
-                    ? 'bg-white/5 border border-white/10 text-slate-300 cursor-default' 
-                    : 'bg-white/10 hover:bg-white/20 border border-white/20 text-white cursor-pointer'
-                }`}
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-1">
-        {messages.map(msg => (
-          <div
-            key={msg.id}
-            className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            {msg.role === 'copilot' && (
-              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                <Bot className="w-4 h-4 text-purple-600" />
-              </div>
-            )}
-            <div className={`max-w-2xl ${msg.role === 'user' ? 'order-1' : 'order-2'}`}>
-              <div
-                className={`p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
-                  msg.role === 'user'
-                    ? 'bg-purple-600 text-white shadow-sm'
-                    : 'bg-white border border-slate-200 text-slate-800 shadow-sm'
-                }`}
-              >
-                {msg.text}
-              </div>
-
-              {/* Citations / Sources */}
-              {msg.sources && msg.sources.length > 0 && (
-                <div className="mt-2 space-y-1.5">
-                  <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Verified Evidence Sources
-                  </p>
-                  {msg.sources.map((src, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-2 text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-700"
-                    >
-                      <span className="font-mono font-bold text-blue-700">{src.reqCode}</span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-200 text-slate-800">
-                        {src.status}
-                      </span>
-                      <FileText className="w-3 h-3 text-slate-400" />
-                      <span className="text-slate-600 truncate">{src.document} (p. {src.page})</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {msg.confidence !== undefined && msg.confidence > 0 && (
-                <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
-                  <div className="flex items-center gap-1.5">
-                    <AlertCircle className="w-3 h-3 text-emerald-500" />
-                    <span>Grounding confidence: {(msg.confidence * 100).toFixed(0)}%</span>
-                  </div>
-                  {msg.modelUsed && (
-                    <span className="inline-flex items-center gap-1 font-mono text-[10px] bg-purple-50 text-purple-700 px-2 py-0.5 rounded border border-purple-200">
-                      ⚡ {msg.modelUsed}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {msg.role === 'user' && (
-              <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1 order-2">
-                <User className="w-4 h-4 text-white" />
-              </div>
-            )}
-          </div>
-        ))}
-
-        {loading && (
-          <div className="flex gap-3">
-            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-              <Bot className="w-4 h-4 text-purple-600 animate-pulse" />
-            </div>
-            <div className="bg-white border border-slate-200 p-4 rounded-2xl text-xs text-slate-500 flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce" />
-              <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce delay-100" />
-              <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce delay-200" />
-              <span>Querying verified compliance index...</span>
+        {/* Suggested Queries — Only for Officer, Admin, Reviewer, Bidder. Auditor has NO live questions */}
+        {!isAuditor && sampleQuestions.length > 0 && (
+          <div className="mt-3">
+            <span className="text-[11px] font-semibold text-purple-300 uppercase tracking-wider block mb-1.5">
+              {isBidder ? 'Quick Inquiries for Your Bid:' : isReviewer ? 'Exception Review Prompts:' : 'Committee Decision Prompts (Non-Compliance / Risk / Contradictions):'}
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {sampleQuestions.map(q => (
+                <button
+                  key={q}
+                  onClick={() => sendMessage(q)}
+                  className="text-xs px-3 py-1 rounded-full transition text-left bg-white/10 hover:bg-white/20 border border-white/20 text-white cursor-pointer"
+                >
+                  {q}
+                </button>
+              ))}
             </div>
           </div>
         )}
       </div>
 
-      {/* Input Form / Auditor Read-Only Lock */}
+      {/* Main Content Area: Auditor Vigilance Transcript vs Interactive Messages */}
+      {isAuditor ? (
+        <div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-1">
+          {transcriptsLoading ? (
+            <div className="p-8 text-center text-slate-500 text-sm bg-white rounded-2xl border border-slate-200">
+              <div className="w-6 h-6 border-2 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+              Loading vigilance inquiry transcripts from AI audit stream...
+            </div>
+          ) : transcripts.length === 0 ? (
+            <div className="p-8 text-center text-slate-500 text-sm bg-white rounded-2xl border border-slate-200">
+              No procurement committee queries recorded yet.
+            </div>
+          ) : (
+            transcripts.map((tx: any) => (
+              <div key={tx.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-mono text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                      {tx.id}
+                    </span>
+                    <span className="text-xs font-bold text-slate-900">{tx.user_name}</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-semibold">
+                      {tx.role}
+                    </span>
+                    <span className="text-xs text-slate-400">• Tender: {tx.tender_id}</span>
+                    <span className="text-xs text-slate-400">• Bid: {tx.bid_id}</span>
+                  </div>
+                  <span className="text-[11px] text-slate-400 font-mono">
+                    {new Date(tx.timestamp).toLocaleString()}
+                  </span>
+                </div>
+
+                <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-1">Inquiry Asked</span>
+                  <p className="text-sm font-semibold text-slate-800">{tx.question}</p>
+                </div>
+
+                <div className="bg-white rounded-xl p-3.5 border border-slate-200 text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                  <span className="text-[10px] uppercase font-bold text-emerald-600 tracking-wider block mb-1">Copilot Answer</span>
+                  {tx.answer}
+                </div>
+
+                {tx.citations && tx.citations.length > 0 && (
+                  <div className="space-y-1">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Evidence Citations</span>
+                    {tx.citations.map((c: any, i: number) => (
+                      <div key={i} className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-slate-600">
+                        <FileText className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                        <span className="font-semibold text-slate-800">{c.document_name}</span>
+                        <span>(p. {c.page})</span>
+                        <span className="text-slate-400 italic truncate">— "{c.snippet}"</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      ) : (
+        /* Chat Messages for Interactive Roles */
+        <div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-1">
+          {messages.map(msg => (
+            <div
+              key={msg.id}
+              className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              {msg.role === 'copilot' && (
+                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <Bot className="w-4 h-4 text-purple-600" />
+                </div>
+              )}
+              <div className={`max-w-2xl ${msg.role === 'user' ? 'order-1' : 'order-2'}`}>
+                <div
+                  className={`p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+                    msg.role === 'user'
+                      ? 'bg-purple-600 text-white shadow-sm'
+                      : 'bg-white border border-slate-200 text-slate-800 shadow-sm'
+                  }`}
+                >
+                  {msg.text}
+                </div>
+
+                {/* Citations / Sources */}
+                {msg.sources && msg.sources.length > 0 && (
+                  <div className="mt-2 space-y-1.5">
+                    <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Verified Evidence Sources
+                    </p>
+                    {msg.sources.map((src, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-2 text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-700"
+                      >
+                        <span className="font-mono font-bold text-blue-700">{src.reqCode}</span>
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-200 text-slate-800">
+                          {src.status}
+                        </span>
+                        <FileText className="w-3 h-3 text-slate-400" />
+                        <span className="text-slate-600 truncate">{src.document} (p. {src.page})</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {msg.confidence !== undefined && msg.confidence > 0 && (
+                  <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+                    <div className="flex items-center gap-1.5">
+                      <AlertCircle className="w-3 h-3 text-emerald-500" />
+                      <span>Grounding confidence: {(msg.confidence * 100).toFixed(0)}%</span>
+                    </div>
+                    {msg.modelUsed && (
+                      <span className="inline-flex items-center gap-1 font-mono text-[10px] bg-purple-50 text-purple-700 px-2 py-0.5 rounded border border-purple-200">
+                        ⚡ {msg.modelUsed}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {msg.role === 'user' && (
+                <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1 order-2">
+                  <User className="w-4 h-4 text-white" />
+                </div>
+              )}
+            </div>
+          ))}
+
+          {loading && (
+            <div className="flex gap-3">
+              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                <Bot className="w-4 h-4 text-purple-600 animate-pulse" />
+              </div>
+              <div className="bg-white border border-slate-200 p-4 rounded-2xl text-xs text-slate-500 flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce" />
+                <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce delay-100" />
+                <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce delay-200" />
+                <span>Querying verified compliance index...</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Input Form or Auditor Read-Only Lock */}
       {isAuditor ? (
         <div className="p-4 bg-slate-100 border border-slate-300 rounded-xl text-xs text-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-2">
           <div className="flex items-center gap-2.5">
             <Lock className="w-5 h-5 text-amber-600 shrink-0" />
             <div>
               <span className="font-bold text-slate-900 block">Vigilance Audit Scrutiny Mode (Read-Only)</span>
-              <span className="text-[11px] text-slate-600">Interactive query submission is locked for Auditor role to ensure complete non-interference with procurement committee evaluations.</span>
+              <span className="text-[11px] text-slate-600">Interactive query submission is locked for Auditor role under GFR 2017 to ensure complete non-interference with procurement committee evaluations.</span>
             </div>
           </div>
           <span className="px-2.5 py-1 bg-slate-200 border border-slate-300 rounded font-mono text-[10px] font-bold text-slate-800 shrink-0">
@@ -540,7 +692,13 @@ export const CopilotPage: React.FC = () => {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={`Ask Copilot about ${bidderDisplayName}'s requirements, evidence, or flags...`}
+            placeholder={
+              isBidder
+                ? "Ask about your submitted requirements, evidence, or missing documents..."
+                : isReviewer
+                ? `Ask about exception items or evidence for ${bidderDisplayName}...`
+                : `Ask Copilot about ${bidderDisplayName}'s requirements, evidence, or flags...`
+            }
             className="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
             disabled={loading}
           />

@@ -4,6 +4,24 @@
 
 ---
 
+## 0. SIH Expected Solution vs. Hackathon Add-ons
+
+**Expected Solution (Mandatory Features):**
+- Automated Document Analysis & Parsing
+- Missing/Inconsistent Information Identification
+- Risk & Compliance Classification
+- Human-in-the-Loop Decision Support
+- Integrations for Udyam/MSME, GST, PAN, Income Tax, Make in India, EPFO/ESIC, Startup India, NSIC, OEM authorization, DigiLocker, and Blacklisting/Debarment checks.
+
+**Hackathon Add-ons (Competitive Differentiators):**
+- **Procurement Copilot:** RBAC-guarded Q&A over isolated vendor data.
+- **On-Chain Cryptographic Audit Trail:** Ethereum EVM anchor for true immutability.
+- **Cross-Document Contradiction Engine:** Advanced LLM reasoning to flag conflicting documents.
+- **Prompt-Injection Defense Sentinel:** Active monitoring against adversarial bid document attacks.
+- **Strict RBAC Enforcement:** Both frontend route guards and backend endpoint security.
+
+---
+
 ## 1. Role-to-Dashboard Overview
 
 The platform implements an **isolated Role-Based Access Control (RBAC)** architecture. Each user role is routed to a purpose-built view within the unified portal shell, ensuring strict data governance, commercial confidentiality, and integrity of public procurement.

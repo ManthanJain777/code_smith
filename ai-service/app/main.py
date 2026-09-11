@@ -1,6 +1,8 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+import datetime
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from app.schemas.compliance import (
     RequirementParseRequest, ExtractedRequirement,
@@ -20,6 +22,8 @@ from app.engines.copilot import ProcurementCopilotEngine
 from app.workers.document_worker import DocumentJobWorker
 from app.retrieval.evidence_retriever import HybridEvidenceRetriever
 from app.parsers.pdf_parser import extract_text_from_bytes
+from app.engines.government_portal_engine import run_portal_verification, PortalVerificationReport
+from app.engines.recommendation_engine import generate_recommendation, AiRecommendation
 
 app = FastAPI(
     title="SIH26100 AI Intelligence API",
@@ -46,9 +50,14 @@ app.add_middleware(
 @app.get("/health", tags=["System"])
 def health_check():
     return {
-        "status": "UP", "service": "ai-service", "version": "3.0.0",
-        "engines": ["TenderUnderstanding","DocumentIntelligence","ComplianceReasoning",
-                    "ContradictionDetection","ForgeryDetection","CollusionDetection","UnitNormalizer","HybridRAG"]
+        "status": "UP", "service": "ai-service", "version": "3.1.0",
+        "engines": [
+            "TenderUnderstanding", "DocumentIntelligence", "ComplianceReasoning",
+            "ContradictionDetection", "ForgeryDetection", "CollusionDetection",
+            "UnitNormalizer", "HybridRAG",
+            "GovernmentPortalVerification",  # NEW — 13 SIH-mandated portals
+            "AiRecommendationEngine",         # NEW — structured procurement recommendations
+        ]
     }
 
 
@@ -169,6 +178,7 @@ def verify_seller_ai(request: SellerVerificationRequest):
 
 
 @app.post("/api/v1/ai/copilot/query", response_model=CopilotQueryResponse, tags=["Procurement Copilot"])
+@app.post("/copilot/query", response_model=CopilotQueryResponse, tags=["Procurement Copilot"])
 def query_copilot(request: CopilotQueryRequest):
     try:
         DocumentJobWorker.ensure_demo_indexed()
@@ -183,6 +193,49 @@ def query_copilot(request: CopilotQueryRequest):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/ai/copilot/transcript", tags=["Procurement Copilot"])
+@app.get("/copilot/transcript", tags=["Procurement Copilot"])
+def get_copilot_transcripts():
+    """Returns past queries asked by officers and committee members for Vigilance/Auditor review."""
+    return {"transcripts": ProcurementCopilotEngine.get_query_transcripts()}
+
+
+
+@app.post("/documents/extract", tags=["Document Intelligence Pipeline"])
+@app.post("/api/v1/ai/documents/extract", tags=["Document Intelligence Pipeline"])
+async def extract_document_sync(file: UploadFile = File(...), bid_id: str = Form("BID-APEX-001")):
+    try:
+        file_bytes = await file.read()
+        pages = extract_text_from_bytes(file_bytes, file.filename)
+        return {
+            "filename": file.filename,
+            "bid_id": bid_id,
+            "page_count": len(pages),
+            "pages": pages,
+            "status": "PARSED"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/ai/security/injection-logs", tags=["Security Sentinel"])
+def get_injection_logs():
+    return {"logs": ProcurementCopilotEngine.get_sanitization_logs()}
+
+
+@app.post("/api/v1/ai/security/test-injection", tags=["Security Sentinel"])
+def test_prompt_injection(payload: Dict[str, str]):
+    text = payload.get("text", "")
+    sanitized, was_injected = ProcurementCopilotEngine.sanitize_prompt(text, source="Adversarial Injection Test Harness")
+    return {
+        "original_text": text,
+        "sanitized_text": sanitized,
+        "injection_detected": was_injected,
+        "action_taken": "STRIPPED_AND_LOGGED" if was_injected else "PASSED_CLEAN",
+        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat() if hasattr(datetime, "timezone") else ""
+    }
 
 
 
@@ -216,3 +269,144 @@ def get_demo_document(filename: str):
     if not os.path.exists(file_path) or not filename.endswith(".pdf"):
         raise HTTPException(status_code=404, detail="Demo document not found")
     return FileResponse(file_path, media_type="application/pdf", filename=filename)
+
+
+# ── SIH Expected Solution: Government Portal Verification ─────────────────────
+class PortalVerifyRequest(BaseModel):
+    seller_id: str
+    organization_name: str
+    gstin: Optional[str] = None
+    pan: Optional[str] = None
+    cin: Optional[str] = None
+    udyam_no: Optional[str] = None
+    dpiit_no: Optional[str] = None
+    epfo_code: Optional[str] = None
+    esic_code: Optional[str] = None
+    bis_license: Optional[str] = None
+    nsic_reg: Optional[str] = None
+    oem_auth_ref: Optional[str] = None
+    mii_reg: Optional[str] = None
+
+
+@app.post("/api/v1/ai/portals/verify", response_model=PortalVerificationReport, tags=["Government Portals"])
+def verify_all_portals(request: PortalVerifyRequest):
+    """
+    SIH Expected Solution: Run all 13 SIH-mandated government portal checks in a single call.
+    Portals: GSTN, PAN+IT, MCA21, Udyam/MSME, Startup India/DPIIT, NSIC, OEM Auth,
+    Make in India, BIS/DPIIT, EPFO, ESIC, DigiLocker, Debarment/Blacklist.
+    Returns structured PortalVerificationReport with per-portal findings and aggregate score.
+    """
+    try:
+        return run_portal_verification(
+            seller_id=request.seller_id,
+            organization_name=request.organization_name,
+            gstin=request.gstin,
+            pan=request.pan,
+            cin=request.cin,
+            udyam_no=request.udyam_no,
+            dpiit_no=request.dpiit_no,
+            epfo_code=request.epfo_code,
+            esic_code=request.esic_code,
+            bis_license=request.bis_license,
+            nsic_reg=request.nsic_reg,
+            oem_auth_ref=request.oem_auth_ref,
+            mii_reg=request.mii_reg,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── SIH Expected Solution: Compliance Score ───────────────────────────────────
+class ComplianceScoreRequest(BaseModel):
+    bid_id: str
+    total_requirements: int
+    compliant_count: int
+    non_compliant_count: int
+    unverified_count: int
+    partially_compliant_count: int
+    not_applicable_count: int = 0
+
+
+class ComplianceScoreResponse(BaseModel):
+    bid_id: str
+    compliance_score: float
+    risk_level: str
+    total_requirements: int
+    compliant_count: int
+    non_compliant_count: int
+    unverified_count: int
+    partially_compliant_count: int
+    computed_at: str
+
+
+@app.post("/api/v1/ai/compliance/score", response_model=ComplianceScoreResponse, tags=["Compliance Scoring"])
+def compute_compliance_score(request: ComplianceScoreRequest):
+    """
+    SIH Expected Solution: Compute weighted compliance score (0-100%) and risk level.
+    Formula: Compliant=1.0pt, Partial=0.5pt; denominator excludes NOT_APPLICABLE.
+    Risk: <40% → CRITICAL, 40-59% → HIGH, 60-79% → MEDIUM, >=80% → LOW.
+    """
+    denominator = request.total_requirements - request.not_applicable_count
+    if denominator <= 0:
+        score = 0.0
+    else:
+        score = round(((request.compliant_count * 1.0 + request.partially_compliant_count * 0.5) / denominator) * 100, 1)
+
+    if request.non_compliant_count > 0 or score < 40:
+        risk = "CRITICAL"
+    elif score < 60:
+        risk = "HIGH"
+    elif score < 80:
+        risk = "MEDIUM"
+    else:
+        risk = "LOW"
+
+    return ComplianceScoreResponse(
+        bid_id=request.bid_id,
+        compliance_score=score,
+        risk_level=risk,
+        total_requirements=request.total_requirements,
+        compliant_count=request.compliant_count,
+        non_compliant_count=request.non_compliant_count,
+        unverified_count=request.unverified_count,
+        partially_compliant_count=request.partially_compliant_count,
+        computed_at=datetime.datetime.utcnow().isoformat() + "Z",
+    )
+
+
+# ── SIH Expected Solution: AI Recommendation ─────────────────────────────────
+class RecommendationRequest(BaseModel):
+    bid_id: str
+    compliance_score: float
+    risk_level: str
+    total_requirements: int
+    compliant_count: int
+    non_compliant_count: int
+    unverified_count: int
+    partially_compliant_count: int
+    gaps: Optional[List[str]] = None
+    strengths: Optional[List[str]] = None
+
+
+@app.post("/api/v1/ai/compliance/recommend", response_model=AiRecommendation, tags=["Compliance Scoring"])
+def get_ai_recommendation(request: RecommendationRequest):
+    """
+    SIH Expected Solution: Generate AI-structured procurement recommendation.
+    Returns RECOMMEND_QUALIFY, RECOMMEND_REJECT, or REFER_FOR_REVIEW with
+    gap analysis, strengths, basis, and officer-authority disclaimer.
+    """
+    try:
+        return generate_recommendation(
+            bid_id=request.bid_id,
+            compliance_score=request.compliance_score,
+            risk_level=request.risk_level,
+            total_requirements=request.total_requirements,
+            compliant_count=request.compliant_count,
+            non_compliant_count=request.non_compliant_count,
+            unverified_count=request.unverified_count,
+            partially_compliant_count=request.partially_compliant_count,
+            gaps=request.gaps,
+            strengths=request.strengths,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

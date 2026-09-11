@@ -156,7 +156,7 @@ public class UserService {
                 .email("auditor.demo@gembid.local")
                 .passwordHash("$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07xd00DMxs.AQubh4a")
                 .fullName("Vikram Sethi (Auditor Demo)")
-                .role("VIEWER")
+                .role("AUDITOR")
                 .isActive(true)
                 .build();
         } else if (key.contains("bidder") || key.contains("usr-demo-bid")) {

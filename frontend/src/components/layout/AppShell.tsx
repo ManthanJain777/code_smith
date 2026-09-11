@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthProvider';
+import { apiService } from '../../services/api';
 import {
   LayoutDashboard,
   FileText,
@@ -20,7 +21,8 @@ import {
   Zap,
   BarChart3,
   Link2,
-  UploadCloud
+  UploadCloud,
+  Globe
 } from 'lucide-react';
 
 
@@ -33,6 +35,16 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      apiService.getNotifications()
+        .then(data => setNotifications(data || []))
+        .catch(() => {});
+    }
+  }, [user]);
 
   // Role-mapped Navigation Definitions
   const getNavItems = () => {
@@ -43,24 +55,26 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           { label: 'Admin Dashboard', path: '/', icon: LayoutDashboard },
           { label: 'Tenders & Specifications', path: '/tenders', icon: FileText },
           { label: 'Compliance Matrix', path: '/compliance', icon: CheckCircle2 },
+          { label: 'Government Portal Verification', path: '/portals', icon: Globe },
           { label: 'Multi-Bidder Compare', path: '/compare', icon: Users },
           { label: 'Procurement Copilot', path: '/copilot', icon: Zap },
           { label: 'Seller Verification Queue', path: '/sellers', icon: UserCheck },
-          { label: 'Review & Overrides Queue', path: '/reviews', icon: AlertTriangle },
+          { label: 'Human Review Queue', path: '/reviews', icon: AlertTriangle },
           { label: 'Compliance Reports', path: '/reports', icon: ClipboardList },
           { label: 'Procurement Analytics', path: '/analytics', icon: BarChart3 },
           { label: 'Blockchain Audit Trail', path: '/audit', icon: Link2 },
-          { label: 'Vendor Ingestion Test', path: '/bids/upload', icon: UploadCloud },
+          { label: 'Vendor Ingestion Test (TEST MODE)', path: '/bids/upload', icon: UploadCloud },
         ];
       case 'PROCUREMENT_OFFICER':
         return [
           { label: 'Procurement Dashboard', path: '/', icon: LayoutDashboard },
           { label: 'Tenders & Specifications', path: '/tenders', icon: FileText },
           { label: 'Compliance Matrix', path: '/compliance', icon: CheckCircle2 },
+          { label: 'Government Portal Verification', path: '/portals', icon: Globe },
           { label: 'Multi-Bidder Compare', path: '/compare', icon: Users },
           { label: 'Procurement Copilot', path: '/copilot', icon: Zap },
           { label: 'Seller Verification Queue', path: '/sellers', icon: UserCheck },
-          { label: 'Review & Overrides Queue', path: '/reviews', icon: AlertTriangle },
+          { label: 'Human Review Queue', path: '/reviews', icon: AlertTriangle },
           { label: 'Compliance Reports', path: '/reports', icon: ClipboardList },
           { label: 'Procurement Analytics', path: '/analytics', icon: BarChart3 },
           { label: 'Blockchain Audit Trail', path: '/audit', icon: Link2 },
@@ -70,13 +84,11 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           { label: 'Reviewer Dashboard', path: '/', icon: LayoutDashboard },
           { label: 'Tenders & Specifications', path: '/tenders', icon: FileText },
           { label: 'Compliance Matrix', path: '/compliance', icon: CheckCircle2 },
-          { label: 'Multi-Bidder Compare', path: '/compare', icon: Users },
-          { label: 'Procurement Copilot', path: '/copilot', icon: Zap },
+          { label: 'Government Portal Verification', path: '/portals', icon: Globe },
+          { label: 'Compliance Exception Assistant', path: '/copilot', icon: Zap },
           { label: 'Seller Verification Queue', path: '/sellers', icon: UserCheck },
-          { label: 'Review & Overrides Queue', path: '/reviews', icon: AlertTriangle },
+          { label: 'Human Review Queue', path: '/reviews', icon: AlertTriangle },
           { label: 'Compliance Reports', path: '/reports', icon: ClipboardList },
-          { label: 'Procurement Analytics', path: '/analytics', icon: BarChart3 },
-          { label: 'Blockchain Audit Trail', path: '/audit', icon: Link2 },
         ];
       case 'VIEWER':
       case 'AUDITOR':
@@ -84,12 +96,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           { label: 'Auditor Dashboard', path: '/', icon: LayoutDashboard },
           { label: 'Tenders & Specifications', path: '/tenders', icon: FileText },
           { label: 'Compliance Matrix', path: '/compliance', icon: CheckCircle2 },
-          { label: 'Multi-Bidder Compare', path: '/compare', icon: Users },
-          { label: 'Audited Copilot Inquiries', path: '/copilot', icon: Zap },
-          { label: 'Seller Verification Queue', path: '/sellers', icon: UserCheck },
-          { label: 'Review & Override Logs', path: '/reviews', icon: AlertTriangle },
+          { label: 'Vigilance Query Transcript', path: '/copilot', icon: Zap },
           { label: 'Compliance Reports', path: '/reports', icon: ClipboardList },
-          { label: 'Procurement Analytics', path: '/analytics', icon: BarChart3 },
           { label: 'Blockchain Audit Trail', path: '/audit', icon: Link2 },
         ];
       case 'BIDDER_VENDOR':
@@ -99,8 +107,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           { label: 'Browse Active Tenders', path: '/tenders', icon: FileText },
           { label: 'Submit Bid Dossier', path: '/bids/upload', icon: UploadCloud },
           { label: 'My Compliance Status', path: '/compliance', icon: CheckCircle2 },
+          { label: 'Bid Compliance Assistant', path: '/copilot', icon: Zap },
           { label: 'My Compliance Report', path: '/reports', icon: ClipboardList },
-          { label: 'My Vendor Verification', path: '/sellers', icon: UserCheck },
+          { label: 'My Vendor Verification', path: '/sellers/me', icon: UserCheck },
         ];
       default:
         return [
@@ -157,10 +166,62 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           </div>
 
           <div className="relative">
-            <button className="p-1.5 sm:p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-full transition">
+            <button
+              onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+              className="p-1.5 sm:p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-full transition cursor-pointer relative"
+              title="Notifications"
+            >
               <Bell className="w-4 h-4" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-emerald-500 rounded-full"></span>
+              {notifications.length > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 bg-rose-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center leading-none">
+                  {notifications.length}
+                </span>
+              )}
             </button>
+
+            {isNotificationsOpen && (
+              <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden text-slate-900 animate-in fade-in zoom-in-95 duration-100">
+                <div className="p-3.5 bg-slate-900 text-white flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-4 h-4 text-amber-400" />
+                    <span className="font-bold text-xs uppercase tracking-wider">Role Notifications</span>
+                  </div>
+                  <span className="text-[10px] font-mono bg-purple-900 text-purple-200 px-2 py-0.5 rounded font-bold">
+                    {user?.role}
+                  </span>
+                </div>
+
+                <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+                  {notifications.length === 0 ? (
+                    <div className="p-6 text-center text-xs text-slate-400">
+                      No new notifications for your role.
+                    </div>
+                  ) : (
+                    notifications.map((n: any) => (
+                      <div key={n.id} className="p-3 hover:bg-slate-50 transition space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-slate-800">{n.title}</span>
+                          <span className="text-[9px] font-mono text-slate-400">{n.time}</span>
+                        </div>
+                        <p className="text-xs text-slate-600 leading-relaxed">{n.message}</p>
+                        <span className="inline-block text-[9px] font-mono font-semibold text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded">
+                          {n.type}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="p-2.5 bg-slate-50 border-t border-slate-100 text-center">
+                  <button
+                    onClick={() => setIsNotificationsOpen(false)}
+                    className="text-xs text-slate-600 hover:text-slate-900 font-semibold cursor-pointer"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {user && (

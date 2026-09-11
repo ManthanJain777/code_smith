@@ -8,10 +8,10 @@ import { useAuth } from '../context/AuthProvider';
 const StatusBadge: React.FC<{ status: ComplianceStatus }> = ({ status }) => {
   const config: Record<string, { bg: string; text: string; icon: React.ReactNode; label: string }> = {
     COMPLIANT:          { bg: 'bg-emerald-100', text: 'text-emerald-800', icon: <CheckCircle2 className="w-3 h-3" />, label: 'COMPLIANT' },
-    PARTIALLY_COMPLIANT:{ bg: 'bg-amber-100',   text: 'text-amber-800',   icon: <AlertCircle className="w-3 h-3" />,  label: 'PARTIAL' },
-    NON_COMPLIANT:      { bg: 'bg-rose-100',    text: 'text-rose-800',    icon: <XCircle className="w-3 h-3" />,      label: 'NON-COMPLIANT' },
+    PARTIALLY_COMPLIANT:{ bg: 'bg-amber-100',   text: 'text-amber-800',   icon: <AlertCircle className="w-3 h-3" />,  label: 'PARTIALLY_COMPLIANT' },
+    NON_COMPLIANT:      { bg: 'bg-rose-100',    text: 'text-rose-800',    icon: <XCircle className="w-3 h-3" />,      label: 'NON_COMPLIANT' },
     UNVERIFIED:         { bg: 'bg-slate-100',   text: 'text-slate-600',   icon: <HelpCircle className="w-3 h-3" />,   label: 'UNVERIFIED' },
-    NOT_APPLICABLE:     { bg: 'bg-gray-100',    text: 'text-gray-600',    icon: <MinusCircle className="w-3 h-3" />,  label: 'N/A' },
+    NOT_APPLICABLE:     { bg: 'bg-gray-100',    text: 'text-gray-600',    icon: <MinusCircle className="w-3 h-3" />,  label: 'NOT_APPLICABLE' },
   };
   const c = config[status] || config.UNVERIFIED;
   return (

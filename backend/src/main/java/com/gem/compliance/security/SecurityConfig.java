@@ -42,19 +42,61 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(exception -> exception.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
             .authorizeHttpRequests(auth -> auth
-                // Public Documentation & Health Endpoints
-                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/health").permitAll()
+                // Public Documentation, Health & Error Dispatch Endpoints
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/health", "/api/v1/health", "/error").permitAll()
                 // Explicit Public Auth Endpoint for Dev/Demo Token Generation
                 .requestMatchers("/api/v1/auth/**").permitAll()
-                // Protected Business APIs Require Authentication
-                .requestMatchers("/api/v1/tenders/**").authenticated()
-                .requestMatchers("/api/v1/bids/**").authenticated()
-                .requestMatchers("/api/v1/compliance/**").authenticated()
-                .requestMatchers("/api/v1/reviews/**").hasAnyAuthority("PROCUREMENT_OFFICER", "COMPLIANCE_REVIEWER", "SYSTEM_ADMIN", "ROLE_PROCUREMENT_OFFICER", "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN")
-                .requestMatchers("/api/v1/audit/**").hasAnyAuthority(
+
+                // Vendor's own profile self-service (Auditor is strictly BLOCKED)
+                .requestMatchers("/api/v1/sellers/me", "/api/v1/sellers/my-status").hasAnyAuthority(
+                    "BIDDER_VENDOR", "BIDDER", "PROCUREMENT_OFFICER", "COMPLIANCE_REVIEWER", "SYSTEM_ADMIN",
+                    "ROLE_BIDDER_VENDOR", "ROLE_BIDDER", "ROLE_PROCUREMENT_OFFICER", "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN"
+                )
+                // Seller Verification Queue - strictly Committee (Officer, Reviewer, Admin) - Auditor & Bidder are BLOCKED
+                .requestMatchers("/api/v1/sellers", "/api/v1/sellers/**").hasAnyAuthority(
+                    "PROCUREMENT_OFFICER", "COMPLIANCE_REVIEWER", "SYSTEM_ADMIN",
+                    "ROLE_PROCUREMENT_OFFICER", "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN"
+                )
+
+                // Contradiction Resolution - Reviewer and System Admin ONLY (Officer, Auditor, Bidder are strictly BLOCKED)
+                .requestMatchers("/api/v1/compliance/contradictions/resolve").hasAnyAuthority(
+                    "COMPLIANCE_REVIEWER", "SYSTEM_ADMIN",
+                    "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN"
+                )
+
+                // Human Reviews & Overrides - strictly officers, reviewers, and admin
+                .requestMatchers("/api/v1/reviews", "/api/v1/reviews/**", "/api/v1/compliance/override").hasAnyAuthority(
+                    "PROCUREMENT_OFFICER", "COMPLIANCE_REVIEWER", "SYSTEM_ADMIN",
+                    "ROLE_PROCUREMENT_OFFICER", "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN"
+                )
+
+                // Multi-bidder listing per tender - Officer and Admin ONLY (Reviewer, Auditor, Bidder are strictly BLOCKED)
+                .requestMatchers("/api/v1/bids/tender/**").hasAnyAuthority(
+                    "PROCUREMENT_OFFICER", "SYSTEM_ADMIN",
+                    "ROLE_PROCUREMENT_OFFICER", "ROLE_SYSTEM_ADMIN"
+                )
+
+                // Dedicated Auditor & Admin views: Collusion flags, Debarment history, Human override log
+                .requestMatchers(
+                    "/api/v1/audit/collusion-flags",
+                    "/api/v1/audit/debarment-history",
+                    "/api/v1/audit/overrides"
+                ).hasAnyAuthority(
+                    "AUDITOR", "VIEWER", "SYSTEM_ADMIN",
+                    "ROLE_AUDITOR", "ROLE_VIEWER", "ROLE_SYSTEM_ADMIN"
+                )
+
+                // Audit Trail & Blockchain verification - internal oversight (Bidder is BLOCKED)
+                .requestMatchers("/api/v1/audit", "/api/v1/audit/**").hasAnyAuthority(
                     "PROCUREMENT_OFFICER", "COMPLIANCE_REVIEWER", "SYSTEM_ADMIN", "AUDITOR", "VIEWER",
                     "ROLE_PROCUREMENT_OFFICER", "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN", "ROLE_AUDITOR", "ROLE_VIEWER"
                 )
+
+                // Protected Business APIs Require Authentication
+                .requestMatchers("/api/v1/tenders", "/api/v1/tenders/**").authenticated()
+                .requestMatchers("/api/v1/bids", "/api/v1/bids/**").authenticated()
+                .requestMatchers("/api/v1/compliance", "/api/v1/compliance/**").authenticated()
+                .requestMatchers("/api/v1/notifications", "/api/v1/notifications/**").authenticated()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

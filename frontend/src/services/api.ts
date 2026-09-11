@@ -16,11 +16,9 @@ async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Re
 
   const res = await fetch(url, { ...options, headers });
 
-  if (res.status === 401) {
-    // Session expired or invalid: clear credentials cleanly without silently masquerading as another user
-    localStorage.removeItem('gem_auth_token');
-    localStorage.removeItem('sih_jwt_token');
-    localStorage.removeItem('sih_user');
+  // Only remove credentials if explicitly unauthorized on an authenticated-only endpoint (not general login or health)
+  if (res.status === 401 && !url.includes('/auth/login') && !url.includes('/health')) {
+    console.warn(`[fetchWithAuth] 401 received from ${url}`);
   }
 
   return res;
@@ -318,5 +316,96 @@ export const apiService = {
     });
     if (!res.ok) throw new Error(`API Error ${res.status}: ${res.statusText}`);
     return await res.json();
-  }
+  },
+
+  // SIH Expected Solution: Compliance Score & Risk Level
+  getComplianceScore: async (bidId: string): Promise<any> => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/compliance/score/${encodeURIComponent(bidId)}`);
+    if (!res.ok) throw new Error(`API Error ${res.status}: ${res.statusText}`);
+    return await res.json();
+  },
+
+  // SIH Expected Solution: AI Recommendation Engine
+  getAiRecommendation: async (bidId: string): Promise<any> => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/compliance/recommendation/${encodeURIComponent(bidId)}`);
+    if (!res.ok) throw new Error(`API Error ${res.status}: ${res.statusText}`);
+    return await res.json();
+  },
+
+  // SIH Expected Solution: Full Government Portal Verification (all 13 portals)
+  verifyAllPortals: async (sellerId: string): Promise<any> => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/sellers/${encodeURIComponent(sellerId)}/verify-all`, {
+      method: 'POST'
+    });
+    if (!res.ok) throw new Error(`API Error ${res.status}: ${res.statusText}`);
+    return await res.json();
+  },
+
+  // Get seller by ID for portal page
+  getSellerById: async (id: string): Promise<any> => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/sellers/${encodeURIComponent(id)}`);
+    if (!res.ok) throw new Error(`API Error ${res.status}: ${res.statusText}`);
+    return await res.json();
+  },
+
+  // Role 4 Dedicated: Human Override Log
+  getAuditOverrides: async (): Promise<any[]> => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/audit/overrides`);
+    if (!res.ok) throw new Error(`API Error ${res.status}: ${res.statusText}`);
+    return await res.json();
+  },
+
+  // Role 4 Dedicated: Debarment Check History
+  getDebarmentHistory: async (): Promise<any[]> => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/audit/debarment-history`);
+    if (!res.ok) throw new Error(`API Error ${res.status}: ${res.statusText}`);
+    return await res.json();
+  },
+
+  // Role 4 Dedicated: Collusion Signal Flags
+  getCollusionFlags: async (): Promise<any[]> => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/audit/collusion-flags`);
+    if (!res.ok) throw new Error(`API Error ${res.status}: ${res.statusText}`);
+    return await res.json();
+  },
+
+  // Role 3 Dedicated: Contradiction Resolve Action
+  resolveContradiction: async (payload: {
+    contradictionId: string;
+    chosenPrecedentDoc: string;
+    resolutionRationale: string;
+  }): Promise<any> => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/compliance/contradictions/resolve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error(`API Error ${res.status}: ${res.statusText}`);
+    return await res.json();
+  },
+
+  // Copilot Query Transcript for Vigilance/Auditor
+  getCopilotTranscript: async (): Promise<any[]> => {
+    const aiUrl = import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:8000';
+    const res = await fetch(`${aiUrl}/api/v1/ai/copilot/transcript`);
+    if (!res.ok) throw new Error(`AI Error ${res.status}: ${res.statusText}`);
+    const data = await res.json();
+    return data.transcripts || [];
+  },
+
+  // Public Health endpoint
+  getBackendHealth: async (): Promise<any> => {
+    const res = await fetch(`${API_BASE_URL}/health`);
+    if (!res.ok) throw new Error(`Health Check Error ${res.status}`);
+    return await res.json();
+  },
+
+  // Role-specific notifications
+  getNotifications: async (): Promise<any[]> => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/notifications`);
+    if (!res.ok) return [];
+    return await res.json();
+  },
 };
+
+

@@ -19,7 +19,12 @@ import {
   Briefcase,
   Play,
   Lock,
-  ShieldCheck
+  ShieldCheck,
+  TrendingUp,
+  AlertTriangle,
+  ThumbsUp,
+  ThumbsDown,
+  MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../context/AuthProvider';
 
@@ -43,6 +48,10 @@ export const ComplianceMatrixPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [evaluating, setEvaluating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // SIH Expected Solution: Compliance Score + Risk Level + AI Recommendation
+  const [complianceScore, setComplianceScore] = useState<any | null>(null);
+  const [aiRecommendation, setAiRecommendation] = useState<any | null>(null);
 
   // Override Form State
   const [overrideStatus, setOverrideStatus] = useState<ComplianceStatus>('COMPLIANT');
@@ -113,6 +122,8 @@ export const ComplianceMatrixPage: React.FC = () => {
   async function loadResults(bidId: string) {
     setLoading(true);
     setError(null);
+    setComplianceScore(null);
+    setAiRecommendation(null);
     try {
       let data = await apiService.getComplianceResults(bidId);
       if ((!data || data.length === 0) && (bidId === 'BID-APEX-001' || bidId === 'BID-A-01')) {
@@ -128,6 +139,14 @@ export const ComplianceMatrixPage: React.FC = () => {
       } else {
         setSelectedResult(null);
       }
+      // Load compliance score + AI recommendation in parallel
+      const effectiveBidId = (data && data.length > 0) ? (data[0].bidId || bidId) : bidId;
+      const [scoreData, recData] = await Promise.allSettled([
+        apiService.getComplianceScore(effectiveBidId),
+        apiService.getAiRecommendation(effectiveBidId),
+      ]);
+      if (scoreData.status === 'fulfilled') setComplianceScore(scoreData.value);
+      if (recData.status === 'fulfilled') setAiRecommendation(recData.value);
     } catch (err: any) {
       setError(err.message || 'Failed to load compliance matrix');
     } finally {
@@ -317,6 +336,90 @@ export const ComplianceMatrixPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* ── SIH Expected Solution: Compliance Score Card + AI Recommendation Panel ── */}
+      {(complianceScore || aiRecommendation) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {complianceScore && (
+            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="w-4 h-4 text-blue-600" />
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Compliance Score</span>
+              </div>
+              <div className="flex items-end gap-3">
+                <span className="text-4xl font-black text-slate-900">{complianceScore.complianceScore?.toFixed(1)}%</span>
+                <span className={`px-2.5 py-1 rounded-full text-xs font-bold mb-1 ${
+                  complianceScore.riskLevel === 'LOW' ? 'bg-emerald-100 text-emerald-800' :
+                  complianceScore.riskLevel === 'MEDIUM' ? 'bg-amber-100 text-amber-800' :
+                  complianceScore.riskLevel === 'HIGH' ? 'bg-orange-100 text-orange-800' :
+                  'bg-red-100 text-red-800'
+                }`}>{complianceScore.riskLevel} RISK</span>
+              </div>
+              <div className="mt-3 h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full transition-all ${
+                  complianceScore.riskLevel === 'LOW' ? 'bg-emerald-500' :
+                  complianceScore.riskLevel === 'MEDIUM' ? 'bg-amber-500' :
+                  complianceScore.riskLevel === 'HIGH' ? 'bg-orange-500' : 'bg-red-500'
+                }`} style={{ width: `${complianceScore.complianceScore}%` }} />
+              </div>
+              <div className="grid grid-cols-4 gap-2 mt-4">
+                {[
+                  { label: 'Compliant', value: complianceScore.compliantCount, color: 'text-emerald-700 bg-emerald-50' },
+                  { label: 'Non-Compliant', value: complianceScore.nonCompliantCount, color: 'text-red-700 bg-red-50' },
+                  { label: 'Unverified', value: complianceScore.unverifiedCount, color: 'text-amber-700 bg-amber-50' },
+                  { label: 'Pending Review', value: complianceScore.pendingHumanReviewCount, color: 'text-purple-700 bg-purple-50' },
+                ].map(item => (
+                  <div key={item.label} className={`text-center rounded-lg p-2 ${item.color}`}>
+                    <p className="text-lg font-bold">{item.value}</p>
+                    <p className="text-[10px] font-medium leading-tight">{item.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {aiRecommendation && (
+            <div className={`border rounded-xl p-5 shadow-sm ${
+              aiRecommendation.recommendationType === 'RECOMMEND_QUALIFY' ? 'bg-emerald-50 border-emerald-200' :
+              aiRecommendation.recommendationType === 'RECOMMEND_REJECT' ? 'bg-red-50 border-red-200' :
+              'bg-amber-50 border-amber-200'
+            }`}>
+              <div className="flex items-center gap-2 mb-3">
+                {aiRecommendation.recommendationType === 'RECOMMEND_QUALIFY'
+                  ? <ThumbsUp className="w-4 h-4 text-emerald-600" />
+                  : aiRecommendation.recommendationType === 'RECOMMEND_REJECT'
+                  ? <ThumbsDown className="w-4 h-4 text-red-600" />
+                  : <MessageSquare className="w-4 h-4 text-amber-600" />}
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">AI Recommendation</span>
+                <span className={`ml-auto px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  aiRecommendation.recommendationType === 'RECOMMEND_QUALIFY' ? 'bg-emerald-200 text-emerald-900' :
+                  aiRecommendation.recommendationType === 'RECOMMEND_REJECT' ? 'bg-red-200 text-red-900' :
+                  'bg-amber-200 text-amber-900'
+                }`}>{aiRecommendation.recommendationType?.replace(/_/g, ' ')}</span>
+              </div>
+              <p className="text-sm text-slate-700 leading-relaxed">{aiRecommendation.summary}</p>
+              {aiRecommendation.gaps && aiRecommendation.gaps.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Identified Gaps</p>
+                  <ul className="space-y-1">
+                    {aiRecommendation.gaps.slice(0, 3).map((gap: string, i: number) => (
+                      <li key={i} className="flex items-start gap-1.5 text-xs text-red-800">
+                        <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0 text-red-500" />
+                        <span className="line-clamp-2">{gap}</span>
+                      </li>
+                    ))}
+                    {aiRecommendation.gaps.length > 3 && (
+                      <li className="text-xs text-slate-500 ml-4">+{aiRecommendation.gaps.length - 3} more gap(s)</li>
+                    )}
+                  </ul>
+                </div>
+              )}
+              <p className="text-[10px] text-slate-500 mt-3 italic border-t border-slate-200 pt-2">
+                ⚖️ {aiRecommendation.disclaimer}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Debarment Verification Banner (Ministry of Finance Blacklist Check) */}
       <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">

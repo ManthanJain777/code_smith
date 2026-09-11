@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
+import { apiService } from '../services/api';
 import { Can } from '../components/auth/Can';
 import {
   ArrowLeft,
@@ -77,23 +78,14 @@ export const SellerDetailPage: React.FC = () => {
     updatedAt: new Date().toISOString()
   };
 
+  const targetSellerId = sellerId || 'me';
+  const isBidder = user?.role === 'BIDDER_VENDOR' || user?.role === 'BIDDER';
+
   const fetchSellerDetail = async () => {
-    if (!sellerId) return;
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/sellers/${sellerId}`, {
-        headers: {
-          'Authorization': `Bearer ${token || localStorage.getItem('gem_auth_token')}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-
-      const data = await res.json();
+      const data = await apiService.getSellerById(targetSellerId);
       setSeller(data);
     } catch (err: any) {
       setSeller(FALLBACK_SELLER);
@@ -104,31 +96,26 @@ export const SellerDetailPage: React.FC = () => {
 
   useEffect(() => {
     fetchSellerDetail();
-  }, [sellerId, token]);
+  }, [targetSellerId, token]);
 
   const handleTriggerVerification = async () => {
-    if (!sellerId) return;
     setIsVerifying(true);
     setActionFeedback(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/sellers/${sellerId}/verify`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token || localStorage.getItem('gem_auth_token')}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      if (res.ok) {
-        await fetchSellerDetail();
-      }
-    } catch (err) {
-      console.warn('Statutory registry verification query:', err);
-    } finally {
-      setIsVerifying(false);
+      await apiService.verifyAllPortals(targetSellerId);
+      await fetchSellerDetail();
       setActionFeedback({
         type: 'success',
-        text: 'All 6 statutory registries queried & verified: GSTN (Active), MCA21 (Matched), EPFO (142 workers), BIS (Valid License IS 1520), Udyam (Verified). Trust score: 84%.'
+        text: 'All 13 statutory registries queried & verified. Trust score updated.'
       });
+    } catch (err) {
+      console.warn('Statutory registry verification query:', err);
+      setActionFeedback({
+        type: 'error',
+        text: 'Verification pipeline failed or encountered an error.'
+      });
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -198,11 +185,11 @@ export const SellerDetailPage: React.FC = () => {
       {/* Back Navigation Bar */}
       <div className="flex items-center justify-between">
         <Link
-          to="/sellers"
+          to={isBidder ? "/" : "/sellers"}
           className="inline-flex items-center text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-xs transition"
         >
           <ArrowLeft className="w-4 h-4 mr-1" />
-          Back to Seller Verification Queue
+          {isBidder ? "Back to Vendor Dashboard" : "Back to Seller Verification Queue"}
         </Link>
 
         <div className="flex items-center space-x-3">
@@ -274,7 +261,7 @@ export const SellerDetailPage: React.FC = () => {
             <span>Government Connector Results</span>
           </h2>
           <span className="px-2.5 py-1 rounded bg-amber-100 border border-amber-300 text-amber-900 text-[10px] font-mono font-bold">
-            SIMULATED GOVERNMENT RESPONSE
+            [SIMULATED — MOCK API]
           </span>
         </div>
 

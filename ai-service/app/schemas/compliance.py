@@ -125,6 +125,8 @@ class CopilotQueryRequest(BaseModel):
     bid_id: str = "BID-APEX-001"
     question: str
     max_results: int = 5
+    role: Optional[str] = "PROCUREMENT_OFFICER"
+    user_name: Optional[str] = "Procurement Officer"
 
 
 class CopilotQueryResponse(BaseModel):

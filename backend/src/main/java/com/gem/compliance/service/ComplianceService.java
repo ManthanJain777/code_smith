@@ -282,4 +282,140 @@ public class ComplianceService {
                 .createdAt(cr.getCreatedAt())
                 .build();
     }
+
+    // ── SIH Expected Solution: Compliance Score + Risk Level ──────────────
+    @Transactional(readOnly = true)
+    public com.gem.compliance.dto.BidComplianceScoreDTO calculateBidComplianceScore(String bidId) {
+        List<ComplianceResult> results = complianceResultRepository.findByBidId(bidId);
+
+        int total = results.size();
+        int compliant = 0, partial = 0, nonCompliant = 0, unverified = 0, notApplicable = 0, pendingReview = 0;
+
+        for (ComplianceResult cr : results) {
+            String st = cr.getStatus();
+            if ("COMPLIANT".equalsIgnoreCase(st)) compliant++;
+            else if ("PARTIALLY_COMPLIANT".equalsIgnoreCase(st)) partial++;
+            else if ("NON_COMPLIANT".equalsIgnoreCase(st)) nonCompliant++;
+            else if ("UNVERIFIED".equalsIgnoreCase(st)) unverified++;
+            else if ("NOT_APPLICABLE".equalsIgnoreCase(st)) notApplicable++;
+            if ("PENDING".equalsIgnoreCase(cr.getReviewStatus())) pendingReview++;
+        }
+
+        // Score formula: Compliant=1.0, Partial=0.5, Others=0
+        int denominator = total - notApplicable;
+        double rawScore = denominator > 0
+                ? ((compliant * 1.0 + partial * 0.5) / denominator) * 100.0
+                : 0.0;
+        double complianceScore = Math.round(rawScore * 10.0) / 10.0;
+
+        String riskLevel;
+        if (nonCompliant > 0 || complianceScore < 40) riskLevel = "CRITICAL";
+        else if (complianceScore < 60) riskLevel = "HIGH";
+        else if (complianceScore < 80) riskLevel = "MEDIUM";
+        else riskLevel = "LOW";
+
+        // Log this computation
+        AuditLog audit = AuditLog.builder()
+                .id("AUD-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase())
+                .actorId("SYSTEM")
+                .actorRole("AI_SERVICE")
+                .organizationId("ORG-001")
+                .action("COMPLIANCE_SCORE_COMPUTED")
+                .resourceType("BID")
+                .resourceId(bidId)
+                .details(String.format("Compliance score: %.1f%%, Risk: %s, Compliant: %d/%d", complianceScore, riskLevel, compliant, total))
+                .build();
+        auditLogRepository.save(audit);
+
+        return com.gem.compliance.dto.BidComplianceScoreDTO.builder()
+                .bidId(bidId)
+                .complianceScore(complianceScore)
+                .riskLevel(riskLevel)
+                .totalRequirements(total)
+                .compliantCount(compliant)
+                .partiallyCompliantCount(partial)
+                .nonCompliantCount(nonCompliant)
+                .unverifiedCount(unverified)
+                .notApplicableCount(notApplicable)
+                .pendingHumanReviewCount(pendingReview)
+                .computedAt(ZonedDateTime.now())
+                .build();
+    }
+
+    // ── SIH Expected Solution: AI Recommendation Engine ───────────────────
+    @Transactional(readOnly = true)
+    public com.gem.compliance.dto.AiRecommendationDTO generateAiRecommendation(String bidId) {
+        com.gem.compliance.dto.BidComplianceScoreDTO score = calculateBidComplianceScore(bidId);
+        List<ComplianceResult> results = complianceResultRepository.findByBidId(bidId);
+
+        List<String> gaps = new java.util.ArrayList<>();
+        List<String> strengths = new java.util.ArrayList<>();
+
+        for (ComplianceResult cr : results) {
+            String st = cr.getStatus();
+            Requirement req = requirementRepository.findById(cr.getRequirementId()).orElse(null);
+            String label = req != null ? "[" + req.getCategory() + "] " + req.getRawText() : cr.getRequirementId();
+            if ("NON_COMPLIANT".equalsIgnoreCase(st)) {
+                gaps.add("NON-COMPLIANT: " + label);
+            } else if ("UNVERIFIED".equalsIgnoreCase(st)) {
+                gaps.add("UNVERIFIED (Human Review Required): " + label);
+            } else if ("PARTIALLY_COMPLIANT".equalsIgnoreCase(st)) {
+                gaps.add("PARTIALLY MET (Contradiction Detected): " + label);
+            } else if ("COMPLIANT".equalsIgnoreCase(st)) {
+                strengths.add(label);
+            }
+        }
+
+        String recommendationType;
+        String summary;
+        if (score.getNonCompliantCount() > 0) {
+            recommendationType = "RECOMMEND_REJECT";
+            summary = String.format(
+                "AI analysis identifies %d mandatory non-compliant requirement(s) with a compliance score of %.1f%% (Risk: %s). "
+                + "Rejection is recommended. The final disqualification decision rests with the Procurement Officer.",
+                score.getNonCompliantCount(), score.getComplianceScore(), score.getRiskLevel()
+            );
+        } else if (score.getUnverifiedCount() > 0 || score.getPartiallyCompliantCount() > 0) {
+            recommendationType = "REFER_FOR_REVIEW";
+            summary = String.format(
+                "AI analysis identifies %d unresolved item(s) requiring human verification. Overall compliance score: %.1f%% (Risk: %s). "
+                + "Refer to Human Review Queue before taking a final decision.",
+                score.getUnverifiedCount() + score.getPartiallyCompliantCount(),
+                score.getComplianceScore(), score.getRiskLevel()
+            );
+        } else {
+            recommendationType = "RECOMMEND_QUALIFY";
+            summary = String.format(
+                "All verified requirements are compliant. Compliance score: %.1f%% (Risk: %s). "
+                + "AI recommends qualification. The final decision rests with the Procurement Officer.",
+                score.getComplianceScore(), score.getRiskLevel()
+            );
+        }
+
+        // Anchor recommendation in audit log
+        AuditLog audit = AuditLog.builder()
+                .id("AUD-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase())
+                .actorId("SYSTEM")
+                .actorRole("AI_SERVICE")
+                .organizationId("ORG-001")
+                .action("AI_RECOMMENDATION_GENERATED")
+                .resourceType("BID")
+                .resourceId(bidId)
+                .details("Recommendation: " + recommendationType + " | Score: " + score.getComplianceScore())
+                .build();
+        auditLogRepository.save(audit);
+        blockchainService.anchorAuditEvent(audit.getId(), "AI_RECOMMENDATION_GENERATED", "SYSTEM");
+
+        return com.gem.compliance.dto.AiRecommendationDTO.builder()
+                .bidId(bidId)
+                .recommendationType(recommendationType)
+                .summary(summary)
+                .gaps(gaps)
+                .strengths(strengths)
+                .basis("Deterministic verification + AI language analysis of " + score.getTotalRequirements() + " requirements")
+                .confidenceScore(gaps.isEmpty() ? 0.95 : 0.88)
+                .disclaimer("The final qualification/disqualification decision rests solely with the Procurement Officer. This AI recommendation is decision-support only.")
+                .generatedAt(ZonedDateTime.now())
+                .build();
+    }
 }

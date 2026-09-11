@@ -22,7 +22,8 @@ interface FileUploadState {
 export const BidUploadPage: React.FC = () => {
   const { bidId: paramBidId } = useParams<{ bidId: string }>();
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const isAdmin = user?.role === 'SYSTEM_ADMIN' || user?.role === 'ROLE_SYSTEM_ADMIN';
 
   const [bidId, setBidId] = useState(paramBidId || 'BID-APEX-001');
   const [tenderId, setTenderId] = useState('TND-PUMP-001');
@@ -157,6 +158,17 @@ export const BidUploadPage: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {/* Test Mode Banner for Admin */}
+      {isAdmin && (
+        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+          <div>
+            <span className="font-bold block">TEST MODE — Admin Parser Verification Harness</span>
+            <span>You are operating the document ingestion test harness as System Administrator. Uploads in this mode are processed strictly for debugging OCR, unit parsing, and chunk indexing pipelines without filing a live vendor bid.</span>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -165,13 +177,21 @@ export const BidUploadPage: React.FC = () => {
           </Link>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-slate-900">Vendor Bid Submission Portal</h1>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-200">
-                Vendor Ingestion Rail
+              <h1 className="text-2xl font-bold text-slate-900">
+                {isAdmin ? 'Vendor Ingestion Test Harness' : 'Vendor Bid Submission Portal'}
+              </h1>
+              <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                isAdmin
+                  ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                  : 'bg-purple-100 text-purple-800 border border-purple-200'
+              }`}>
+                {isAdmin ? 'TEST MODE (Admin Harness)' : 'Vendor Ingestion Rail'}
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Seller Document Upload: Extracts text, computes SHA-256 hashes, indexes embeddings, and prepares submissions for Procurement Officer review.
+              {isAdmin
+                ? 'Administrative Test Harness: Debug document ingestion, verify OCR accuracy, and confirm embedding generation.'
+                : 'Seller Document Upload: Extracts text, computes SHA-256 hashes, indexes embeddings, and prepares submissions for Procurement Officer review.'}
             </p>
           </div>
         </div>
