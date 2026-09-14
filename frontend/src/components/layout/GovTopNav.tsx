@@ -136,7 +136,7 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
     {
       id: 'dashboard',
       label: isVendor ? 'Vendor Dashboard' : (isReviewer ? 'Reviewer Dashboard' : (isAuditor ? 'Auditor Dashboard' : (isAdmin ? 'Admin Dashboard' : 'Procurement Dashboard'))),
-      path: '/',
+      path: '/dashboard',
       icon: LayoutDashboard,
       allowed: true
     },
