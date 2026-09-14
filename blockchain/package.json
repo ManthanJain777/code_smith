@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "sih26100-blockchain",
   "version": "1.0.0",
   "description": "Ethereum audit trail for SIH26100 GeM compliance platform",
@@ -12,5 +12,8 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "hardhat": "^2.22.0"
+  },
+  "dependencies": {
+    "sih26100-monorepo": "file:.."
   }
 }

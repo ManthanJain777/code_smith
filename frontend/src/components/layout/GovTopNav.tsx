@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthProvider';
 import { usePermissions } from '../../context/PermissionsContext';
 import { AshokaEmblem } from '../ui/AshokaEmblem';
+import { ProfileSettingsModal } from '../ui/ProfileSettingsModal';
 import {
   ShieldCheck,
   Globe,
@@ -47,6 +48,7 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
   const [currentTime, setCurrentTime] = useState<string>('');
   const [fontSize, setFontSize] = useState<'sm' | 'md' | 'lg'>('md');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFilter, setSearchFilter] = useState<'all' | 'tenders' | 'bids'>('all');
@@ -434,22 +436,27 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
 
           {/* User Identity Pill (Desktop) */}
           {user && (
-            <div className="hidden lg:flex items-center space-x-2.5 border-l border-slate-200 pl-3">
-              <div className="w-8 h-8 rounded-full bg-slate-900 text-amber-400 font-bold flex items-center justify-center text-xs shadow-inner">
+            <button
+              type="button"
+              onClick={() => setIsProfileModalOpen(true)}
+              className="hidden lg:flex items-center space-x-2.5 border-l border-slate-200 pl-3 py-1 px-2 rounded-lg hover:bg-slate-100/90 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer group"
+              title="Click to open Profile & Settings"
+            >
+              <div className="w-8 h-8 rounded-full bg-slate-900 text-amber-400 font-bold flex items-center justify-center text-xs shadow-inner group-hover:scale-105 transition-transform">
                 {user.fullName?.charAt(0) || 'U'}
               </div>
               <div className="text-left">
-                <div className="text-xs font-bold text-slate-900 truncate max-w-[130px]">
+                <div className="text-xs font-bold text-slate-900 truncate max-w-[130px] group-hover:text-amber-700 transition-colors">
                   {user.fullName}
                 </div>
                 <div className="text-[10px] font-semibold text-amber-700 uppercase tracking-wider">
                   {user.role?.replace('ROLE_', '')}
                 </div>
               </div>
-            </div>
+            </button>
           )}
 
-          {/* PROMINENT LOG OUT BUTTON FOR ALL USER ROLES */}
+          {/* Return to GeM Portal Home link */}
           <Link
             to="/"
             className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors shadow-sm"
@@ -458,14 +465,6 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
             <Home className="w-3.5 h-3.5 text-slate-500" />
             <span className="hidden md:inline">GeM Portal</span>
           </Link>
-          <button
-            onClick={handleLogout}
-            className="flex items-center space-x-1.5 px-2.5 py-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg border border-rose-200 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-500 cursor-pointer"
-            title="Log Out of GeM Compliance Platform"
-          >
-            <LogOut className="w-3.5 h-3.5 text-rose-600" />
-            <span className="hidden sm:inline">Log Out</span>
-          </button>
 
           {/* Mobile Hamburger Trigger (<= 768px) */}
           <button
@@ -658,15 +657,28 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
             {/* User Details & Mobile Log Out Button */}
             <div className="p-4 border-t border-slate-200 bg-slate-50">
               {user && (
-                <div className="mb-3 flex items-center space-x-2.5">
-                  <div className="w-8 h-8 rounded-full bg-slate-900 text-amber-400 font-bold flex items-center justify-center text-xs">
-                    {user.fullName?.charAt(0) || 'U'}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsProfileModalOpen(true);
+                  }}
+                  className="mb-3 w-full text-left flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 transition cursor-pointer"
+                  title="Open Profile & Settings"
+                >
+                  <div className="flex items-center space-x-2.5">
+                    <div className="w-8 h-8 rounded-full bg-slate-900 text-amber-400 font-bold flex items-center justify-center text-xs">
+                      {user.fullName?.charAt(0) || 'U'}
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-slate-900">{user.fullName}</div>
+                      <div className="text-[10px] text-slate-500">{user.email}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-xs font-bold text-slate-900">{user.fullName}</div>
-                    <div className="text-[10px] text-slate-500">{user.email}</div>
-                  </div>
-                </div>
+                  <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    Settings
+                  </span>
+                </button>
               )}
 
               <button
@@ -680,6 +692,12 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
           </div>
         </div>
       )}
+
+      {/* User Profile & Settings Modal */}
+      <ProfileSettingsModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
     </header>
   );
 };
