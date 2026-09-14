@@ -1,8 +1,8 @@
 import React from 'react';
-import { AshokaEmblem } from './AshokaEmblem';
+import { GemStarLogo } from './GemStarLogo';
 
 interface GovBrandLogoProps {
-  /** Size of the Ashoka Emblem in pixels */
+  /** Size of the GeM Shield Logo in pixels */
   emblemSize?: number;
   /** Show "GeM Compliance" wordmark below emblem */
   showWordmark?: boolean;
@@ -16,7 +16,7 @@ interface GovBrandLogoProps {
 
 /**
  * GovBrandLogo — Official combined government logo component.
- * Combines the Lion Capital of Ashoka emblem with GeM wordmark and ministry subtitle.
+ * Combines the GeM Shield Logo with GeM wordmark and ministry subtitle.
  */
 export const GovBrandLogo: React.FC<GovBrandLogoProps> = ({
   emblemSize = 64,
@@ -33,7 +33,7 @@ export const GovBrandLogo: React.FC<GovBrandLogoProps> = ({
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>
-      <AshokaEmblem size={emblemSize} variant={variant === 'gold' ? 'color' : variant} />
+      <GemStarLogo size={emblemSize} variant={variant === 'gold' ? 'color' : variant} />
       {showWordmark && (
         <div className="flex flex-col justify-center gap-0.5">
           <div className="flex items-center gap-2">

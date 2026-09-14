@@ -1,0 +1,18 @@
+{
+  "folder_number": 29,
+  "folder_name": "folder_029_gst_registration_godrej",
+  "document_type_index": 3,
+  "document_type": "gst_registration",
+  "document_title": "GST Registration Certificate (Form GST REG-06)",
+  "vendor_name": "Godrej Process Equipment",
+  "pan": "AADCG5678K",
+  "gstin": "27AADCG5678K1ZX",
+  "udyam_id": "UDYAM-MH-09-0043210",
+  "signatory": "Suresh Kumar",
+  "pdf_file": "gst_registration_godrej_doc.pdf",
+  "sha256_hash": "81767d0a2f7291ac4c5a9acb4a9a05abc19c5ec478ac7f502ef3623857fc6cf8",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

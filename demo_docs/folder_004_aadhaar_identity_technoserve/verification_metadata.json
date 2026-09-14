@@ -1,0 +1,18 @@
+{
+  "folder_number": 4,
+  "folder_name": "folder_004_aadhaar_identity_technoserve",
+  "document_type_index": 1,
+  "document_type": "aadhaar_identity",
+  "document_title": "Aadhaar Identity Verification (UIDAI e-KYC)",
+  "vendor_name": "TechnoServe Industrial Solutions",
+  "pan": "AAFCT3456E",
+  "gstin": "29AAFCT3456E1ZS",
+  "udyam_id": "UDYAM-KA-04-0076543",
+  "signatory": "Ananya Gupta",
+  "pdf_file": "aadhaar_identity_technoserve_doc.pdf",
+  "sha256_hash": "1f0ebc2d33f8af6e90095921efa14ee35a7b5fae6f1314b3e62dacead50fec8f",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

@@ -1,0 +1,18 @@
+{
+  "folder_number": 56,
+  "folder_name": "folder_056_balance_sheet_hindalco",
+  "document_type_index": 6,
+  "document_type": "balance_sheet",
+  "document_title": "Audited Annual Balance Sheet & P&L Statement",
+  "vendor_name": "Hindalco Pumps Division",
+  "pan": "AABCH2345G",
+  "gstin": "06AABCH2345G1ZU",
+  "udyam_id": "UDYAM-HR-06-0021098",
+  "signatory": "Meera Nair",
+  "pdf_file": "balance_sheet_hindalco_doc.pdf",
+  "sha256_hash": "da835c0053cc5d4d66a1164baf6b4bd1ff3d051061190cd2f49a22ccdbbeea7e",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

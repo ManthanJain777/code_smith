@@ -20,7 +20,7 @@ import {
   Stamp,
   FileText
 } from 'lucide-react';
-import { AshokaEmblem } from '../components/ui/AshokaEmblem';
+import { GemStarLogo } from '../components/ui/GemStarLogo';
 
 interface RankedBidder {
   rank: number;
@@ -472,7 +472,7 @@ export const TenderResultsPage: React.FC = () => {
                 ✕
               </button>
 
-              <AshokaEmblem size={52} variant="navy" />
+              <GemStarLogo size={44} variant="color" />
               <div className="mt-2 space-y-0.5">
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">
                   भारत सरकार | Government of India

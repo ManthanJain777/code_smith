@@ -1,0 +1,18 @@
+{
+  "folder_number": 65,
+  "folder_name": "folder_065_ca_turnover_national",
+  "document_type_index": 7,
+  "document_type": "ca_turnover",
+  "document_title": "Chartered Accountant Turnover Certificate (UDIN Verified)",
+  "vendor_name": "National Water Engineering Corp",
+  "pan": "AAECN7890F",
+  "gstin": "09AAECN7890F1ZT",
+  "udyam_id": "UDYAM-UP-05-0043210",
+  "signatory": "Vikram Singh",
+  "pdf_file": "ca_turnover_national_doc.pdf",
+  "sha256_hash": "a5ca65ec92cef095bf87445a617dd9eb4a3afccafc14734f164097e5db67091b",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

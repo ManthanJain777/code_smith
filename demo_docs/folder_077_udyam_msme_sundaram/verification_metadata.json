@@ -1,0 +1,18 @@
+{
+  "folder_number": 77,
+  "folder_name": "folder_077_udyam_msme_sundaram",
+  "document_type_index": 8,
+  "document_type": "udyam_msme",
+  "document_title": "Udyam MSME Registration Certificate",
+  "vendor_name": "Sundaram Precision Engg",
+  "pan": "AAICS6789H",
+  "gstin": "34AAICS6789H1ZV",
+  "udyam_id": "UDYAM-KL-07-0087654",
+  "signatory": "Arjun Rao",
+  "pdf_file": "udyam_msme_sundaram_doc.pdf",
+  "sha256_hash": "43d5f0b3f0970a146b589bbb7a42b5fd67b735932016c5730e9789a32a6fb4cf",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

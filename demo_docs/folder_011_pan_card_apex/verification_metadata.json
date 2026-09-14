@@ -1,0 +1,18 @@
+{
+  "folder_number": 11,
+  "folder_name": "folder_011_pan_card_apex",
+  "document_type_index": 2,
+  "document_type": "pan_card",
+  "document_title": "Permanent Account Number (PAN Card Record)",
+  "vendor_name": "Apex Pumps & Motors Pvt Ltd",
+  "pan": "AAACA1234F",
+  "gstin": "07AAAAA0000A1Z5",
+  "udyam_id": "UDYAM-MH-01-0012345",
+  "signatory": "Aarav Sharma",
+  "pdf_file": "pan_card_apex_doc.pdf",
+  "sha256_hash": "7c71724f73fb75c7f40b4b785e52032489ad3de5ee668b037ed84203d6404210",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

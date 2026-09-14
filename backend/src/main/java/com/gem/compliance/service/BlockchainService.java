@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -43,6 +44,34 @@ public class BlockchainService {
 
     // Cache of recent anchored entries for fast local lookup
     private final Map<String, MockChainEntry> mockLedger = new ConcurrentHashMap<>();
+
+    @PostConstruct
+    public void initDemoLedger() {
+        // Pre-seed mock ledger across all 10 core compliance document types
+        String[][] demoAnchors = {
+            {"0x8f2d3a9b1c7e4f5a6b0c1d2e3f4a5b6c7d8e9f0a", "AADHAAR_KYC_ANCHORED", "UIDAI_DEPOSITORY", "0x3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a01", "1000031"},
+            {"0x7c3b2e1a9f8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b", "PAN_CARD_TAX_ANCHORED", "ITD_NSDL_PORTAL", "0x4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a02", "1000032"},
+            {"0x6b2a1f9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a", "GST_FILING_LEDGER_ANCHORED", "GSTN_API_GATEWAY", "0x5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a03", "1000033"},
+            {"0x5a1f9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f", "ISO_9001_CERTIFICATE_ANCHORED", "NABCB_REGISTRY", "0x6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a04", "1000034"},
+            {"0x4f9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e", "BANK_GUARANTEE_SFMS_ANCHORED", "SFMS_GATEWAY", "0x7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a05", "1000035"},
+            {"0x3e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d", "BALANCE_SHEET_AUDIT_ANCHORED", "MCA21_PORTAL", "0x8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a06", "1000036"},
+            {"0x2d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c", "CA_TURNOVER_UDIN_ANCHORED", "ICAI_UDIN_PORTAL", "0x9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a07", "1000037"},
+            {"0x1c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b", "UDYAM_MSME_REGISTRATION_ANCHORED", "MSME_UDYAM_REG", "0xa0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a08", "1000038"},
+            {"0x0b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a", "EXPERIENCE_WORK_ORDER_ANCHORED", "NTPC_PSU_PORTAL", "0xb1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a09", "1000039"},
+            {"0x9a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6f", "TECHNICAL_SPEC_DATASHEET_ANCHORED", "AI_TECH_EXTRACTOR", "0xc2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a10", "1000040"}
+        };
+
+        long now = Instant.now().getEpochSecond();
+        for (int i = 0; i < demoAnchors.length; i++) {
+            String[] a = demoAnchors[i];
+            MockChainEntry entry = new MockChainEntry(
+                a[0], a[1], a[2], now - (10 - i) * 3600L, a[3], Long.parseLong(a[4])
+            );
+            mockLedger.put(a[3], entry);
+            mockLedger.put(a[0], entry);
+        }
+        log.info("Initialized demo blockchain ledger with {} pre-anchored compliance records across 10 categories", demoAnchors.length);
+    }
 
     private final java.net.http.HttpClient httpClient = java.net.http.HttpClient.newBuilder()
         .version(java.net.http.HttpClient.Version.HTTP_1_1)

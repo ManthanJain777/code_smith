@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
-import { AshokaEmblem } from '../components/ui/AshokaEmblem';
+import { GemStarLogo } from '../components/ui/GemStarLogo';
 import { GemFoundationBanner, CELEBRATION_BANNERS } from '../components/banner/GemFoundationBanner';
 import {
   Search, ChevronDown, ChevronRight, ChevronLeft, Globe, PhoneCall, Sun, Moon,
@@ -354,7 +354,7 @@ export const LandingPage: React.FC = () => {
 
           {/* Logo Block */}
           <Link to="/" className="flex items-center gap-3 flex-shrink-0 group">
-            <AshokaEmblem size={48} variant={darkMode ? 'white' : 'navy'} />
+            <GemStarLogo size={42} variant={darkMode ? 'white' : 'color'} />
             <div className="hidden sm:flex flex-col">
               <div className="flex items-baseline gap-2">
                 <span className={`font-black text-lg leading-none ${darkMode ? 'text-white' : 'text-slate-900'}`}>
@@ -829,7 +829,7 @@ export const LandingPage: React.FC = () => {
         <section className="bg-[#1B365D] text-white py-12 px-4 sm:px-8">
           <div className="max-w-screen-2xl mx-auto text-center">
             <div className="flex justify-center mb-4">
-              <AshokaEmblem size={72} variant="white" />
+              <GemStarLogo size={64} variant="color" />
             </div>
             <h2 className="text-2xl font-black mb-3 text-white">
               Transparent • Accountable • Efficient
@@ -865,7 +865,7 @@ export const LandingPage: React.FC = () => {
 
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-8 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-3 md:col-span-1">
-            <AshokaEmblem size={56} variant="white" />
+            <GemStarLogo size={48} variant="color" />
             <div className="text-white font-bold text-sm">GeM Bid Compliance Platform</div>
             <p className="text-[11px] leading-relaxed">
               Ministry of Petroleum & Natural Gas, Government of India.

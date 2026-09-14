@@ -1,0 +1,18 @@
+{
+  "folder_number": 59,
+  "folder_name": "folder_059_balance_sheet_godrej",
+  "document_type_index": 6,
+  "document_type": "balance_sheet",
+  "document_title": "Audited Annual Balance Sheet & P&L Statement",
+  "vendor_name": "Godrej Process Equipment",
+  "pan": "AADCG5678K",
+  "gstin": "27AADCG5678K1ZX",
+  "udyam_id": "UDYAM-MH-09-0043210",
+  "signatory": "Suresh Kumar",
+  "pdf_file": "balance_sheet_godrej_doc.pdf",
+  "sha256_hash": "85255ecbcca7b63dc0d19f36e6d38387206ce44ba4c170db1d4b5c481e57552d",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

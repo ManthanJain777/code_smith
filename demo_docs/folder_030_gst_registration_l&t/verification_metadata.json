@@ -1,0 +1,18 @@
+{
+  "folder_number": 30,
+  "folder_name": "folder_030_gst_registration_l&t",
+  "document_type_index": 3,
+  "document_type": "gst_registration",
+  "document_title": "GST Registration Certificate (Form GST REG-06)",
+  "vendor_name": "L&T EPC Heavy Engineering",
+  "pan": "AABCL9012L",
+  "gstin": "27AABCL9012L1ZY",
+  "udyam_id": "UDYAM-MH-10-0021098",
+  "signatory": "Neha Joshi",
+  "pdf_file": "gst_registration_l&t_doc.pdf",
+  "sha256_hash": "ff595e9bb35b74e9c23f0b8c60b7061a430f2d09c19e7d347ee48460088956e2",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

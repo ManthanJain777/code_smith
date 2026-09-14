@@ -1,0 +1,18 @@
+{
+  "folder_number": 23,
+  "folder_name": "folder_023_gst_registration_crompton",
+  "document_type_index": 3,
+  "document_type": "gst_registration",
+  "document_title": "GST Registration Certificate (Form GST REG-06)",
+  "vendor_name": "Crompton Flow Dynamics",
+  "pan": "AABCC9012D",
+  "gstin": "33AABCC9012D1ZR",
+  "udyam_id": "UDYAM-TN-03-0098765",
+  "signatory": "Rohit Verma",
+  "pdf_file": "gst_registration_crompton_doc.pdf",
+  "sha256_hash": "e97e021df5c98557f27d3a053996165e323cec535d917679ded6d6cb4e677f48",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

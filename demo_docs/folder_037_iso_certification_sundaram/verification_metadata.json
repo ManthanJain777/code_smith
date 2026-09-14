@@ -1,0 +1,18 @@
+{
+  "folder_number": 37,
+  "folder_name": "folder_037_iso_certification_sundaram",
+  "document_type_index": 4,
+  "document_type": "iso_certification",
+  "document_title": "ISO Quality Management Certificate (ISO 9001:2015)",
+  "vendor_name": "Sundaram Precision Engg",
+  "pan": "AAICS6789H",
+  "gstin": "34AAICS6789H1ZV",
+  "udyam_id": "UDYAM-KL-07-0087654",
+  "signatory": "Arjun Rao",
+  "pdf_file": "iso_certification_sundaram_doc.pdf",
+  "sha256_hash": "fa4c90e5d0b28ccf571033bedb29da77f946b74ca4a12cf98cf625be155c8548",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

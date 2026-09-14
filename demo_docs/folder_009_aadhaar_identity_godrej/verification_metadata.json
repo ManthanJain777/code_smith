@@ -1,0 +1,18 @@
+{
+  "folder_number": 9,
+  "folder_name": "folder_009_aadhaar_identity_godrej",
+  "document_type_index": 1,
+  "document_type": "aadhaar_identity",
+  "document_title": "Aadhaar Identity Verification (UIDAI e-KYC)",
+  "vendor_name": "Godrej Process Equipment",
+  "pan": "AADCG5678K",
+  "gstin": "27AADCG5678K1ZX",
+  "udyam_id": "UDYAM-MH-09-0043210",
+  "signatory": "Suresh Kumar",
+  "pdf_file": "aadhaar_identity_godrej_doc.pdf",
+  "sha256_hash": "b37c0c7c7cdc589ada2a25acf87bd84f59d9e1a12ecdc18a086fea3e096b9db6",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

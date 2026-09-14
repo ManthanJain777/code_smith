@@ -1,0 +1,18 @@
+{
+  "folder_number": 86,
+  "folder_name": "folder_086_experience_cert_hindalco",
+  "document_type_index": 9,
+  "document_type": "experience_cert",
+  "document_title": "Past Performance & Work Order Completion Certificate",
+  "vendor_name": "Hindalco Pumps Division",
+  "pan": "AABCH2345G",
+  "gstin": "06AABCH2345G1ZU",
+  "udyam_id": "UDYAM-HR-06-0021098",
+  "signatory": "Meera Nair",
+  "pdf_file": "experience_cert_hindalco_doc.pdf",
+  "sha256_hash": "b097c1913f2d28a9e75a85fecd0e671c6cb10b9749350b8c788c27f577c1d92d",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

@@ -1,0 +1,18 @@
+{
+  "folder_number": 47,
+  "folder_name": "folder_047_bank_guarantee_sundaram",
+  "document_type_index": 5,
+  "document_type": "bank_guarantee",
+  "document_title": "e-Bank Guarantee / EMD Security Instrument",
+  "vendor_name": "Sundaram Precision Engg",
+  "pan": "AAICS6789H",
+  "gstin": "34AAICS6789H1ZV",
+  "udyam_id": "UDYAM-KL-07-0087654",
+  "signatory": "Arjun Rao",
+  "pdf_file": "bank_guarantee_sundaram_doc.pdf",
+  "sha256_hash": "d97203cc525eff6ad8f1d07daa9354d4908787b36f3fb9378bc995894049bce0",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

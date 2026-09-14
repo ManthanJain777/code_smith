@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
+import { useLanguage } from '../context/LanguageContext';
 import {
   ShieldCheck, Lock, Mail, Eye, EyeOff, AlertCircle, ArrowRight, ArrowLeft,
   UserCheck, CheckCircle2, ChevronLeft, ChevronRight, Cpu, Layers, Database
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { AshokaEmblem } from '../components/ui/AshokaEmblem';
+import { GemStarLogo } from '../components/ui/GemStarLogo';
 
 interface CarouselSlide {
   title: string;
@@ -45,6 +46,7 @@ export const LoginPage: React.FC = () => {
   const [activeSlide, setActiveSlide] = useState(0);
 
   const { user, login } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -144,10 +146,10 @@ export const LoginPage: React.FC = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col justify-center py-8 px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Brand Header with Official Ashoka Emblem */}
-        <div className="text-center sm:mx-auto sm:w-full sm:max-w-2xl mb-6">
-          <div className="flex flex-col items-center justify-center mb-3">
-            <AshokaEmblem size={52} variant="navy" className="mb-2" />
+        {/* Brand Header with GeM Shield Logo */}
+        <div className="text-center mb-6">
+          <div className="flex items-center justify-center mb-3">
+            <GemStarLogo size={52} variant="color" className="mb-2" />
             <div className="flex items-center space-x-2">
               <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
                 GeM<span className="text-amber-600">COMPLIANCE</span>
@@ -158,10 +160,10 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
-            Government e-Marketplace Verification Gateway
+            {t('login.heading')}
           </h1>
           <p className="mt-1 text-xs text-slate-500 uppercase tracking-widest font-mono">
-            National Public Procurement AI Compliance Engine • SIH26100
+            {t('login.subheading')}
           </p>
         </div>
 

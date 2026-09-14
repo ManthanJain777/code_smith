@@ -1,0 +1,18 @@
+{
+  "folder_number": 44,
+  "folder_name": "folder_044_bank_guarantee_technoserve",
+  "document_type_index": 5,
+  "document_type": "bank_guarantee",
+  "document_title": "e-Bank Guarantee / EMD Security Instrument",
+  "vendor_name": "TechnoServe Industrial Solutions",
+  "pan": "AAFCT3456E",
+  "gstin": "29AAFCT3456E1ZS",
+  "udyam_id": "UDYAM-KA-04-0076543",
+  "signatory": "Ananya Gupta",
+  "pdf_file": "bank_guarantee_technoserve_doc.pdf",
+  "sha256_hash": "faebc28e6ca0a005c9d44bea91482d2e999bdfd5fe5709992a137f4350c02f53",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

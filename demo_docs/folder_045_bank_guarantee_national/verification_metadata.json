@@ -1,0 +1,18 @@
+{
+  "folder_number": 45,
+  "folder_name": "folder_045_bank_guarantee_national",
+  "document_type_index": 5,
+  "document_type": "bank_guarantee",
+  "document_title": "e-Bank Guarantee / EMD Security Instrument",
+  "vendor_name": "National Water Engineering Corp",
+  "pan": "AAECN7890F",
+  "gstin": "09AAECN7890F1ZT",
+  "udyam_id": "UDYAM-UP-05-0043210",
+  "signatory": "Vikram Singh",
+  "pdf_file": "bank_guarantee_national_doc.pdf",
+  "sha256_hash": "163c9831bf948b94b6fde84af3ffe64aaef64c5b9e565c26ad65b62527e4f2b0",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

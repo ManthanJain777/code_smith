@@ -1,0 +1,18 @@
+{
+  "folder_number": 89,
+  "folder_name": "folder_089_experience_cert_godrej",
+  "document_type_index": 9,
+  "document_type": "experience_cert",
+  "document_title": "Past Performance & Work Order Completion Certificate",
+  "vendor_name": "Godrej Process Equipment",
+  "pan": "AADCG5678K",
+  "gstin": "27AADCG5678K1ZX",
+  "udyam_id": "UDYAM-MH-09-0043210",
+  "signatory": "Suresh Kumar",
+  "pdf_file": "experience_cert_godrej_doc.pdf",
+  "sha256_hash": "04cd47b2d52d9f54769c0c95ad0a26907633c330e70acbe4ed607ddda5de40a7",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

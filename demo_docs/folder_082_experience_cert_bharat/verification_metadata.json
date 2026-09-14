@@ -1,0 +1,18 @@
+{
+  "folder_number": 82,
+  "folder_name": "folder_082_experience_cert_bharat",
+  "document_type_index": 9,
+  "document_type": "experience_cert",
+  "document_title": "Past Performance & Work Order Completion Certificate",
+  "vendor_name": "Bharat Heavy Valves Ltd",
+  "pan": "AADCB5678C",
+  "gstin": "07AADCB5678C1ZQ",
+  "udyam_id": "UDYAM-DL-02-0054321",
+  "signatory": "Priya Patel",
+  "pdf_file": "experience_cert_bharat_doc.pdf",
+  "sha256_hash": "e6c6aef9ef3adfecfcaaa6f31f0839678bdf93c7e8c4edce4e67b84a34540051",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

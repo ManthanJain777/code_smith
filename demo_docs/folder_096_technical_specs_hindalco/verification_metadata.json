@@ -1,0 +1,18 @@
+{
+  "folder_number": 96,
+  "folder_name": "folder_096_technical_specs_hindalco",
+  "document_type_index": 10,
+  "document_type": "technical_specs",
+  "document_title": "Technical Specification Compliance Matrix & Datasheet",
+  "vendor_name": "Hindalco Pumps Division",
+  "pan": "AABCH2345G",
+  "gstin": "06AABCH2345G1ZU",
+  "udyam_id": "UDYAM-HR-06-0021098",
+  "signatory": "Meera Nair",
+  "pdf_file": "technical_specs_hindalco_doc.pdf",
+  "sha256_hash": "b5d06c6d11fe77872d11a50f5dec1c21048eb1f0a1713020b7303bc6f9aeda60",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

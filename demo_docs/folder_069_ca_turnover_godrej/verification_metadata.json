@@ -1,0 +1,18 @@
+{
+  "folder_number": 69,
+  "folder_name": "folder_069_ca_turnover_godrej",
+  "document_type_index": 7,
+  "document_type": "ca_turnover",
+  "document_title": "Chartered Accountant Turnover Certificate (UDIN Verified)",
+  "vendor_name": "Godrej Process Equipment",
+  "pan": "AADCG5678K",
+  "gstin": "27AADCG5678K1ZX",
+  "udyam_id": "UDYAM-MH-09-0043210",
+  "signatory": "Suresh Kumar",
+  "pdf_file": "ca_turnover_godrej_doc.pdf",
+  "sha256_hash": "2f0394bc2f54fdbf54f3d6e6b1d2f797b1191608ee66077088b7760183871d45",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

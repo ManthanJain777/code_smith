@@ -1,0 +1,18 @@
+{
+  "folder_number": 1,
+  "folder_name": "folder_001_aadhaar_identity_apex",
+  "document_type_index": 1,
+  "document_type": "aadhaar_identity",
+  "document_title": "Aadhaar Identity Verification (UIDAI e-KYC)",
+  "vendor_name": "Apex Pumps & Motors Pvt Ltd",
+  "pan": "AAACA1234F",
+  "gstin": "07AAAAA0000A1Z5",
+  "udyam_id": "UDYAM-MH-01-0012345",
+  "signatory": "Aarav Sharma",
+  "pdf_file": "aadhaar_identity_apex_doc.pdf",
+  "sha256_hash": "80419f99c06e642c3c7fbd1529cfd94452b715acabd201ce9da482f6d044c264",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

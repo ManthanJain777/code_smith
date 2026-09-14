@@ -1,0 +1,18 @@
+{
+  "folder_number": 12,
+  "folder_name": "folder_012_pan_card_bharat",
+  "document_type_index": 2,
+  "document_type": "pan_card",
+  "document_title": "Permanent Account Number (PAN Card Record)",
+  "vendor_name": "Bharat Heavy Valves Ltd",
+  "pan": "AADCB5678C",
+  "gstin": "07AADCB5678C1ZQ",
+  "udyam_id": "UDYAM-DL-02-0054321",
+  "signatory": "Priya Patel",
+  "pdf_file": "pan_card_bharat_doc.pdf",
+  "sha256_hash": "8110d07f84b3b6dd4e433df70f387a6ca7f95bb62d6af35188edded6ab0b0f08",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

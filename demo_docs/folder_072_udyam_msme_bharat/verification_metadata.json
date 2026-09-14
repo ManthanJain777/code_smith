@@ -1,0 +1,18 @@
+{
+  "folder_number": 72,
+  "folder_name": "folder_072_udyam_msme_bharat",
+  "document_type_index": 8,
+  "document_type": "udyam_msme",
+  "document_title": "Udyam MSME Registration Certificate",
+  "vendor_name": "Bharat Heavy Valves Ltd",
+  "pan": "AADCB5678C",
+  "gstin": "07AADCB5678C1ZQ",
+  "udyam_id": "UDYAM-DL-02-0054321",
+  "signatory": "Priya Patel",
+  "pdf_file": "udyam_msme_bharat_doc.pdf",
+  "sha256_hash": "400d6eda08b1178a0fef9e9ce9bb75eca476888764751ef853f3ddd515d1f169",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

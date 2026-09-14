@@ -1,0 +1,18 @@
+{
+  "folder_number": 8,
+  "folder_name": "folder_008_aadhaar_identity_tata",
+  "document_type_index": 1,
+  "document_type": "aadhaar_identity",
+  "document_title": "Aadhaar Identity Verification (UIDAI e-KYC)",
+  "vendor_name": "Tata Industrial Components",
+  "pan": "AACT1234J",
+  "gstin": "27AACT1234J1ZW",
+  "udyam_id": "UDYAM-MH-08-0065432",
+  "signatory": "Kavita Deshmukh",
+  "pdf_file": "aadhaar_identity_tata_doc.pdf",
+  "sha256_hash": "49885c1600d059acb057633ee1daf32bd218933bcf5edbeed135e620f385e387",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

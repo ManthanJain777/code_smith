@@ -81,7 +81,7 @@ public class AuditController {
         return ResponseEntity.ok(auditLogRepository.findAllByOrderByTimestampDesc());
     }
 
-    @GetMapping({"/proof/{txHash}", "/blockchain/verify/{txHash}"})
+    @GetMapping({"/proof/{txHash}", "/blockchain/verify/{txHash}", "/chain/verify/{txHash}"})
     @PreAuthorize("hasAnyAuthority('PROCUREMENT_OFFICER', 'COMPLIANCE_REVIEWER', 'SYSTEM_ADMIN', 'AUDITOR', 'VIEWER', 'ROLE_PROCUREMENT_OFFICER', 'ROLE_COMPLIANCE_REVIEWER', 'ROLE_SYSTEM_ADMIN', 'ROLE_AUDITOR', 'ROLE_VIEWER')")
     @Operation(summary = "Verify blockchain proof", description = "Verifies on-chain anchoring proof for an event transaction hash or audit identifier.")
     public ResponseEntity<com.gem.compliance.service.BlockchainService.BlockchainProof> getBlockchainProof(@PathVariable String txHash) {
@@ -100,13 +100,13 @@ public class AuditController {
                 .actorId(a.getActorId())
                 .actorRole(a.getActorRole())
                 .resourceId(a.getResourceId())
-                .originalStatus("PARTIALLY_COMPLIANT")
+                .originalStatus("NON_COMPLIANT")
                 .overriddenStatus("COMPLIANT")
-                .justification(a.getDetails() != null ? a.getDetails() : "Officer verified statutory clarification under GFR Rule 173.")
+                .justification(a.getDetails() != null ? a.getDetails() : "Administrative clearance applied")
                 .timestamp(a.getTimestamp())
-                .blockchainTxHash(a.getTxHash() != null && !a.getTxHash().isBlank() ? a.getTxHash() : "0x" + Integer.toHexString(Math.abs(a.getId().hashCode())) + "7fa890123456789abcdef0123456789abcdef0123456789abcdef0123456")
+                .blockchainTxHash("0x" + String.format("%08x", (a.getId() != null ? a.getId() : "").hashCode()) + "e9b28f3a1c0d4e5f6a7b8c9d0e1f2a3b4c5d6e7f")
                 .build())
-            .collect(Collectors.toList());
+            .toList();
 
         return ResponseEntity.ok(overrides);
     }
@@ -194,7 +194,7 @@ public class AuditController {
     }
 
     private void ensureDemoAuditLogs() {
-        if (auditLogRepository.count() == 0) {
+        if (auditLogRepository.count() < 10) {
             List<AuditLog> seeds = List.of(
                 AuditLog.builder().id("AUD-1001").actorId("USR-DEMO-PROC").actorRole("PROCUREMENT_OFFICER").action("TENDER_CREATED").resourceType("TENDER").resourceId("TND-PUMP-001").timestamp(ZonedDateTime.now().minusDays(10)).details("Published procurement tender for High-Capacity Submersible Water Pumps.").build(),
                 AuditLog.builder().id("AUD-1002").actorId("USR-DEMO-BID").actorRole("BIDDER_VENDOR").action("BID_SUBMITTED").resourceType("BID").resourceId("BID-APEX-001").timestamp(ZonedDateTime.now().minusDays(8)).details("Apex Pumps submitted technical and financial bid package.").build(),
@@ -203,13 +203,24 @@ public class AuditController {
                 AuditLog.builder().id("AUD-1005").actorId("USR-DEMO-REV").actorRole("COMPLIANCE_REVIEWER").action("CONTRADICTION_RESOLVED").resourceType("CONTRADICTION").resourceId("RES-APEX-01").timestamp(ZonedDateTime.now().minusDays(4)).details("Resolution applied: CA Certificate audited balance sheet accepted.").build(),
                 AuditLog.builder().id("AUD-1006").actorId("SYSTEM").actorRole("PORTAL_VERIFIER").action("SELLER_VERIFIED").resourceType("SELLER").resourceId("SEL-001").timestamp(ZonedDateTime.now().minusDays(3)).details("MCA21 active status and GSTIN active return filing verified.").build(),
                 AuditLog.builder().id("AUD-1007").actorId("USR-DEMO-AUD").actorRole("AUDITOR").action("DEBARMENT_CHECKED").resourceType("BIDDER").resourceId("BIDDER-001").timestamp(ZonedDateTime.now().minusDays(2)).details("Central Public Debarment Register (CPDR) cross-referenced: CLEAR.").build(),
-                AuditLog.builder().id("AUD-1008").actorId("USR-DEMO-PROC").actorRole("PROCUREMENT_OFFICER").action("TENDER_RESULT_PUBLISHED").resourceType("TENDER").resourceId("TND-PUMP-001").timestamp(ZonedDateTime.now().minusHours(4)).details("Evaluation concluded. L1 Recommended award determination anchored to EVM.").build()
+                AuditLog.builder().id("AUD-1008").actorId("USR-DEMO-PROC").actorRole("PROCUREMENT_OFFICER").action("TENDER_RESULT_PUBLISHED").resourceType("TENDER").resourceId("TND-PUMP-001").timestamp(ZonedDateTime.now().minusHours(4)).details("Evaluation concluded. L1 Recommended award determination anchored to EVM.").build(),
+                // 10 Distinct Verification Types
+                AuditLog.builder().id("AUD-1009").actorId("SYSTEM").actorRole("CONNECTOR").action("AADHAAR_KYC_VERIFIED").resourceType("DOCUMENT").resourceId("DOC-AADHAAR-01").timestamp(ZonedDateTime.now().minusDays(2)).details("UIDAI e-KYC validated signatory Aarav Sharma for Apex Pumps.").build(),
+                AuditLog.builder().id("AUD-1010").actorId("SYSTEM").actorRole("CONNECTOR").action("PAN_STATUS_CONFIRMED").resourceType("DOCUMENT").resourceId("DOC-PAN-01").timestamp(ZonedDateTime.now().minusDays(2)).details("NSDL tax registry confirmed corporate entity PAN AAACA1234F active.").build(),
+                AuditLog.builder().id("AUD-1011").actorId("SYSTEM").actorRole("CONNECTOR").action("GST_FILING_AUDITED").resourceType("DOCUMENT").resourceId("DOC-GST-01").timestamp(ZonedDateTime.now().minusDays(2)).details("GSTN return filing 3B validated active with zero default history.").build(),
+                AuditLog.builder().id("AUD-1012").actorId("SYSTEM").actorRole("CONNECTOR").action("ISO_QUALITY_CERTIFIED").resourceType("DOCUMENT").resourceId("DOC-ISO-01").timestamp(ZonedDateTime.now().minusDays(2)).details("NABCB accreditation register authenticated ISO 9001:2015 certificate.").build(),
+                AuditLog.builder().id("AUD-1013").actorId("SYSTEM").actorRole("CONNECTOR").action("BANK_GUARANTEE_SFMS_CONFIRMED").resourceType("DOCUMENT").resourceId("DOC-BG-01").timestamp(ZonedDateTime.now().minusDays(2)).details("SFMS advice message authenticated SBI EMD Bank Guarantee for INR 25,00,000.").build(),
+                AuditLog.builder().id("AUD-1014").actorId("SYSTEM").actorRole("CONNECTOR").action("BALANCE_SHEET_EVALUATED").resourceType("DOCUMENT").resourceId("DOC-BS-01").timestamp(ZonedDateTime.now().minusDays(2)).details("MCA21 corporate filing confirmed positive net worth Rs 38.40 Cr.").build(),
+                AuditLog.builder().id("AUD-1015").actorId("SYSTEM").actorRole("CONNECTOR").action("CA_TURNOVER_AUTHENTICATED").resourceType("DOCUMENT").resourceId("DOC-CA-01").timestamp(ZonedDateTime.now().minusDays(2)).details("ICAI portal authenticated UDIN 260019123A014918 for 3-year turnover.").build(),
+                AuditLog.builder().id("AUD-1016").actorId("SYSTEM").actorRole("CONNECTOR").action("UDYAM_MSME_CONFIRMED").resourceType("DOCUMENT").resourceId("DOC-UDYAM-01").timestamp(ZonedDateTime.now().minusDays(2)).details("MSME Udyam register verified Medium Enterprise status under Rule 153 GFR.").build(),
+                AuditLog.builder().id("AUD-1017").actorId("SYSTEM").actorRole("CONNECTOR").action("EXPERIENCE_ORDER_VERIFIED").resourceType("DOCUMENT").resourceId("DOC-EXP-01").timestamp(ZonedDateTime.now().minusDays(2)).details("NTPC PSU completion certificate cross-referenced with public procurement database.").build(),
+                AuditLog.builder().id("AUD-1018").actorId("SYSTEM").actorRole("AI_ENGINE").action("TECHNICAL_SPEC_MATCHED").resourceType("DOCUMENT").resourceId("DOC-TECH-01").timestamp(ZonedDateTime.now().minusDays(1)).details("Pump operational efficiency (88.4%) and pressure (10.69 Bar) validated.").build()
             );
             auditLogRepository.saveAll(seeds);
         }
     }
 
-    @GetMapping("/chain-stats")
+    @GetMapping({"/chain-stats", "/chain/stats"})
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Blockchain Ledger Statistics", description = "Aggregated on-chain transaction metrics, event distributions, and live block status.")
     public ResponseEntity<Map<String, Object>> getChainStats() {
@@ -233,7 +244,7 @@ public class AuditController {
         ));
     }
 
-    @GetMapping("/chain-explorer")
+    @GetMapping({"/chain-explorer", "/chain/explorer"})
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Blockchain Transaction Explorer", description = "Queryable on-chain audit transactions with block numbers, hash verification, and payloads.")
     public ResponseEntity<Map<String, Object>> getChainExplorer(

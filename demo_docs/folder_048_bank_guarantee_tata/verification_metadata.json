@@ -1,0 +1,18 @@
+{
+  "folder_number": 48,
+  "folder_name": "folder_048_bank_guarantee_tata",
+  "document_type_index": 5,
+  "document_type": "bank_guarantee",
+  "document_title": "e-Bank Guarantee / EMD Security Instrument",
+  "vendor_name": "Tata Industrial Components",
+  "pan": "AACT1234J",
+  "gstin": "27AACT1234J1ZW",
+  "udyam_id": "UDYAM-MH-08-0065432",
+  "signatory": "Kavita Deshmukh",
+  "pdf_file": "bank_guarantee_tata_doc.pdf",
+  "sha256_hash": "08d00872199517ac30c01ecd4de98b9be0ca80856ddeafb7055a13bd1d2188ab",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

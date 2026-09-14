@@ -1,0 +1,18 @@
+{
+  "folder_number": 19,
+  "folder_name": "folder_019_pan_card_godrej",
+  "document_type_index": 2,
+  "document_type": "pan_card",
+  "document_title": "Permanent Account Number (PAN Card Record)",
+  "vendor_name": "Godrej Process Equipment",
+  "pan": "AADCG5678K",
+  "gstin": "27AADCG5678K1ZX",
+  "udyam_id": "UDYAM-MH-09-0043210",
+  "signatory": "Suresh Kumar",
+  "pdf_file": "pan_card_godrej_doc.pdf",
+  "sha256_hash": "2c649cbf1d9e783ea3fa479cb05c5447f36c69ea301d88fa895a6041010e1da5",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthProvider';
 import { usePermissions } from '../../context/PermissionsContext';
-import { AshokaEmblem } from '../ui/AshokaEmblem';
+import { GemStarLogo } from '../ui/GemStarLogo';
 import { ProfileSettingsModal } from '../ui/ProfileSettingsModal';
 import { CreateTenderModal } from '../tenders/CreateTenderModal';
 import { useToast } from '../../context/ToastContext';
+import { useLanguage } from '../../context/LanguageContext';
 import {
   ShieldCheck,
   Globe,
@@ -23,14 +24,16 @@ import {
   ClipboardList,
   UserCheck,
   Users,
-  Zap,
   BarChart3,
   Link2,
   UploadCloud,
   Award,
   HelpCircle,
   Home,
-  Server
+  Server,
+  Sparkles,
+  Bot,
+  Zap
 } from 'lucide-react';
 
 interface GovTopNavProps {
@@ -44,11 +47,11 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout, switchRole } = useAuth();
+  const { user, logout } = useAuth();
   const { hasAccess } = usePermissions();
   const { showToast } = useToast();
 
-  const [lang, setLang] = useState<'EN' | 'HI'>('EN');
+  const { lang, toggleLang, t } = useLanguage();
   const [currentTime, setCurrentTime] = useState<string>('');
   const [fontSize, setFontSize] = useState<'sm' | 'md' | 'lg'>('md');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -142,47 +145,47 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
   const navGroups: NavGroup[] = [
     {
       id: 'dashboard',
-      label: isVendor ? 'Vendor Dashboard' : (isReviewer ? 'Reviewer Dashboard' : (isAuditor ? 'Auditor Dashboard' : (isAdmin ? 'Admin Dashboard' : 'Procurement Dashboard'))),
+      label: t('nav.dashboard'),
       path: '/dashboard',
       icon: LayoutDashboard,
       allowed: true
     },
     {
       id: 'tenders',
-      label: isVendor ? 'Browse Tenders' : 'Tenders',
+      label: isVendor ? t('nav.browseTenders') : t('nav.tenders'),
       path: '/tenders',
       icon: FileText,
       allowed: hasAccess('tender_spec')
     },
     {
       id: 'submission',
-      label: 'Submit Bid Dossier',
+      label: t('nav.submitBid'),
       path: '/bids/upload',
       icon: UploadCloud,
       allowed: isVendor && hasAccess('bid_upload')
     },
     {
       id: 'evaluation',
-      label: isVendor ? 'My Compliance Status' : 'Compliance & Evaluation',
+      label: isVendor ? t('nav.myCompliance') : t('nav.compliance'),
       icon: CheckCircle2,
       allowed: hasAccess('compliance_matrix'),
       children: isVendor ? undefined : [
         {
-          label: 'Compliance Matrix',
+          label: t('nav.matrix'),
           path: '/compliance',
           description: 'Detailed requirement breakdown with multi-stage reasoning chain',
           icon: CheckCircle2,
           allowed: hasAccess('compliance_matrix')
         },
         {
-          label: 'Multi-Bidder Compare',
+          label: t('nav.compare'),
           path: '/compare',
           description: 'Side-by-side technical evaluation across all tender bidders',
           icon: Users,
           allowed: hasAccess('multi_bidder_compare')
         },
         {
-          label: 'Compliance Reports',
+          label: t('nav.reports'),
           path: '/reports',
           description: 'Executive Award Summary Memorandum and statutory audit sheets',
           icon: ClipboardList,
@@ -193,34 +196,34 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
     },
     {
       id: 'clarifications',
-      label: 'Clarifications & Grievances',
+      label: t('nav.clarifications'),
       path: '/reviews',
       icon: AlertTriangle,
       allowed: isVendor
     },
     {
       id: 'verification',
-      label: isVendor ? 'Vendor Profile' : 'Verification Queue',
+      label: isVendor ? t('nav.vendorProfile') : t('nav.verification'),
       icon: UserCheck,
       allowed: isVendor ? true : (hasAccess('seller_queue') || hasAccess('portal_verification') || hasAccess('human_review')),
       path: isVendor ? '/sellers/me' : undefined,
       children: isVendor ? undefined : [
         {
-          label: 'Government Portal Verification',
+          label: t('nav.portals'),
           path: '/portals',
           description: 'Live simulated API connectors for GSTN, MCA21, EPFO, PAN',
           icon: ShieldCheck,
           allowed: hasAccess('portal_verification')
         },
         {
-          label: 'Seller Verification Queue',
+          label: t('nav.sellers'),
           path: '/sellers',
           description: 'Vendor credential vetting, trust scores, and debarment screening',
           icon: UserCheck,
           allowed: hasAccess('seller_queue')
         },
         {
-          label: 'Human Review Queue',
+          label: t('nav.humanReview'),
           path: '/reviews',
           description: 'Reviewer calibration and statutory contradiction resolution',
           icon: AlertTriangle,
@@ -230,21 +233,21 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
     },
     {
       id: 'copilot',
-      label: isVendor ? 'Bid Assistant' : (isReviewer ? 'Exception Assistant' : (isAuditor ? 'Vigilance Transcripts' : 'Procurement Copilot')),
+      label: isVendor ? t('nav.bidAssistant') : (isReviewer ? t('nav.exceptionAssistant') : (isAuditor ? t('nav.vigilanceTranscripts') : t('nav.copilot'))),
       path: '/copilot',
       icon: Zap,
       allowed: hasAccess('copilot_query')
     },
     {
       id: 'analytics',
-      label: 'Analytics',
+      label: t('nav.analytics'),
       path: '/analytics',
       icon: BarChart3,
       allowed: hasAccess('analytics_overview') && !isVendor
     },
     {
       id: 'audit',
-      label: isVendor ? 'Blockchain Proofs' : 'Blockchain Audit',
+      label: isVendor ? t('nav.proofs') : t('nav.audit'),
       path: isVendor ? '/audit' : undefined,
       icon: Link2,
       allowed: true,
@@ -337,9 +340,9 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
           {/* Language Toggle */}
           <div className="flex items-center space-x-2 border-l border-slate-700 pl-3">
             <button
-              onClick={() => setLang(l => (l === 'EN' ? 'HI' : 'EN'))}
-              className="flex items-center space-x-1 hover:text-white transition-colors text-[10px] font-semibold bg-slate-800 px-2 py-0.5 rounded"
-              title="Toggle Official Language"
+              onClick={toggleLang}
+              className="flex items-center space-x-1 hover:text-white transition-colors text-[10px] font-semibold bg-slate-800 px-2 py-0.5 rounded cursor-pointer"
+              title="Toggle Official Language (English / हिन्दी)"
             >
               <Globe className="w-3 h-3 text-amber-400" />
               <span>{lang === 'EN' ? 'English (EN)' : 'हिन्दी (HI)'}</span>
@@ -350,67 +353,22 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
               title="Government National Procurement Helpline"
             >
               <PhoneCall className="w-3 h-3 text-amber-400" />
-              <span>Toll-Free 1800-419-3436</span>
+              <span>{t('topnav.helpline')}</span>
             </a>
           </div>
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* LIVE DEMO ROLE SWITCHER TOOLBAR (EXPERIENCE ALL 5 ROLES INSTANTLY)        */}
-      {/* ========================================================================= */}
-      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 text-white px-4 sm:px-6 lg:px-8 py-1.5 border-b border-indigo-900/40 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-[10px] uppercase font-bold tracking-widest text-amber-400 bg-amber-950/90 px-2 py-0.5 rounded border border-amber-500/40 flex items-center gap-1 shadow-xs">
-            <Zap className="w-3 h-3 text-amber-400 fill-amber-400" /> DEMO ROLE SWITCHER
-          </span>
-          <span className="text-slate-400 hidden sm:inline text-[11px]">
-            Switch identity to test any stakeholder perspective:
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
-          {[
-            { role: 'BIDDER_VENDOR', label: 'Bidder / Vendor', icon: UploadCloud },
-            { role: 'PROCUREMENT_OFFICER', label: 'Procurement Officer', icon: FileText },
-            { role: 'COMPLIANCE_REVIEWER', label: 'Compliance Reviewer', icon: CheckCircle2 },
-            { role: 'AUDITOR', label: 'Auditor & Vigilance', icon: ShieldCheck },
-            { role: 'SYSTEM_ADMIN', label: 'System Admin', icon: Server },
-          ].map(r => {
-            const isCurrent = user?.role === r.role || (r.role === 'BIDDER_VENDOR' && user?.role === 'BIDDER');
-            return (
-              <button
-                key={r.role}
-                type="button"
-                onClick={() => {
-                  switchRole(r.role);
-                  navigate('/dashboard');
-                }}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                  isCurrent
-                    ? 'bg-amber-500 text-slate-950 shadow-md font-black ring-1 ring-amber-300'
-                    : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60'
-                }`}
-                title={`Switch active perspective to ${r.label}`}
-              >
-                <r.icon className={`w-3 h-3 ${isCurrent ? 'text-slate-950' : 'text-amber-400'}`} />
-                <span>{r.label}</span>
-                {isCurrent && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-700 animate-pulse ml-0.5" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+
 
       {/* ========================================================================= */}
       {/* ROW 2: Main Brand, Search, User Identity & PROMINENT LOGOUT               */}
       {/* ========================================================================= */}
       <div className="px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-4">
-        {/* Left: Official Ashoka Emblem & Platform Wordmark */}
+        {/* Left: GeM Shield Logo & Platform Wordmark */}
         <Link to="/dashboard" className="flex items-center space-x-3 flex-shrink-0 group">
           <div className="relative flex-shrink-0">
-            <AshokaEmblem size={44} variant="navy" />
+            <GemStarLogo size={38} variant="navy" />
           </div>
 
           <div className="flex flex-col">
@@ -444,7 +402,7 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search tenders by number / bids by bidder name..."
+              placeholder={t('nav.searchPlaceholder')}
               className="w-full pl-24 pr-10 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition"
             />
             <button
@@ -608,7 +566,7 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
                 title="Create a new Notice Inviting Tender (NIT)"
               >
                 <FileText className="w-3.5 h-3.5 text-emerald-200" />
-                <span>+ Create Tender (NIT)</span>
+                <span>{t('nav.createTender')}</span>
               </button>
             )}
           </div>
@@ -752,7 +710,7 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
                 className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-bold text-rose-700 bg-rose-100 hover:bg-rose-200 rounded-lg transition"
               >
                 <LogOut className="w-4 h-4 text-rose-600" />
-                <span>Log Out</span>
+                <span>{t('nav.logout')}</span>
               </button>
             </div>
           </div>

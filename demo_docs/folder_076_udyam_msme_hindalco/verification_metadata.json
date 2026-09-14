@@ -1,0 +1,18 @@
+{
+  "folder_number": 76,
+  "folder_name": "folder_076_udyam_msme_hindalco",
+  "document_type_index": 8,
+  "document_type": "udyam_msme",
+  "document_title": "Udyam MSME Registration Certificate",
+  "vendor_name": "Hindalco Pumps Division",
+  "pan": "AABCH2345G",
+  "gstin": "06AABCH2345G1ZU",
+  "udyam_id": "UDYAM-HR-06-0021098",
+  "signatory": "Meera Nair",
+  "pdf_file": "udyam_msme_hindalco_doc.pdf",
+  "sha256_hash": "487173555c0305641710a8c824ce44fd7f269a2b116c82ee1a3ef8cde1b8643b",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

@@ -1,0 +1,18 @@
+{
+  "folder_number": 100,
+  "folder_name": "folder_100_technical_specs_l&t",
+  "document_type_index": 10,
+  "document_type": "technical_specs",
+  "document_title": "Technical Specification Compliance Matrix & Datasheet",
+  "vendor_name": "L&T EPC Heavy Engineering",
+  "pan": "AABCL9012L",
+  "gstin": "27AABCL9012L1ZY",
+  "udyam_id": "UDYAM-MH-10-0021098",
+  "signatory": "Neha Joshi",
+  "pdf_file": "technical_specs_l&t_doc.pdf",
+  "sha256_hash": "7b3a6b651ed115737a135ce0bb3f5d8511f5849ecdc690743e9da8a2fae8d041",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

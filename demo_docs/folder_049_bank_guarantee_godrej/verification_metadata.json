@@ -1,0 +1,18 @@
+{
+  "folder_number": 49,
+  "folder_name": "folder_049_bank_guarantee_godrej",
+  "document_type_index": 5,
+  "document_type": "bank_guarantee",
+  "document_title": "e-Bank Guarantee / EMD Security Instrument",
+  "vendor_name": "Godrej Process Equipment",
+  "pan": "AADCG5678K",
+  "gstin": "27AADCG5678K1ZX",
+  "udyam_id": "UDYAM-MH-09-0043210",
+  "signatory": "Suresh Kumar",
+  "pdf_file": "bank_guarantee_godrej_doc.pdf",
+  "sha256_hash": "ffdb2197cce63544046f47671c777f06920ee72096339d846e3a147deb3a5078",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

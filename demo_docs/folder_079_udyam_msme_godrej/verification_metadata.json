@@ -1,0 +1,18 @@
+{
+  "folder_number": 79,
+  "folder_name": "folder_079_udyam_msme_godrej",
+  "document_type_index": 8,
+  "document_type": "udyam_msme",
+  "document_title": "Udyam MSME Registration Certificate",
+  "vendor_name": "Godrej Process Equipment",
+  "pan": "AADCG5678K",
+  "gstin": "27AADCG5678K1ZX",
+  "udyam_id": "UDYAM-MH-09-0043210",
+  "signatory": "Suresh Kumar",
+  "pdf_file": "udyam_msme_godrej_doc.pdf",
+  "sha256_hash": "7a29442a208cdec28b0fe1e0f791c935c6fd9432794d00bcdc6824f609bf6a67",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

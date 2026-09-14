@@ -1,0 +1,18 @@
+{
+  "folder_number": 95,
+  "folder_name": "folder_095_technical_specs_national",
+  "document_type_index": 10,
+  "document_type": "technical_specs",
+  "document_title": "Technical Specification Compliance Matrix & Datasheet",
+  "vendor_name": "National Water Engineering Corp",
+  "pan": "AAECN7890F",
+  "gstin": "09AAECN7890F1ZT",
+  "udyam_id": "UDYAM-UP-05-0043210",
+  "signatory": "Vikram Singh",
+  "pdf_file": "technical_specs_national_doc.pdf",
+  "sha256_hash": "734f4b923f3ffe9fc730c14661c5dadfdf39a76186be843fdfc95c3b690bee57",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

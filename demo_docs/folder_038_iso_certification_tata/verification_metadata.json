@@ -1,0 +1,18 @@
+{
+  "folder_number": 38,
+  "folder_name": "folder_038_iso_certification_tata",
+  "document_type_index": 4,
+  "document_type": "iso_certification",
+  "document_title": "ISO Quality Management Certificate (ISO 9001:2015)",
+  "vendor_name": "Tata Industrial Components",
+  "pan": "AACT1234J",
+  "gstin": "27AACT1234J1ZW",
+  "udyam_id": "UDYAM-MH-08-0065432",
+  "signatory": "Kavita Deshmukh",
+  "pdf_file": "iso_certification_tata_doc.pdf",
+  "sha256_hash": "4098e96ba1dfbe9a36d7a561bbde10c23c7052a7d13493fca60a6ba93df960f3",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

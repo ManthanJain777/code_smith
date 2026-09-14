@@ -1,0 +1,18 @@
+{
+  "folder_number": 99,
+  "folder_name": "folder_099_technical_specs_godrej",
+  "document_type_index": 10,
+  "document_type": "technical_specs",
+  "document_title": "Technical Specification Compliance Matrix & Datasheet",
+  "vendor_name": "Godrej Process Equipment",
+  "pan": "AADCG5678K",
+  "gstin": "27AADCG5678K1ZX",
+  "udyam_id": "UDYAM-MH-09-0043210",
+  "signatory": "Suresh Kumar",
+  "pdf_file": "technical_specs_godrej_doc.pdf",
+  "sha256_hash": "8c1e69b770023249a60825603518134430f639ff15ef7a688ae8b3fd39a87edf",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

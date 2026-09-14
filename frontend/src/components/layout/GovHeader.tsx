@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Globe, Bell, PhoneCall, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../context/AuthProvider';
-import { AshokaEmblem } from '../ui/AshokaEmblem';
+import { useLanguage } from '../../context/LanguageContext';
+import { GemStarLogo } from '../ui/GemStarLogo';
 
 interface GovHeaderProps {
   onToggleNotifications: () => void;
@@ -13,7 +14,7 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
   unreadNotificationCount
 }) => {
   const { user, login } = useAuth();
-  const [lang, setLang] = useState<'EN' | 'HI'>('EN');
+  const { lang, toggleLang, t } = useLanguage();
   const [currentTime, setCurrentTime] = useState<string>('');
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [isSwitchingRole, setIsSwitchingRole] = useState(false);
@@ -77,9 +78,9 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
           </div>
           <div className="flex items-center space-x-2 border-l border-slate-700 pl-3">
             <button
-              onClick={() => setLang(l => (l === 'EN' ? 'HI' : 'EN'))}
-              className="flex items-center space-x-1 hover:text-white transition-colors text-[11px] font-semibold bg-slate-800 px-2 py-0.5 rounded"
-              title="Toggle Language"
+              onClick={toggleLang}
+              className="flex items-center space-x-1 hover:text-white transition-colors text-[11px] font-semibold bg-slate-800 px-2 py-0.5 rounded cursor-pointer"
+              title="Toggle Language (English / हिन्दी)"
             >
               <Globe className="w-3 h-3 text-amber-400" />
               <span>{lang === 'EN' ? 'English (EN)' : 'हिन्दी (HI)'}</span>
@@ -89,7 +90,7 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
               className="hidden sm:flex items-center space-x-1 text-slate-400 hover:text-amber-300 transition-colors text-[11px]"
             >
               <PhoneCall className="w-3 h-3" />
-              <span>Toll-Free 1800-419-3436</span>
+              <span>{t('topnav.helpline')}</span>
             </a>
           </div>
         </div>
@@ -98,9 +99,9 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
       {/* 3. Main Brand & Identity Header */}
       <div className="px-4 sm:px-8 py-2.5 flex items-center justify-between">
         <div className="flex items-center space-x-3 sm:space-x-4">
-          {/* Official Lion Capital Emblem */}
+          {/* GeM Shield Logo */}
           <div className="relative flex-shrink-0 flex items-center justify-center">
-            <AshokaEmblem size={44} variant="navy" />
+            <GemStarLogo size={38} variant="navy" />
           </div>
 
           <div className="flex flex-col">

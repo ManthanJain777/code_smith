@@ -1,0 +1,18 @@
+{
+  "folder_number": 32,
+  "folder_name": "folder_032_iso_certification_bharat",
+  "document_type_index": 4,
+  "document_type": "iso_certification",
+  "document_title": "ISO Quality Management Certificate (ISO 9001:2015)",
+  "vendor_name": "Bharat Heavy Valves Ltd",
+  "pan": "AADCB5678C",
+  "gstin": "07AADCB5678C1ZQ",
+  "udyam_id": "UDYAM-DL-02-0054321",
+  "signatory": "Priya Patel",
+  "pdf_file": "iso_certification_bharat_doc.pdf",
+  "sha256_hash": "53cc9c0544e22b849ebe09aa672efa7bff073e3d91d5c1d248ca29512e5c6279",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

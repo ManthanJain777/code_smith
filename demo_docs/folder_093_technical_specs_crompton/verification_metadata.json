@@ -1,0 +1,18 @@
+{
+  "folder_number": 93,
+  "folder_name": "folder_093_technical_specs_crompton",
+  "document_type_index": 10,
+  "document_type": "technical_specs",
+  "document_title": "Technical Specification Compliance Matrix & Datasheet",
+  "vendor_name": "Crompton Flow Dynamics",
+  "pan": "AABCC9012D",
+  "gstin": "33AABCC9012D1ZR",
+  "udyam_id": "UDYAM-TN-03-0098765",
+  "signatory": "Rohit Verma",
+  "pdf_file": "technical_specs_crompton_doc.pdf",
+  "sha256_hash": "4a90ba1ee4e0cd1f19f89e2575db4b2ade0b8f5dffe6ffbeb5874267b01b485e",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

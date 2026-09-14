@@ -1,0 +1,18 @@
+{
+  "folder_number": 15,
+  "folder_name": "folder_015_pan_card_national",
+  "document_type_index": 2,
+  "document_type": "pan_card",
+  "document_title": "Permanent Account Number (PAN Card Record)",
+  "vendor_name": "National Water Engineering Corp",
+  "pan": "AAECN7890F",
+  "gstin": "09AAECN7890F1ZT",
+  "udyam_id": "UDYAM-UP-05-0043210",
+  "signatory": "Vikram Singh",
+  "pdf_file": "pan_card_national_doc.pdf",
+  "sha256_hash": "bb3394dcdfd2935e9a3b13ff467a23f40c800eae91e689115dc102afa506ebfa",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

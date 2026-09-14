@@ -1,0 +1,18 @@
+{
+  "folder_number": 13,
+  "folder_name": "folder_013_pan_card_crompton",
+  "document_type_index": 2,
+  "document_type": "pan_card",
+  "document_title": "Permanent Account Number (PAN Card Record)",
+  "vendor_name": "Crompton Flow Dynamics",
+  "pan": "AABCC9012D",
+  "gstin": "33AABCC9012D1ZR",
+  "udyam_id": "UDYAM-TN-03-0098765",
+  "signatory": "Rohit Verma",
+  "pdf_file": "pan_card_crompton_doc.pdf",
+  "sha256_hash": "8056688123d7e828b8f99d768a79e0e973b9dc9314326394e1a02d7a9aba1a10",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

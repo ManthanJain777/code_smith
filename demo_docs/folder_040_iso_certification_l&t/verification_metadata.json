@@ -1,0 +1,18 @@
+{
+  "folder_number": 40,
+  "folder_name": "folder_040_iso_certification_l&t",
+  "document_type_index": 4,
+  "document_type": "iso_certification",
+  "document_title": "ISO Quality Management Certificate (ISO 9001:2015)",
+  "vendor_name": "L&T EPC Heavy Engineering",
+  "pan": "AABCL9012L",
+  "gstin": "27AABCL9012L1ZY",
+  "udyam_id": "UDYAM-MH-10-0021098",
+  "signatory": "Neha Joshi",
+  "pdf_file": "iso_certification_l&t_doc.pdf",
+  "sha256_hash": "2b5394ef16ea39999f6623c29912d4ecb5033e4de45bc62d1933a2caa4ce622c",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

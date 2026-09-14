@@ -1,0 +1,18 @@
+{
+  "folder_number": 62,
+  "folder_name": "folder_062_ca_turnover_bharat",
+  "document_type_index": 7,
+  "document_type": "ca_turnover",
+  "document_title": "Chartered Accountant Turnover Certificate (UDIN Verified)",
+  "vendor_name": "Bharat Heavy Valves Ltd",
+  "pan": "AADCB5678C",
+  "gstin": "07AADCB5678C1ZQ",
+  "udyam_id": "UDYAM-DL-02-0054321",
+  "signatory": "Priya Patel",
+  "pdf_file": "ca_turnover_bharat_doc.pdf",
+  "sha256_hash": "b447161d380dbe835af7be724bd6fb624cea15eca80b8161c1ef594047c226da",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

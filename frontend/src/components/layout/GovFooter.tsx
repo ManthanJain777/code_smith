@@ -1,6 +1,6 @@
 import React from 'react';
 import { ShieldCheck, ExternalLink, HelpCircle, PhoneCall, Mail, Building2 } from 'lucide-react';
-import { AshokaEmblem } from '../ui/AshokaEmblem';
+import { GemStarLogo } from '../ui/GemStarLogo';
 import { formatGovDate } from '../../utils/date';
 
 export const GovFooter: React.FC = () => {
@@ -20,7 +20,7 @@ export const GovFooter: React.FC = () => {
           {/* Column 1: Ministry & Platform */}
           <div className="space-y-3 md:col-span-1">
             <div className="flex items-start space-x-3 text-white font-bold text-sm">
-              <AshokaEmblem size={44} variant="white" />
+              <GemStarLogo size={36} variant="white" />
               <div>
                 <div className="text-white font-bold text-sm leading-tight">GeM Bid Compliance Platform</div>
                 <div className="text-[10px] text-amber-400 font-semibold tracking-wide mt-0.5">Government of India</div>

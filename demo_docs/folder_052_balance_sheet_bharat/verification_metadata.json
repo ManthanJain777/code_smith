@@ -1,0 +1,18 @@
+{
+  "folder_number": 52,
+  "folder_name": "folder_052_balance_sheet_bharat",
+  "document_type_index": 6,
+  "document_type": "balance_sheet",
+  "document_title": "Audited Annual Balance Sheet & P&L Statement",
+  "vendor_name": "Bharat Heavy Valves Ltd",
+  "pan": "AADCB5678C",
+  "gstin": "07AADCB5678C1ZQ",
+  "udyam_id": "UDYAM-DL-02-0054321",
+  "signatory": "Priya Patel",
+  "pdf_file": "balance_sheet_bharat_doc.pdf",
+  "sha256_hash": "aa2ebf68e0efbfc5ec33529699785fd3b3e4cea92996386ecd66df24b523da70",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

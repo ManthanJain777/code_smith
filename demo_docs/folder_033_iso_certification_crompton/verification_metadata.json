@@ -1,0 +1,18 @@
+{
+  "folder_number": 33,
+  "folder_name": "folder_033_iso_certification_crompton",
+  "document_type_index": 4,
+  "document_type": "iso_certification",
+  "document_title": "ISO Quality Management Certificate (ISO 9001:2015)",
+  "vendor_name": "Crompton Flow Dynamics",
+  "pan": "AABCC9012D",
+  "gstin": "33AABCC9012D1ZR",
+  "udyam_id": "UDYAM-TN-03-0098765",
+  "signatory": "Rohit Verma",
+  "pdf_file": "iso_certification_crompton_doc.pdf",
+  "sha256_hash": "2a169462b7daedfee61bb00b7ea52eb188ef2ebc3543ed69234b88eee7a9d6f4",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

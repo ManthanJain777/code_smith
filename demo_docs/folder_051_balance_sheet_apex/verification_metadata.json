@@ -1,0 +1,18 @@
+{
+  "folder_number": 51,
+  "folder_name": "folder_051_balance_sheet_apex",
+  "document_type_index": 6,
+  "document_type": "balance_sheet",
+  "document_title": "Audited Annual Balance Sheet & P&L Statement",
+  "vendor_name": "Apex Pumps & Motors Pvt Ltd",
+  "pan": "AAACA1234F",
+  "gstin": "07AAAAA0000A1Z5",
+  "udyam_id": "UDYAM-MH-01-0012345",
+  "signatory": "Aarav Sharma",
+  "pdf_file": "balance_sheet_apex_doc.pdf",
+  "sha256_hash": "9cef30ec41f2aae92fcfe0e795958b0a33862c255c8f96ccc5b247d27d765f3a",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

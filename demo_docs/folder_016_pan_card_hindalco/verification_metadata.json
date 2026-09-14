@@ -1,0 +1,18 @@
+{
+  "folder_number": 16,
+  "folder_name": "folder_016_pan_card_hindalco",
+  "document_type_index": 2,
+  "document_type": "pan_card",
+  "document_title": "Permanent Account Number (PAN Card Record)",
+  "vendor_name": "Hindalco Pumps Division",
+  "pan": "AABCH2345G",
+  "gstin": "06AABCH2345G1ZU",
+  "udyam_id": "UDYAM-HR-06-0021098",
+  "signatory": "Meera Nair",
+  "pdf_file": "pan_card_hindalco_doc.pdf",
+  "sha256_hash": "f0f99e2d4550a38b8c0916876f064c7a7c224eea117e37d2b712468d565067f3",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

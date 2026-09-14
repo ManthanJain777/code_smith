@@ -8,7 +8,7 @@ import {
 import { useAuth } from '../context/AuthProvider';
 import { AUTH_TOKEN_KEY } from '../constants/auth';
 import { BlockchainProofBadge } from '../components/ui/BlockchainProofBadge';
-import { AshokaEmblem } from '../components/ui/AshokaEmblem';
+import { GemStarLogo } from '../components/ui/GemStarLogo';
 
 interface FileUploadState {
   file: File;
@@ -845,7 +845,7 @@ export const BidUploadPage: React.FC = () => {
             {/* Certificate Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
               <div className="flex items-center gap-4">
-                <AshokaEmblem size={50} variant="gold" />
+                <GemStarLogo size={44} variant="color" />
                 <div>
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Government of India • Ministry of Commerce & Industry</span>
                   <h2 className="text-xl font-black text-slate-900">GeM Statutory Bid Submission Acknowledgment</h2>

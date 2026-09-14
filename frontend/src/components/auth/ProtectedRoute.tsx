@@ -17,7 +17,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredPermission,
   feature
 }) => {
-  const { isAuthenticated, isLoading, user, hasPermission, switchRole } = useAuth();
+  const { isAuthenticated, isLoading, user, hasPermission } = useAuth();
   const { hasAccess } = usePermissions();
   const location = useLocation();
 
@@ -59,36 +59,23 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           You are currently signed in as <strong className="text-amber-800 font-mono bg-amber-50 px-2 py-0.5 rounded border border-amber-200">{user.role}</strong> ({user.fullName}). Under statutory public procurement rules, access to <span className="font-mono font-bold text-slate-900">{feature || location.pathname}</span> requires specialized committee or officer accreditation.
         </p>
 
-        {/* 1-Click Role Switcher for Demo Evaluation */}
-        <div className="mt-6 p-5 bg-gradient-to-r from-slate-900 to-indigo-950 rounded-2xl text-white w-full shadow-lg border border-indigo-900/50">
-          <div className="text-xs font-bold uppercase tracking-wider text-amber-400 mb-2 flex items-center justify-center gap-1.5">
-            <span>⚡ Instant Demo Role Switcher</span>
-          </div>
-          <p className="text-xs text-slate-300 mb-4">
-            Switch your role with 1-click to immediately access and evaluate this feature:
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {[
-              { role: 'PROCUREMENT_OFFICER', label: 'Procurement Officer' },
-              { role: 'COMPLIANCE_REVIEWER', label: 'Compliance Reviewer' },
-              { role: 'SYSTEM_ADMIN', label: 'System Admin' },
-              { role: 'AUDITOR', label: 'Auditor & Vigilance' },
-              { role: 'BIDDER_VENDOR', label: 'Bidder / Vendor' },
-            ].map(r => (
-              <button
-                key={r.role}
-                type="button"
-                onClick={() => switchRole(r.role)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                  user.role === r.role
-                    ? 'bg-amber-500 text-slate-950 ring-2 ring-white'
-                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
-                }`}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
+        {/* Action Options */}
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs">
+          <a
+            href="/dashboard"
+            className="inline-flex items-center gap-1.5 px-4 py-2 font-bold text-white bg-[#1B365D] rounded-xl hover:bg-[#152843] transition shadow-sm"
+          >
+            <span>Return to Dashboard</span>
+          </a>
+          <button
+            type="button"
+            onClick={() => {
+              window.location.href = '/login';
+            }}
+            className="inline-flex items-center gap-1.5 px-4 py-2 font-bold text-slate-700 bg-white hover:bg-slate-50 rounded-xl transition border border-slate-300 shadow-sm cursor-pointer"
+          >
+            <span>Sign In with Authorized Account</span>
+          </button>
         </div>
 
         {/* Quick Navigation Links */}

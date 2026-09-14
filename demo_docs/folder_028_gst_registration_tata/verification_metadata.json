@@ -1,0 +1,18 @@
+{
+  "folder_number": 28,
+  "folder_name": "folder_028_gst_registration_tata",
+  "document_type_index": 3,
+  "document_type": "gst_registration",
+  "document_title": "GST Registration Certificate (Form GST REG-06)",
+  "vendor_name": "Tata Industrial Components",
+  "pan": "AACT1234J",
+  "gstin": "27AACT1234J1ZW",
+  "udyam_id": "UDYAM-MH-08-0065432",
+  "signatory": "Kavita Deshmukh",
+  "pdf_file": "gst_registration_tata_doc.pdf",
+  "sha256_hash": "c7f6db07591d08ce829829a91d8866eeda087a6788b01a9b645e01bf410fd571",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

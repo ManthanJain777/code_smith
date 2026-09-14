@@ -1,0 +1,18 @@
+{
+  "folder_number": 24,
+  "folder_name": "folder_024_gst_registration_technoserve",
+  "document_type_index": 3,
+  "document_type": "gst_registration",
+  "document_title": "GST Registration Certificate (Form GST REG-06)",
+  "vendor_name": "TechnoServe Industrial Solutions",
+  "pan": "AAFCT3456E",
+  "gstin": "29AAFCT3456E1ZS",
+  "udyam_id": "UDYAM-KA-04-0076543",
+  "signatory": "Ananya Gupta",
+  "pdf_file": "gst_registration_technoserve_doc.pdf",
+  "sha256_hash": "4efc24d568e326ea0d563fd352755402a5e986b1ac202a7446fb6ba8a6f0ede7",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

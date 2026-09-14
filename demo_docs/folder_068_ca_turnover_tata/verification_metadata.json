@@ -1,0 +1,18 @@
+{
+  "folder_number": 68,
+  "folder_name": "folder_068_ca_turnover_tata",
+  "document_type_index": 7,
+  "document_type": "ca_turnover",
+  "document_title": "Chartered Accountant Turnover Certificate (UDIN Verified)",
+  "vendor_name": "Tata Industrial Components",
+  "pan": "AACT1234J",
+  "gstin": "27AACT1234J1ZW",
+  "udyam_id": "UDYAM-MH-08-0065432",
+  "signatory": "Kavita Deshmukh",
+  "pdf_file": "ca_turnover_tata_doc.pdf",
+  "sha256_hash": "5f935a37b4d9b64f951f7b1aa07c5563d4c274f4718ff8c3bdc377de54bffa75",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

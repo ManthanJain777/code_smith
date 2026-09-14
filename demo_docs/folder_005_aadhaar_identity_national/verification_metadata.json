@@ -1,0 +1,18 @@
+{
+  "folder_number": 5,
+  "folder_name": "folder_005_aadhaar_identity_national",
+  "document_type_index": 1,
+  "document_type": "aadhaar_identity",
+  "document_title": "Aadhaar Identity Verification (UIDAI e-KYC)",
+  "vendor_name": "National Water Engineering Corp",
+  "pan": "AAECN7890F",
+  "gstin": "09AAECN7890F1ZT",
+  "udyam_id": "UDYAM-UP-05-0043210",
+  "signatory": "Vikram Singh",
+  "pdf_file": "aadhaar_identity_national_doc.pdf",
+  "sha256_hash": "47e2c7792cde29fcf3d6279e5d284a1a28167a50d495978a4a668b943b357357",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

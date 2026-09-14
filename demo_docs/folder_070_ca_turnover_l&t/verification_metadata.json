@@ -1,0 +1,18 @@
+{
+  "folder_number": 70,
+  "folder_name": "folder_070_ca_turnover_l&t",
+  "document_type_index": 7,
+  "document_type": "ca_turnover",
+  "document_title": "Chartered Accountant Turnover Certificate (UDIN Verified)",
+  "vendor_name": "L&T EPC Heavy Engineering",
+  "pan": "AABCL9012L",
+  "gstin": "27AABCL9012L1ZY",
+  "udyam_id": "UDYAM-MH-10-0021098",
+  "signatory": "Neha Joshi",
+  "pdf_file": "ca_turnover_l&t_doc.pdf",
+  "sha256_hash": "6d6e49d519150177adee06c420440b56452c87f7fdc87d61b52c1b04f488b3c7",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

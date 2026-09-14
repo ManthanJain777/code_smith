@@ -1,0 +1,18 @@
+{
+  "folder_number": 55,
+  "folder_name": "folder_055_balance_sheet_national",
+  "document_type_index": 6,
+  "document_type": "balance_sheet",
+  "document_title": "Audited Annual Balance Sheet & P&L Statement",
+  "vendor_name": "National Water Engineering Corp",
+  "pan": "AAECN7890F",
+  "gstin": "09AAECN7890F1ZT",
+  "udyam_id": "UDYAM-UP-05-0043210",
+  "signatory": "Vikram Singh",
+  "pdf_file": "balance_sheet_national_doc.pdf",
+  "sha256_hash": "8fc08277922cebaaa97f84a4549c552636d7d6fb73e5ade0fe9b14c439011c60",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

@@ -1,0 +1,18 @@
+{
+  "folder_number": 3,
+  "folder_name": "folder_003_aadhaar_identity_crompton",
+  "document_type_index": 1,
+  "document_type": "aadhaar_identity",
+  "document_title": "Aadhaar Identity Verification (UIDAI e-KYC)",
+  "vendor_name": "Crompton Flow Dynamics",
+  "pan": "AABCC9012D",
+  "gstin": "33AABCC9012D1ZR",
+  "udyam_id": "UDYAM-TN-03-0098765",
+  "signatory": "Rohit Verma",
+  "pdf_file": "aadhaar_identity_crompton_doc.pdf",
+  "sha256_hash": "e814d44014a9a2baed6fa82228755fc4999a2fdebc93b55422642bf3670740af",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

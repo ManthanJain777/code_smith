@@ -1,0 +1,18 @@
+{
+  "folder_number": 20,
+  "folder_name": "folder_020_pan_card_l&t",
+  "document_type_index": 2,
+  "document_type": "pan_card",
+  "document_title": "Permanent Account Number (PAN Card Record)",
+  "vendor_name": "L&T EPC Heavy Engineering",
+  "pan": "AABCL9012L",
+  "gstin": "27AABCL9012L1ZY",
+  "udyam_id": "UDYAM-MH-10-0021098",
+  "signatory": "Neha Joshi",
+  "pdf_file": "pan_card_l&t_doc.pdf",
+  "sha256_hash": "a3e50f4087bb483d7384d3b69d46aebf56698d2cb3b4b4234b2c7dd90d657e1a",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

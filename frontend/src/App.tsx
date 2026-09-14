@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthProvider';
 import { PermissionsProvider } from './context/PermissionsContext';
 import { ToastProvider } from './context/ToastContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AppShell } from './components/layout/AppShell';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
@@ -74,10 +75,11 @@ const LoginRoute: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <PermissionsProvider>
-          <ToastProvider>
-            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <LanguageProvider>
+        <AuthProvider>
+          <PermissionsProvider>
+            <ToastProvider>
+              <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <Routes>
                 {/* ============================================================ */}
                 {/* PUBLIC ROUTES                                                */}
@@ -147,6 +149,7 @@ export const App: React.FC = () => {
           </ToastProvider>
         </PermissionsProvider>
       </AuthProvider>
+      </LanguageProvider>
     </ErrorBoundary>
   );
 };

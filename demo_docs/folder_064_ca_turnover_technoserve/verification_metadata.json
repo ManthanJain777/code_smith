@@ -1,0 +1,18 @@
+{
+  "folder_number": 64,
+  "folder_name": "folder_064_ca_turnover_technoserve",
+  "document_type_index": 7,
+  "document_type": "ca_turnover",
+  "document_title": "Chartered Accountant Turnover Certificate (UDIN Verified)",
+  "vendor_name": "TechnoServe Industrial Solutions",
+  "pan": "AAFCT3456E",
+  "gstin": "29AAFCT3456E1ZS",
+  "udyam_id": "UDYAM-KA-04-0076543",
+  "signatory": "Ananya Gupta",
+  "pdf_file": "ca_turnover_technoserve_doc.pdf",
+  "sha256_hash": "05e1c9f07fb743bd2872791ec72285513e93b69e58ffd4f02e333a24813d8821",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

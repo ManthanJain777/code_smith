@@ -1,0 +1,18 @@
+{
+  "folder_number": 21,
+  "folder_name": "folder_021_gst_registration_apex",
+  "document_type_index": 3,
+  "document_type": "gst_registration",
+  "document_title": "GST Registration Certificate (Form GST REG-06)",
+  "vendor_name": "Apex Pumps & Motors Pvt Ltd",
+  "pan": "AAACA1234F",
+  "gstin": "07AAAAA0000A1Z5",
+  "udyam_id": "UDYAM-MH-01-0012345",
+  "signatory": "Aarav Sharma",
+  "pdf_file": "gst_registration_apex_doc.pdf",
+  "sha256_hash": "1b4d30b6b639360cc37917096058a9f3c85cd4f752293875e7a32c27db5c5c6a",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

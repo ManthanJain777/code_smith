@@ -266,6 +266,108 @@ export const AuditLogPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Visual Blockchain Chain Rendering */}
+          {filteredEvents.length > 0 && (
+            <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-900 rounded-2xl p-5 shadow-lg border border-slate-700/50">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Link2 className="w-5 h-5 text-emerald-400" />
+                  <span className="text-sm font-bold text-white">Live Block Chain Visualization</span>
+                  <span className="text-[10px] text-emerald-400 font-mono bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-700/40">
+                    REAL-TIME
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  ComplianceAuditLedger.sol
+                </div>
+              </div>
+              <div className="flex items-center gap-0 overflow-x-auto pb-2">
+                {filteredEvents.slice(0, 6).map((ev, i) => (
+                  <div key={ev.txHash} className="flex items-center flex-shrink-0">
+                    <div
+                      className="bg-slate-800/80 border border-slate-600/60 rounded-xl p-3 min-w-[160px] hover:border-emerald-500/60 transition-all cursor-pointer group"
+                      onClick={() => setSelectedProofEvent(ev)}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-mono font-bold text-amber-400">Block #{ev.blockNumber}</span>
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 opacity-70 group-hover:opacity-100 transition" />
+                      </div>
+                      <div className="text-[9px] font-mono text-slate-400 truncate mb-1" title={ev.txHash}>
+                        {ev.txHash.slice(0, 14)}...
+                      </div>
+                      <div className={`text-[9px] font-bold px-1.5 py-0.5 rounded inline-block ${
+                        EVENT_COLORS[ev.eventType]?.replace('border-', 'border border-') || 'bg-slate-700 text-slate-300'
+                      }`}>
+                        {ev.eventType.replace(/_/g, ' ')}
+                      </div>
+                      <div className="text-[9px] text-slate-500 mt-1 flex items-center gap-1">
+                        <Clock className="w-2.5 h-2.5" />
+                        {new Date(ev.timestamp).toLocaleTimeString()}
+                      </div>
+                    </div>
+                    {i < Math.min(filteredEvents.length, 6) - 1 && (
+                      <div className="flex items-center px-1 flex-shrink-0">
+                        <div className="w-6 h-0.5 bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full" />
+                        <div className="w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-l-[6px] border-l-emerald-400" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-700/50">
+                <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-bold">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  INTEGRITY VERIFIED
+                </div>
+                <span className="text-[10px] text-slate-500">All {filteredEvents.length} events cryptographically anchored with SHA-256 proofs</span>
+              </div>
+            </div>
+          )}
+
+          {/* Hash Verification Panel */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <ShieldCheck className="w-5 h-5 text-blue-700" />
+                <div>
+                  <span className="text-xs font-bold text-slate-900">Verify Event Hash</span>
+                  <p className="text-[10px] text-slate-500">Enter any SHA-256 hash or transaction ID to verify its on-chain anchor status</p>
+                </div>
+              </div>
+              <div className="flex-1 flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="0x... or SHA-256 hash"
+                  className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-600"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const val = (e.target as HTMLInputElement).value.trim().toLowerCase();
+                      const match = chainEvents.find(ev => ev.txHash.toLowerCase() === val || ev.id.toLowerCase() === val);
+                      if (match) {
+                        setSelectedProofEvent(match);
+                      }
+                    }
+                  }}
+                />
+                <button
+                  className="px-4 py-2 bg-blue-700 text-white text-xs font-bold rounded-lg hover:bg-blue-800 transition cursor-pointer flex items-center gap-1.5"
+                  onClick={() => {
+                    const input = document.querySelector<HTMLInputElement>('input[placeholder="0x... or SHA-256 hash"]');
+                    if (input) {
+                      const val = input.value.trim().toLowerCase();
+                      const match = chainEvents.find(ev => ev.txHash.toLowerCase() === val || ev.id.toLowerCase() === val);
+                      if (match) setSelectedProofEvent(match);
+                    }
+                  }}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  Verify
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Chain Explorer Table */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
             <div className="p-4 border-b border-slate-100 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-2">

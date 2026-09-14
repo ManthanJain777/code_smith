@@ -1,0 +1,18 @@
+{
+  "folder_number": 83,
+  "folder_name": "folder_083_experience_cert_crompton",
+  "document_type_index": 9,
+  "document_type": "experience_cert",
+  "document_title": "Past Performance & Work Order Completion Certificate",
+  "vendor_name": "Crompton Flow Dynamics",
+  "pan": "AABCC9012D",
+  "gstin": "33AABCC9012D1ZR",
+  "udyam_id": "UDYAM-TN-03-0098765",
+  "signatory": "Rohit Verma",
+  "pdf_file": "experience_cert_crompton_doc.pdf",
+  "sha256_hash": "88a5ef8ed3ef567e880720297c9c2072840ff4ef096eb90906686c330be6955e",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

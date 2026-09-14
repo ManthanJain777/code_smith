@@ -1,0 +1,18 @@
+{
+  "folder_number": 67,
+  "folder_name": "folder_067_ca_turnover_sundaram",
+  "document_type_index": 7,
+  "document_type": "ca_turnover",
+  "document_title": "Chartered Accountant Turnover Certificate (UDIN Verified)",
+  "vendor_name": "Sundaram Precision Engg",
+  "pan": "AAICS6789H",
+  "gstin": "34AAICS6789H1ZV",
+  "udyam_id": "UDYAM-KL-07-0087654",
+  "signatory": "Arjun Rao",
+  "pdf_file": "ca_turnover_sundaram_doc.pdf",
+  "sha256_hash": "714aa3475ce6c8dc1627e6890c777a54508be948750fe28c6a9a0f34eb597cd1",
+  "compliance_status": "COMPLIANT",
+  "blockchain_network": "GeM Private Ethereum / Proof-of-Authority",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verified_at": "2026-09-14T12:00:00Z"
+}

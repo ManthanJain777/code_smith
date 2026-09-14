@@ -1,0 +1,31 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="redGrad" x1="32" y1="4" x2="32" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FF334B" />
+      <stop offset="100%" stop-color="#C81E32" />
+    </linearGradient>
+    <linearGradient id="blueGrad" x1="32" y1="16" x2="32" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="32" y1="18" x2="32" y2="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#000000" flood-opacity="0.25" />
+    </filter>
+  </defs>
+  <circle cx="32" cy="32" r="30" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="3 3" opacity="0.6" />
+  <g filter="url(#shadow)">
+    <!-- Downward Triangle (Blue) -->
+    <polygon points="7.8,18.5 56.2,18.5 32,60.5" fill="url(#blueGrad)" stroke="#1E40AF" stroke-width="1.5" stroke-linejoin="round" />
+    <!-- Upward Triangle (Red) -->
+    <polygon points="32,3.5 56.2,45.5 7.8,45.5" fill="url(#redGrad)" stroke="#991B1B" stroke-width="1.5" stroke-linejoin="round" />
+    <!-- Overlap Hexagon (Green) -->
+    <polygon points="24,18.5 40,18.5 48.1,32 40,45.5 24,45.5 15.9,32" fill="url(#greenGrad)" stroke="#047857" stroke-width="1.2" stroke-linejoin="round" />
+    <!-- Center Core -->
+    <circle cx="32" cy="32" r="5" fill="#FFFFFF" opacity="0.9" />
+    <circle cx="32" cy="32" r="2.8" fill="#10B981" />
+  </g>
+</svg>
