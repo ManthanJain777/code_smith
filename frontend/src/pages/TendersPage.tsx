@@ -66,7 +66,10 @@ export const TendersPage: React.FC = () => {
         selectedCategory === 'ALL' || t.category === selectedCategory;
 
       const matchesStatus =
-        selectedStatus === 'ALL' || t.status === selectedStatus;
+        selectedStatus === 'ALL' ||
+        (selectedStatus === 'ACCEPTING_BIDS'
+          ? (t.status === 'OPEN' || t.status === 'IN_EVALUATION')
+          : t.status === selectedStatus);
 
       return matchesSearch && matchesCategory && matchesStatus;
     });
@@ -161,9 +164,10 @@ export const TendersPage: React.FC = () => {
           {/* Status Tabs */}
           <div className="flex items-center gap-1.5 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
             {[
-              { label: 'All Bids', value: 'ALL' },
-              { label: 'Accepting Bids', value: 'IN_EVALUATION' },
-              { label: 'Open', value: 'OPEN' },
+              { label: 'All Tenders', value: 'ALL' },
+              { label: 'Accepting Bids', value: 'ACCEPTING_BIDS' },
+              { label: 'Awarded Contracts', value: 'AWARDED' },
+              { label: 'Under Evaluation', value: 'IN_EVALUATION' },
               { label: 'Closed', value: 'CLOSED' },
             ].map(tab => (
               <button
@@ -248,8 +252,14 @@ export const TendersPage: React.FC = () => {
                     <span className="text-xs font-mono bg-blue-500/20 text-blue-300 border border-blue-400/30 px-2.5 py-0.5 rounded font-semibold">
                       {tender.tenderNumber}
                     </span>
-                    <span className="text-xs font-medium text-emerald-300 bg-emerald-950/80 border border-emerald-700/50 px-2.5 py-0.5 rounded-full">
-                      {tender.status === 'IN_EVALUATION' ? 'ACCEPTING BIDS / EVALUATION' : tender.status}
+                    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
+                      tender.status === 'AWARDED'
+                        ? 'text-amber-300 bg-amber-950/80 border-amber-600/50'
+                        : tender.status === 'IN_EVALUATION'
+                        ? 'text-emerald-300 bg-emerald-950/80 border-emerald-700/50'
+                        : 'text-blue-300 bg-blue-950/80 border-blue-700/50'
+                    }`}>
+                      {tender.status === 'AWARDED' ? '🏆 CONTRACT AWARDED' : tender.status === 'IN_EVALUATION' ? 'ACCEPTING BIDS / EVALUATION' : tender.status}
                     </span>
                     {tender.category && (
                       <span className="text-xs text-slate-300 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
@@ -268,6 +278,12 @@ export const TendersPage: React.FC = () => {
                       <strong>Closing:</strong> 30-Sep-2026, 17:00 IST
                     </span>
                   </div>
+                  {tender.status === 'AWARDED' && (
+                    <div className="mt-2 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg text-xs text-amber-300 flex items-center gap-2">
+                      <Award className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span><strong>Awarded L1 Vendor:</strong> GlobalFlow Engineers / Apex Pumps (₹4.85 Cr) • Anchored on EVM Block #1042</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Right side: Value and Key Action */}
@@ -284,7 +300,7 @@ export const TendersPage: React.FC = () => {
                   <div className="flex flex-wrap items-center gap-2">
                     {/* Direct Participation for Bidders */}
                     <Can role={['BIDDER_VENDOR', 'BIDDER', 'SYSTEM_ADMIN']}>
-                      {tender.status !== 'CLOSED' ? (
+                      {tender.status === 'OPEN' || tender.status === 'IN_EVALUATION' ? (
                         <Link
                           to={`/bids/upload?tenderId=${tender.id}`}
                           className="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-md"
@@ -292,6 +308,15 @@ export const TendersPage: React.FC = () => {
                         >
                           <UploadCloud className="w-3.5 h-3.5" />
                           <span>Participate & Submit Bid</span>
+                        </Link>
+                      ) : tender.status === 'AWARDED' ? (
+                        <Link
+                          to={`/tenders/${tender.id}/results`}
+                          className="px-3.5 py-2 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-md"
+                          title="View contract awardee, score rank list, and blockchain proof"
+                        >
+                          <Award className="w-3.5 h-3.5" />
+                          <span>View Award Standings & Proof</span>
                         </Link>
                       ) : (
                         <span className="px-3 py-1.5 bg-slate-800 text-slate-400 text-xs font-semibold rounded border border-slate-700">

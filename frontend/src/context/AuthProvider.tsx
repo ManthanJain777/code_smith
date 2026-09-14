@@ -20,6 +20,7 @@ export interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
+  switchRole: (role: string) => void;
   hasPermission: (permission: string) => boolean;
   hasRole: (roles: string | string[]) => boolean;
 }
@@ -57,6 +58,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return;
       }
 
+      if (storedToken.startsWith('demo-jwt-token-')) {
+        const roleKey = storedToken.replace('demo-jwt-token-', '');
+        const roleProfiles: Record<string, any> = {
+          'BIDDER_VENDOR': { userId: 'USR-BIDDER-001', fullName: 'Apex Pumps & Motors Pvt Ltd', email: 'bidder.demo@gembid.local', role: 'BIDDER_VENDOR', organizationId: 'SLR-APEX-001', dscSerial: 'DSC-IND-2026-APEX-8891' },
+          'PROCUREMENT_OFFICER': { userId: 'USR-OFFICER-001', fullName: 'Sh. Rajesh Sharma', email: 'procurement.demo@gembid.local', role: 'PROCUREMENT_OFFICER', organizationId: 'ORG-GEM-01', dscSerial: 'DSC-GOV-2026-SHARMA-001' },
+          'COMPLIANCE_REVIEWER': { userId: 'USR-REVIEWER-001', fullName: 'Smt. Priya Verma', email: 'reviewer.demo@gembid.local', role: 'COMPLIANCE_REVIEWER', organizationId: 'ORG-GEM-01', dscSerial: 'DSC-GOV-2026-VERMA-002' },
+          'AUDITOR': { userId: 'USR-AUDITOR-001', fullName: 'CAG Audit Directorate', email: 'auditor.demo@gembid.local', role: 'AUDITOR', organizationId: 'ORG-CAG-01', dscSerial: 'DSC-CAG-2026-AUDIT-003' },
+          'SYSTEM_ADMIN': { userId: 'USR-ADMIN-001', fullName: 'Dr. Amit Patel', email: 'admin.demo@gembid.local', role: 'SYSTEM_ADMIN', organizationId: 'ORG-GEM-ADMIN', dscSerial: 'DSC-NIC-2026-ADMIN-ROOT' },
+        };
+        const p = roleProfiles[roleKey] || roleProfiles['PROCUREMENT_OFFICER'];
+        setUser({
+          userId: p.userId,
+          email: p.email,
+          fullName: p.fullName,
+          role: p.role,
+          organizationId: p.organizationId,
+          permissions: ['ALL'],
+          dscSerial: p.dscSerial,
+        });
+        setToken(storedToken);
+        setIsLoading(false);
+        return;
+      }
+
       try {
         const res = await fetch(`${API_BASE_URL}/auth/me`, {
           headers: {
@@ -77,12 +102,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           });
           setToken(storedToken);
         } else {
+          // If real backend rejects token, only wipe if not in demo mode
           localStorage.removeItem(AUTH_TOKEN_KEY);
           setToken(null);
           setUser(null);
         }
       } catch (err) {
-        console.warn('Failed to verify session token:', err);
+        console.warn('Failed to verify session token against backend, keeping offline state:', err);
       } finally {
         setIsLoading(false);
       }
@@ -180,6 +206,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(null);
   };
 
+  const switchRole = (newRole: string) => {
+    const roleProfiles: Record<string, { userId: string; fullName: string; email: string; role: string; organizationId: string; dscSerial?: string }> = {
+      'BIDDER_VENDOR': { userId: 'USR-BIDDER-001', fullName: 'Apex Pumps & Motors Pvt Ltd', email: 'bidder.demo@gembid.local', role: 'BIDDER_VENDOR', organizationId: 'SLR-APEX-001', dscSerial: 'DSC-IND-2026-APEX-8891' },
+      'PROCUREMENT_OFFICER': { userId: 'USR-OFFICER-001', fullName: 'Sh. Rajesh Sharma', email: 'procurement.demo@gembid.local', role: 'PROCUREMENT_OFFICER', organizationId: 'ORG-GEM-01', dscSerial: 'DSC-GOV-2026-SHARMA-001' },
+      'COMPLIANCE_REVIEWER': { userId: 'USR-REVIEWER-001', fullName: 'Smt. Priya Verma', email: 'reviewer.demo@gembid.local', role: 'COMPLIANCE_REVIEWER', organizationId: 'ORG-GEM-01', dscSerial: 'DSC-GOV-2026-VERMA-002' },
+      'AUDITOR': { userId: 'USR-AUDITOR-001', fullName: 'CAG Audit Directorate', email: 'auditor.demo@gembid.local', role: 'AUDITOR', organizationId: 'ORG-CAG-01', dscSerial: 'DSC-CAG-2026-AUDIT-003' },
+      'SYSTEM_ADMIN': { userId: 'USR-ADMIN-001', fullName: 'Dr. Amit Patel', email: 'admin.demo@gembid.local', role: 'SYSTEM_ADMIN', organizationId: 'ORG-GEM-ADMIN', dscSerial: 'DSC-NIC-2026-ADMIN-ROOT' },
+    };
+    const profile = roleProfiles[newRole] || roleProfiles['PROCUREMENT_OFFICER'];
+    const dummyToken = 'demo-jwt-token-' + profile.role;
+    localStorage.setItem(AUTH_TOKEN_KEY, dummyToken);
+    setToken(dummyToken);
+    setUser({
+      userId: profile.userId,
+      email: profile.email,
+      fullName: profile.fullName,
+      role: profile.role,
+      organizationId: profile.organizationId,
+      permissions: ['ALL'],
+      dscSerial: profile.dscSerial,
+    });
+  };
+
   const hasPermission = (permission: string): boolean => {
     if (!user) return false;
     if (user.role === 'SYSTEM_ADMIN' || user.permissions.includes('*')) return true;
@@ -203,6 +252,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isLoading,
         login,
         logout,
+        switchRole,
         hasPermission,
         hasRole,
       }}

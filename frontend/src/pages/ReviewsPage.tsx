@@ -18,10 +18,58 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
 export const ReviewsPage: React.FC = () => {
   const { user, token } = useAuth();
   const role = user?.role || 'PROCUREMENT_OFFICER';
+  const isVendor = role === 'BIDDER_VENDOR' || role === 'BIDDER';
   const isAuditor = role === 'AUDITOR' || role === 'VIEWER';
   const isReviewer = role === 'COMPLIANCE_REVIEWER';
   const isAdmin = role === 'SYSTEM_ADMIN';
   const isOfficer = role === 'PROCUREMENT_OFFICER';
+
+  // Vendor Grievance & Clarifications State (GFR 2017 Rule 173(iv))
+  const [vendorQueries, setVendorQueries] = useState([
+    {
+      id: 'CLR-2026-001',
+      tenderNumber: 'GEM/2026/B/90125',
+      tenderTitle: 'Supply & Installation of High-Efficiency Industrial Water Pumps',
+      clauseCode: 'REQ-001',
+      clauseName: 'Annual Financial Turnover (>= ₹100 Cr)',
+      committeeQuery: 'Audited balance sheet FY24 reflects turnover of ₹118.40 Cr, but CA net worth certificate is awaiting UDIN validation. Please submit UDIN generated CA certificate.',
+      status: 'AWAITING_VENDOR_REPRESENTATION',
+      deadline: '16-Sep-2026, 17:00 IST',
+      statutoryRule: 'GFR Rule 173(iv)',
+      submittedReply: '',
+      blockchainProof: '',
+    },
+    {
+      id: 'CLR-2026-002',
+      tenderNumber: 'GEM/2026/B/90125',
+      tenderTitle: 'Supply & Installation of High-Efficiency Industrial Water Pumps',
+      clauseCode: 'REQ-003',
+      clauseName: 'Pump Operational Efficiency (>= 85%)',
+      committeeQuery: 'Datasheet specifies 86.2% efficiency under ISO 9906 Grade 2. Clarify if test bed certification is ISO 9906 Grade 1.',
+      status: 'REPRESENTATION_SUBMITTED',
+      deadline: '15-Sep-2026, 12:00 IST',
+      statutoryRule: 'GFR Rule 173(iv)',
+      submittedReply: 'Testing was conducted per ISO 9906 Grade 1 at CWPRS Pune testbed. Lab test report certificate #CWPRS/PUMP/2025/449 attached.',
+      blockchainProof: '0x7f9a88b12c5e3170d49f6580918b939faecb910245a703b68f77341e3d0912cb',
+    },
+    {
+      id: 'CLR-2026-003',
+      tenderNumber: 'GEM/2026/B/90124',
+      tenderTitle: 'Supply & Installation of High-Efficiency Water Pumps',
+      clauseCode: 'REQ-004',
+      clauseName: 'Prior Public Sector Supply Experience (>= 5 Years)',
+      committeeQuery: 'Submit proof of completion for Ministry of Water Resources FY22 supply order.',
+      status: 'RESOLVED_ACCEPTED',
+      deadline: '10-Sep-2026',
+      statutoryRule: 'GFR Rule 173(iv)',
+      submittedReply: 'Final completion and performance certificate issued by Central Water Commission uploaded.',
+      blockchainProof: '0x438e1290bbff81792ca8490a019842a78cd8410294e773bc68a011ef4890cd12',
+    }
+  ]);
+  const [activeVendorModal, setActiveVendorModal] = useState<any | null>(null);
+  const [vendorReplyText, setVendorReplyText] = useState('');
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
+  const [vendorReplySuccess, setVendorReplySuccess] = useState<string | null>(null);
 
   const [tenders, setTenders] = useState<any[]>([]);
   const [selectedTenderId, setSelectedTenderId] = useState<string>('');
@@ -276,6 +324,276 @@ export const ReviewsPage: React.FC = () => {
   );
 
   if (error) return <ApiErrorState message={error} onRetry={() => selectedTenderId && loadQueue(selectedTenderId)} />;
+
+  /* ========================================================================= */
+  /* VENDOR CLARIFICATIONS & GRIEVANCE REPRESENTATION DESK (GFR RULE 173(iv))  */
+  /* ========================================================================= */
+  if (isVendor) {
+    return (
+      <div className="space-y-6">
+        {/* Vendor Header */}
+        <div className="bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 rounded-2xl p-6 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
+                <Scale className="w-3.5 h-3.5" /> GFR 2017 Rule 173(iv) Statutory Portal
+              </span>
+              <span className="text-xs text-slate-400">Bidder Clarifications & Grievances</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-1">
+              Technical Representation & Clarification Desk
+            </h1>
+            <p className="text-slate-300 text-sm max-w-2xl">
+              Under GFR Rule 173(iv), participating bidders are granted a statutory opportunity to clarify technical discrepancies or submit representations regarding pre-qualification decisions before final financial bid opening.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link
+              to="/compliance"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-xl transition shadow-md"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>My Compliance Matrix</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Vendor Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Inquiries Raised</span>
+            <span className="text-2xl font-black text-slate-900 mt-1 block">{vendorQueries.length}</span>
+            <span className="text-[11px] text-slate-500">By Evaluation Committees</span>
+          </div>
+
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Action Required</span>
+            <span className="text-2xl font-black text-rose-600 mt-1 block">
+              {vendorQueries.filter(q => q.status === 'AWAITING_VENDOR_REPRESENTATION').length}
+            </span>
+            <span className="text-[11px] text-rose-600 font-semibold">Response window open</span>
+          </div>
+
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Representations Filed</span>
+            <span className="text-2xl font-black text-purple-700 mt-1 block">
+              {vendorQueries.filter(q => q.status === 'REPRESENTATION_SUBMITTED').length}
+            </span>
+            <span className="text-[11px] text-purple-600 font-semibold">Under Committee Scrutiny</span>
+          </div>
+
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Resolved & Accepted</span>
+            <span className="text-2xl font-black text-emerald-600 mt-1 block">
+              {vendorQueries.filter(q => q.status === 'RESOLVED_ACCEPTED').length}
+            </span>
+            <span className="text-[11px] text-emerald-600 font-semibold">Technical Compliance Sealed</span>
+          </div>
+        </div>
+
+        {/* Clarification Representations Queue */}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-purple-600" />
+              <h2 className="font-bold text-slate-900 text-sm">Committee Inquiries & Clarification Requirements</h2>
+            </div>
+            <span className="text-xs text-slate-500 font-medium">Bidding Entity: <strong>{user?.fullName || 'Apex Pumps & Motors Pvt Ltd'}</strong></span>
+          </div>
+
+          <div className="divide-y divide-slate-100">
+            {vendorQueries.map(q => (
+              <div key={q.id} className="p-5 hover:bg-slate-50 transition space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-bold text-purple-800 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                      {q.clauseCode}
+                    </span>
+                    <span className="font-bold text-slate-900 text-sm">{q.clauseName}</span>
+                    <span className="text-xs text-slate-400">• {q.tenderNumber}</span>
+                  </div>
+
+                  <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
+                    q.status === 'AWAITING_VENDOR_REPRESENTATION'
+                      ? 'bg-rose-50 text-rose-700 border-rose-200 animate-pulse'
+                      : q.status === 'REPRESENTATION_SUBMITTED'
+                      ? 'bg-purple-50 text-purple-700 border-purple-200'
+                      : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  }`}>
+                    {q.status === 'AWAITING_VENDOR_REPRESENTATION' ? '⏳ ACTION REQUIRED: Awaiting Representation' :
+                     q.status === 'REPRESENTATION_SUBMITTED' ? '📋 REPRESENTATION SUBMITTED' : '✅ RESOLVED & ACCEPTED'}
+                  </span>
+                </div>
+
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-1.5">
+                  <div className="flex items-center justify-between text-slate-500">
+                    <span className="font-bold uppercase text-[10px] tracking-wider text-slate-500">Procurement Committee Inquiry:</span>
+                    <span className="font-medium text-[11px]">Statutory Deadline: <strong>{q.deadline}</strong></span>
+                  </div>
+                  <p className="font-medium text-slate-900 leading-relaxed">{q.committeeQuery}</p>
+                </div>
+
+                {q.submittedReply && (
+                  <div className="bg-emerald-50/70 p-3.5 rounded-xl border border-emerald-200 text-xs text-emerald-950 space-y-1.5">
+                    <div className="flex items-center justify-between text-emerald-800">
+                      <span className="font-bold uppercase text-[10px] tracking-wider flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        Vendor Official Representation (Filed via DSC):
+                      </span>
+                      {q.blockchainProof && (
+                        <span className="font-mono text-[10px] text-emerald-700 truncate max-w-xs">
+                          EVM Tx: {q.blockchainProof.slice(0, 18)}...
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-slate-800">{q.submittedReply}</p>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] text-slate-400">Governed under {q.statutoryRule}</span>
+                  {q.status === 'AWAITING_VENDOR_REPRESENTATION' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveVendorModal(q);
+                        setVendorReplyText('');
+                      }}
+                      className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+                    >
+                      <Stamp className="w-3.5 h-3.5" />
+                      <span>Submit Representation / Reply</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Vendor Representation Modal */}
+        {activeVendorModal && (
+          <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <Scale className="w-5 h-5 text-purple-600" />
+                  <h3 className="font-bold text-slate-900 text-base">File Statutory Representation</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveVendorModal(null)}
+                  className="text-slate-400 hover:text-slate-600 text-xs font-bold"
+                >
+                  ✕ Close
+                </button>
+              </div>
+
+              <div className="bg-purple-50 p-3 rounded-xl border border-purple-200 text-xs text-purple-900 space-y-1">
+                <span className="font-bold block">Target Clause: {activeVendorModal.clauseCode} — {activeVendorModal.clauseName}</span>
+                <p className="text-[11px] text-purple-800">{activeVendorModal.committeeQuery}</p>
+              </div>
+
+              {vendorReplySuccess ? (
+                <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-xl text-emerald-900 text-xs space-y-2">
+                  <div className="flex items-center gap-2 font-bold">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span>Representation Recorded Successfully</span>
+                  </div>
+                  <p className="text-[11px] text-emerald-800 leading-relaxed">{vendorReplySuccess}</p>
+                </div>
+              ) : (
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (vendorReplyText.trim().length < 10) {
+                      alert('Please provide a comprehensive response statement (min. 10 characters).');
+                      return;
+                    }
+                    setIsSubmittingReply(true);
+                    await new Promise(r => setTimeout(r, 600));
+                    const pseudoTx = '0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('');
+                    setVendorQueries(prev => prev.map(q => q.id === activeVendorModal.id ? {
+                      ...q,
+                      status: 'REPRESENTATION_SUBMITTED',
+                      submittedReply: vendorReplyText.trim(),
+                      blockchainProof: pseudoTx
+                    } : q));
+                    setVendorReplySuccess(`Representation digitally signed with DSC (${user?.dscSerial || 'DSC-IND-2026-APEX-8891'}) and anchored on EVM Ledger (Tx: ${pseudoTx.slice(0, 16)}...).`);
+                    setIsSubmittingReply(false);
+                    setTimeout(() => {
+                      setActiveVendorModal(null);
+                      setVendorReplyText('');
+                      setVendorReplySuccess(null);
+                    }, 2000);
+                  }}
+                  className="space-y-4"
+                >
+                  <div>
+                    <label className="font-bold text-xs text-slate-700 block mb-1">
+                      Written Statement / Technical Clarification:
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={vendorReplyText}
+                      onChange={e => setVendorReplyText(e.target.value)}
+                      placeholder="Detail your compliance evidence, certificate serial numbers, or test report references..."
+                      className="w-full text-xs p-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-xs text-slate-700 block mb-1">
+                      Attach Supporting Evidence (PDF):
+                    </label>
+                    <select className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium">
+                      <option value="Apex_CA_Turnover_UDIN_Annexure.pdf">Apex_CA_Turnover_UDIN_Annexure.pdf (Generated with UDIN: 26038419AAAAA9812)</option>
+                      <option value="CWPRS_Pump_Efficiency_Grade1_Cert.pdf">CWPRS_Pump_Efficiency_Grade1_Cert.pdf (Govt. Testbed Report)</option>
+                      <option value="Ministry_Water_Resources_FY22_Completion.pdf">Ministry_Water_Resources_FY22_Completion.pdf</option>
+                    </select>
+                  </div>
+
+                  <div className="p-3 bg-slate-900 rounded-xl text-white text-[11px] font-mono flex items-center justify-between">
+                    <span className="text-slate-400">DSC SIGNATURE:</span>
+                    <span className="text-amber-400 font-bold">{user?.dscSerial || 'DSC-IND-2026-APEX-8891'}</span>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveVendorModal(null)}
+                      className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmittingReply}
+                      className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer"
+                    >
+                      {isSubmittingReply ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Committing to Blockchain...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Stamp className="w-3.5 h-3.5" />
+                          <span>Digitally Sign & Commit Representation</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

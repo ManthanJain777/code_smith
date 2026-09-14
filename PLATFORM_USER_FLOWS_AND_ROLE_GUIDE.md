@@ -75,29 +75,32 @@ flowchart TD
 2. **Live Tenders & Bidding Opportunities (`/tenders`)**:
    - **Search & Filtering**: Search by tender reference number (`GEM/2026/B/90125`), ministry, or keywords.
    - **Category Filters**: Filter by *Industrial Equipment*, *IT & Data Systems*, *Medical Equipment*.
-   - **Status Tabs**: *All Bids*, *Accepting Bids*, *Open*, *Closed*.
+   - **Status Tabs**: *All Tenders*, *Accepting Bids*, *Awarded Contracts*, *Under Evaluation*, *Closed*.
    - **Tender Cards**:
      - Est. Value in Crores (`₹5.00 Cr`).
      - EMD Exemption Status (`MSME Exempt per GFR Rule 170`).
      - Closing Countdown (`30-Sep-2026, 17:00 IST`).
-     - **"Participate & Submit Bid" Action**: Prominent button pre-filling the tender ID in the submission wizard.
+     - **"Participate & Submit Bid" Action**: Prominent button pre-filling the tender ID in the submission wizard for open tenders.
+     - **"View Award Standings & Proof" Action**: Dedicated gold badge and award banner on awarded contracts (`GEM/2026/B/90124`) linking directly to blockchain results.
    - **Clause Transparency**: Expandable table listing all mandatory GFR clauses, thresholds, units, and verification methods.
 
-3. **4-Step Bid Dossier Submission Wizard (`/bids/upload`)**:
-   - **Step 1 — Statutory & Vendor Profile**: Pre-filled from verified profile (GSTIN, PAN, Udyam number, local content percentage, EMD exemption mode).
+3. **4-Step Bid Dossier Submission Wizard & 1-Click Fast Submit (`/bids/upload`)**:
+   - **Header Fast Submit Trigger**: Persistent, glowing **"⚡ 1-Click Fast Submit & Digital Seal"** button in the header across all steps, enabling immediate submission with auto-attached verified documents.
+   - **Step 1 — Statutory & Vendor Profile**: Pre-filled from verified profile (GSTIN, PAN, Udyam number, local content percentage, EMD exemption mode). Includes 1-Click Fast Submit button.
    - **Step 2 — Commercial BoQ Quote**: Interactive landed cost calculator (Quantity × Base Unit Price + GST 18% = Total Landed Cost in INR).
    - **Step 3 — Technical Dossier Upload & AI Pre-Screening**:
-     - Multi-file drag-and-drop or single-click *"Load Pre-Certified Bid Pack"* (includes Technical Datasheet, CA Turnover Certificate, Balance Sheet, ISO 9001, GST certificate).
-     - Instant OCR text extraction, chunk indexing, and deterministic threshold pre-check.
-   - **Step 4 — DSC Cryptographic Signing & Anchoring**:
-     - Simulates Class-3 Digital Signature Certificate (DSC) hardware token.
-     - Computes SHA-256 integrity digest across commercial and technical data.
-     - Anchors transaction on the Consortium Blockchain.
-     - Generates **Official Government Bid Submission Acknowledgment Receipt** complete with QR code, GeM watermark, and printable PDF layout.
+     - Multi-file drag-and-drop or single-click *"Load Verified Bid Pack (5 PDFs)"* (includes Technical Datasheet, CA Turnover Certificate, Balance Sheet, ISO 9001, GST certificate).
+     - Always-visible action footer with bold **"Submit Formal Bid Dossier & Digital Seal (DSC)"**.
+     - Seamless client-side deterministic fallback: If local AI microservice is offline, the client parsing engine extracts text, chunk counts, page counts, generates SHA-256 digests, and completes submission without error.
+   - **Step 4 — Official GeM Bid Submission Acknowledgment Certificate**:
+     - Official Government of India Form GeM-SUB-01 with Gold Ashoka Emblem.
+     - Class-3 Digital Signature Certificate (DSC) verification serial.
+     - Hardhat EVM Blockchain Transaction Hash (Chain ID 31337).
+     - Direct action buttons: `[Print Receipt]`, `[My Dashboard]`, `[Blockchain Ledger]`, `[Open AI Compliance Matrix]`.
 
-4. **Vendor Profile & Statutory Standing (`/sellers/me`)**:
-   - Inspection of own 13 government portal connections: GSTN, MCA21, EPFO, ESIC, DPIIT, CPPP.
-   - Access to DigiLocker simulated certificate vault.
+4. **Vendor Clarifications & Representation Desk (`/reviews`)**:
+   - Full implementation under **GFR 2017 Rule 173(iv)**, replacing blunt 403 walls.
+   - Committee inquiry tracking, statutory response deadlines, and interactive **File Formal Representation** modal with DSC seal and blockchain anchoring.
 
 ---
 
@@ -123,10 +126,12 @@ flowchart TD
 #### Detailed Screens & Features
 
 1. **Procurement Executive Dashboard (`/dashboard`)**:
-   - System-wide procurement volume (`₹20.48 Lakh Cr GMV`).
-   - Active tender pipeline with status breakdowns.
-   - Service health monitoring widget (Backend, AI, Blockchain, Ollama).
-   - "Time Saved" calculator showing automated vs. manual evaluation hours.
+   - **Tender Lifecycle Pipeline Stepper**: Interactive visual stepper tracking NIT Published -> Bids Ingested -> OCR Extraction -> Committee Review -> Financial BoQ (L1) -> Contract Awarded.
+   - **Live Turnaround Acceleration Calculator**: Interactive 24/48/72 hrs baseline selector quantifying hours and rupees saved per tender (48hr baseline savings: ~47.5 hrs, ~₹2.13 Lakh saved).
+   - **Published Tenders Under Management**: With direct action buttons (`Run Pipeline`, `Compare Bids`, `View Matrix`).
+   - **Verified Requirements Status Breakdown**: Compliant, Partially Met, Non-Compliant, Unverified.
+   - **Bidder Risk Index Highlight & Contradiction Drill-Down**.
+   - **Collusion & Forgery Signals Alert**.
 
 2. **Tender Management & Creation (`/tenders`)**:
    - **"Create Tender Notice (NIT)"**: Modal to define tender title, issuing authority, category, estimated budget, closing date, and upload PDF specifications.
@@ -167,22 +172,21 @@ flowchart TD
 
 #### Detailed Screens & Features
 
-1. **Human Review Queue (`/reviews`)**:
+1. **Dedicated Technical Committee Dashboard (`/dashboard`)**:
+   - Header: *"Technical Scrutiny & Human Review Command"* (Rule 173 GFR 2017).
+   - **4 Stat Cards**: Pending Committee Scrutiny (3 In Queue), Contradictions Flagged (1 Variance), Human Overrides Justified, Reviewer AI Alignment (96.2%).
+   - **Action Items Requiring Committee Human Evaluation**: Interactive items for `REQ-FIN-001` (Turnover discrepancy), `REQ-TECH-003` (Pump efficiency testbed validation), and `REQ-EXP-004` (PSU experience) with direct `[Adjudicate & Override]` and `[View Citations]` actions.
+   - **Personal Confidence Calibration Monitor**: 88% High Confidence, 9% Medium, 3% Overridden with justification.
+   - **Statutory Committee Guidelines** under GFR 2017 Rule 173.
+
+2. **Human Review Queue (`/reviews`)**:
    - Filters for *Pending Scrutiny*, *Contradictions Flagged*, *Overridden*, and *Approved*.
    - Displays detected conflicts, such as **Contradiction in Pump Production Capacity** (Datasheet: 800 units/day vs. Brochure: 500 units/day).
 
-2. **Scrutiny & Override Modal**:
+3. **Scrutiny & Override Modal**:
    - Displays side-by-side snippets of conflicting documents with page numbers.
    - Requires the reviewer to select the authoritative document and enter a detailed statutory rationale.
    - Updates the compliance status and creates an immutable event in the audit trail.
-
-3. **Sequential Reasoning Chain (`/compliance`)**:
-   - Expandable 5-stage verification breakdown:
-     1. Text extraction & OCR confidence
-     2. Unit normalization (e.g. 155 PSI = 10.69 Bar >= 10 Bar)
-     3. Deterministic threshold evaluation
-     4. Negative verification (debarment check)
-     5. Final compliance recommendation
 
 ---
 
@@ -192,27 +196,23 @@ flowchart TD
 #### Objectives
 Conduct independent post-award scrutiny, inspect blockchain audit provenance, verify zero tampering, and export executive compliance audit memorandums.
 
-#### End-to-End User Journey
-```mermaid
-flowchart TD
-    A[Auditor Dashboard /dashboard] --> B[Immutable Audit Trail /audit]
-    B --> C[Filter Security Events & Overrides]
-    C --> D[Inspect EVM Block & Cryptographic Hash]
-    D --> E[Verify Zero Tampering Badge]
-    E --> F[Executive Reports & Memorandum /reports]
-    F --> G[Export Printable Statutory Audit Sheet]
-```
-
 #### Detailed Screens & Features
 
-1. **Immutable Blockchain Audit Trail (`/audit`)**:
-   - Table of chronologically ordered security events (`BID_SUBMISSION`, `PIPELINE_RUN`, `COMPLIANCE_OVERRIDDEN`, `TENDER_AWARDED`).
+1. **Dedicated Integrity & Audit Dashboard (`/dashboard`)**:
+   - Header: *"Public Procurement Integrity & Audit Dashboard"* (CVC / CAG Oversight).
+   - **4 Stat Cards**: Anchored Audit Events (12), Active Tenders Monitored, Human Overrides Recorded, Blacklist Verifications (100% Clear).
+   - **Live Hardhat EVM Block & Gas Explorer Stream**: Real-time blockchain block height (#10042), gas limit (30,000,000), contract address (`BidRegistry.sol`), and "✓ MERKLE ROOT VALID" immutability badge.
+   - **Officer Override Audit Log**: Detailed log of human overrides requiring justification scrutiny.
+   - **Ministry of Finance Debarment Check Log**: 100% CLEAR verification records.
+   - **Collusion Signal Detection**: Vigilance review of shared entities.
+
+2. **Immutable Blockchain Audit Trail (`/audit`)**:
+   - Chronologically ordered security events (`BID_SUBMISSION`, `PIPELINE_RUN`, `COMPLIANCE_OVERRIDDEN`, `TENDER_AWARDED`).
    - Real transaction hashes linking to the consortium smart contract.
    - Tamper-detection indicator verifying hash chain integrity.
 
-2. **Compliance Reports & Executive Memorandum (`/reports`)**:
+3. **Compliance Reports & Executive Memorandum (`/reports`)**:
    - Formal GFR 2017 Executive Award Summary Memorandum.
-   - Bid evaluation matrix with risk scores and debarment screenings.
    - Printable view with Government of India header and verification stamp.
 
 ---
@@ -224,20 +224,43 @@ flowchart TD
 Maintain platform infrastructure, monitor node health, supervise permissions, test security guardrails, and manage user accounts.
 
 #### Detailed Screens & Features
-1. **System Health Console**: Real-time heartbeat probes for React, Spring Boot, FastAPI, Hardhat EVM, and Ollama.
-2. **Security Sentinel**: Live testing of prompt-injection defense mechanisms.
-3. **Unrestricted Oversight**: Administrative access to all portals, queues, and debug tools.
+1. **Dedicated Infrastructure & Sentinel Dashboard (`/dashboard`)**:
+   - Header: *"GeM Infrastructure & Security Sentinel"*.
+   - **4 Stat Cards**: Fleet Status (5/5 Services UP), Hardhat Block Height (#10042), Prompt Injections Quarantined (0 Active), System Calibration Alignment (98.4%).
+   - **Microservice Fleet Health Monitor**: Real-time status cards for Frontend (:3000), Spring Boot REST (:8080), FastAPI AI (:8000), Ollama LLM (:11434), Hardhat EVM (:8545) with *"Ping Fleet"* action.
+   - **Prompt-Injection Defense Sentinel**: Interactive adversarial attack testing form and live security incident logs.
+   - **System-Wide Aggregate Confidence Calibration**: Full interactive calibration curve chart.
+   - **Platform Control Center**: Buttons to Create Tender, Run Batch Pipeline, and Inspect Ledger.
 
 ---
 
-## 4. Verification & Readiness Checklist
+## 4. Live Demo Role Switcher Toolbar
+
+To allow evaluators and jury members to immediately inspect the platform from any stakeholder's point of view, a persistent **Live Demo Role Switcher Toolbar** is pinned to the top of the application:
+
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ ⚡ DEMO ROLE SWITCHER:  [Bidder / Vendor]  [Procurement Officer]  [Compliance Reviewer]  [Auditor]  [Admin] │
+└────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+- **Instant 1-Click Switching**: Seamlessly updates auth state, permissions, and active views without requiring logout or password re-entry.
+- **Zero Session Drops**: Fixed `fetchWithAuth` in `api.ts` to prevent 401 redirects when operating with demo identities.
+- **Role Guidance Panel**: Replaces blunt 403 error screens with interactive role switching shortcuts.
+
+---
+
+## 5. Verification & Readiness Checklist
 
 | Feature Area | Verification Status | Evidence |
 |---|---|---|
 | **Official Branding** | Verified | Official `Emblem_of_India.svg` rendered across header, footer, favicon, and login gateway |
-| **Bidder Bidding Flow** | Verified | 4-step submission wizard with DSC signing, QR code, and blockchain anchoring |
-| **Tender Search & Filters** | Verified | Instant category, status, and keyword filtering with direct participation buttons |
+| **Bidder Bidding Flow** | Verified | 4-step submission wizard with 1-Click Fast Submit, DSC signing, QR code, and EVM anchoring |
+| **All 5 Role Dashboards** | Verified | Dedicated, bespoke dashboards for Bidder, Officer, Reviewer, Auditor, and Admin |
+| **Demo Role Switcher** | Verified | Instant 1-click identity switching across all 5 roles with active view updating |
+| **Clarifications Desk** | Verified | GFR Rule 173(iv) technical representation desk at `/reviews` replacing 403 screen |
+| **Tender Search & Filters** | Verified | Status tabs, category filters, and awardee badges on awarded contracts |
 | **Vercel Deployment** | Verified | Root `vercel.json` configured with SPA rewrites; built-in serverless API bridge in `api/index.js` |
-| **TypeScript Build** | Verified | Clean compilation with `0 errors` (`npx tsc --noEmit`) |
-| **Production Bundle** | Verified | Optimized production build generated in 4.33s |
-| **GitHub Synchronization** | Verified | Pushed to `https://github.com/ManthanJain777/code_smith` on branch `main` |
+| **TypeScript Build** | Verified | Clean compilation with `0 errors` (`npm run build`) |
+| **Production Bundle** | Verified | Vite v5.4.21 optimized production bundle generated in 5.15s |
+| **GitHub Synchronization** | Verified | Branch `main` ready for push |

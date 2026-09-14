@@ -27,7 +27,8 @@ import {
   UploadCloud,
   Award,
   HelpCircle,
-  Home
+  Home,
+  Server
 } from 'lucide-react';
 
 interface GovTopNavProps {
@@ -41,7 +42,7 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, switchRole } = useAuth();
   const { hasAccess } = usePermissions();
 
   const [lang, setLang] = useState<'EN' | 'HI'>('EN');
@@ -187,6 +188,13 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
       path: isVendor ? '/compliance' : undefined
     },
     {
+      id: 'clarifications',
+      label: 'Clarifications & Grievances',
+      path: '/reviews',
+      icon: AlertTriangle,
+      allowed: isVendor
+    },
+    {
       id: 'verification',
       label: isVendor ? 'Vendor Profile' : 'Verification Queue',
       icon: UserCheck,
@@ -228,15 +236,15 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
       label: 'Analytics',
       path: '/analytics',
       icon: BarChart3,
-      allowed: hasAccess('analytics_overview')
+      allowed: hasAccess('analytics_overview') && !isVendor
     },
     {
       id: 'audit',
-      label: 'Blockchain Audit',
+      label: isVendor ? 'Blockchain Proofs' : 'Blockchain Audit',
       path: '/audit',
       icon: Link2,
-      allowed: hasAccess('blockchain_audit'),
-      children: [
+      allowed: true,
+      children: isVendor ? undefined : [
         {
           label: 'Audit Trail & Overrides',
           path: '/audit',
@@ -341,6 +349,53 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
               <span>Toll-Free 1800-419-3436</span>
             </a>
           </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* LIVE DEMO ROLE SWITCHER TOOLBAR (EXPERIENCE ALL 5 ROLES INSTANTLY)        */}
+      {/* ========================================================================= */}
+      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 text-white px-4 sm:px-6 lg:px-8 py-1.5 border-b border-indigo-900/40 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-[10px] uppercase font-bold tracking-widest text-amber-400 bg-amber-950/90 px-2 py-0.5 rounded border border-amber-500/40 flex items-center gap-1 shadow-xs">
+            <Zap className="w-3 h-3 text-amber-400 fill-amber-400" /> DEMO ROLE SWITCHER
+          </span>
+          <span className="text-slate-400 hidden sm:inline text-[11px]">
+            Switch identity to test any stakeholder perspective:
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
+          {[
+            { role: 'BIDDER_VENDOR', label: 'Bidder / Vendor', icon: UploadCloud },
+            { role: 'PROCUREMENT_OFFICER', label: 'Procurement Officer', icon: FileText },
+            { role: 'COMPLIANCE_REVIEWER', label: 'Compliance Reviewer', icon: CheckCircle2 },
+            { role: 'AUDITOR', label: 'Auditor & Vigilance', icon: ShieldCheck },
+            { role: 'SYSTEM_ADMIN', label: 'System Admin', icon: Server },
+          ].map(r => {
+            const isCurrent = user?.role === r.role || (r.role === 'BIDDER_VENDOR' && user?.role === 'BIDDER');
+            return (
+              <button
+                key={r.role}
+                type="button"
+                onClick={() => {
+                  switchRole(r.role);
+                  navigate('/dashboard');
+                }}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  isCurrent
+                    ? 'bg-amber-500 text-slate-950 shadow-md font-black ring-1 ring-amber-300'
+                    : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60'
+                }`}
+                title={`Switch active perspective to ${r.label}`}
+              >
+                <r.icon className={`w-3 h-3 ${isCurrent ? 'text-slate-950' : 'text-amber-400'}`} />
+                <span>{r.label}</span>
+                {isCurrent && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-700 animate-pulse ml-0.5" />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -465,87 +520,139 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
       {/* ROW 3: Mega-Menu Category Row (Desktop Horizontal Navigation)             */}
       {/* ========================================================================= */}
       <nav className="hidden md:block bg-slate-800 text-white border-t border-slate-700/80 px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center space-x-1 py-1" ref={dropdownRef}>
-          {navGroups.map(group => {
-            const Icon = group.icon;
-            const hasChildren = group.children && group.children.length > 0;
-            const isActive = isActiveGroup(group);
-            const isOpen = openDropdown === group.id;
+        <div className="flex items-center justify-between py-1" ref={dropdownRef}>
+          <div className="flex items-center space-x-1">
+            {navGroups.map(group => {
+              const Icon = group.icon;
+              const hasChildren = group.children && group.children.length > 0;
+              const isActive = isActiveGroup(group);
+              const isOpen = openDropdown === group.id;
 
-            if (!hasChildren && group.path) {
+              if (!hasChildren && group.path) {
+                return (
+                  <Link
+                    key={group.id}
+                    to={group.path}
+                    className={`flex items-center space-x-1.5 px-3 py-2 rounded-md text-xs font-semibold transition ${
+                      isActive
+                        ? 'bg-amber-600 text-white shadow-sm'
+                        : 'text-slate-200 hover:text-white hover:bg-slate-700/80'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    <span>{group.label}</span>
+                  </Link>
+                );
+              }
+
               return (
-                <Link
-                  key={group.id}
-                  to={group.path}
-                  className={`flex items-center space-x-1.5 px-3 py-2 rounded-md text-xs font-semibold transition ${
-                    isActive
-                      ? 'bg-amber-600 text-white shadow-sm'
-                      : 'text-slate-200 hover:text-white hover:bg-slate-700/80'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{group.label}</span>
-                </Link>
+                <div key={group.id} className="relative">
+                  <button
+                    onClick={() => setOpenDropdown(isOpen ? null : group.id)}
+                    className={`flex items-center space-x-1.5 px-3 py-2 rounded-md text-xs font-semibold transition ${
+                      isActive || isOpen
+                        ? 'bg-amber-600 text-white shadow-sm'
+                        : 'text-slate-200 hover:text-white hover:bg-slate-700/80'
+                    }`}
+                    aria-expanded={isOpen}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    <span>{group.label}</span>
+                    <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {/* Dropdown Mega-Menu Panel */}
+                  {isOpen && (
+                    <div className="absolute left-0 mt-1 w-72 bg-white rounded-xl shadow-2xl border border-slate-200 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                      <div className="px-3 py-1.5 border-b border-slate-100">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                          {group.label}
+                        </span>
+                      </div>
+                      <div className="py-1">
+                        {group.children?.map(child => {
+                          const ChildIcon = child.icon;
+                          const isChildActive = location.pathname === child.path;
+                          return (
+                            <Link
+                              key={child.path}
+                              to={child.path}
+                              onClick={() => setOpenDropdown(null)}
+                              className={`flex items-start gap-2.5 px-3 py-2 transition ${
+                                isChildActive
+                                  ? 'bg-amber-50 text-amber-900 font-semibold'
+                                  : 'text-slate-700 hover:bg-slate-50'
+                              }`}
+                            >
+                              <ChildIcon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isChildActive ? 'text-amber-600' : 'text-slate-400'}`} />
+                              <div>
+                                <div className="text-xs font-semibold">{child.label}</div>
+                                {child.description && (
+                                  <div className="text-[10px] text-slate-500 line-clamp-1 leading-normal">
+                                    {child.description}
+                                  </div>
+                                )}
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
               );
-            }
+            })}
+          </div>
 
-            return (
-              <div key={group.id} className="relative">
-                <button
-                  onClick={() => setOpenDropdown(isOpen ? null : group.id)}
-                  className={`flex items-center space-x-1.5 px-3 py-2 rounded-md text-xs font-semibold transition ${
-                    isActive || isOpen
-                      ? 'bg-amber-600 text-white shadow-sm'
-                      : 'text-slate-200 hover:text-white hover:bg-slate-700/80'
-                  }`}
-                  aria-expanded={isOpen}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{group.label}</span>
-                  <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {/* Dropdown Mega-Menu Panel */}
-                {isOpen && (
-                  <div className="absolute left-0 mt-1 w-72 bg-white rounded-xl shadow-2xl border border-slate-200 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                    <div className="px-3 py-1.5 border-b border-slate-100">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                        {group.label}
-                      </span>
-                    </div>
-                    <div className="py-1">
-                      {group.children?.map(child => {
-                        const ChildIcon = child.icon;
-                        const isChildActive = location.pathname === child.path;
-                        return (
-                          <Link
-                            key={child.path}
-                            to={child.path}
-                            onClick={() => setOpenDropdown(null)}
-                            className={`flex items-start gap-2.5 px-3 py-2 transition ${
-                              isChildActive
-                                ? 'bg-amber-50 text-amber-900 font-semibold'
-                                : 'text-slate-700 hover:bg-slate-50'
-                            }`}
-                          >
-                            <ChildIcon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isChildActive ? 'text-amber-600' : 'text-slate-400'}`} />
-                            <div>
-                              <div className="text-xs font-semibold">{child.label}</div>
-                              {child.description && (
-                                <div className="text-[10px] text-slate-500 line-clamp-1 leading-normal">
-                                  {child.description}
-                                </div>
-                              )}
-                            </div>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          {/* Role-Specific Quick Action Trigger */}
+          <div className="flex items-center pl-4">
+            {isVendor && (
+              <Link
+                to="/bids/upload"
+                className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-lg text-xs font-black flex items-center gap-1.5 shadow-sm transition cursor-pointer"
+              >
+                <UploadCloud className="w-3.5 h-3.5 text-amber-300" />
+                <span>+ Submit Bid Dossier</span>
+              </Link>
+            )}
+            {isOfficer && (
+              <button
+                type="button"
+                onClick={() => navigate('/dashboard')}
+                className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
+              >
+                <FileText className="w-3.5 h-3.5 text-emerald-200" />
+                <span>+ Create Tender (NIT)</span>
+              </button>
+            )}
+            {isReviewer && (
+              <Link
+                to="/reviews"
+                className="px-3.5 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
+              >
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-200" />
+                <span>Review Queue (1 Flagged)</span>
+              </Link>
+            )}
+            {isAuditor && (
+              <Link
+                to="/audit"
+                className="px-3.5 py-1.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
+              >
+                <Link2 className="w-3.5 h-3.5 text-teal-200" />
+                <span>Blockchain Ledger</span>
+              </Link>
+            )}
+            {isAdmin && (
+              <Link
+                to="/dashboard"
+                className="px-3.5 py-1.5 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
+              >
+                <Server className="w-3.5 h-3.5 text-purple-200" />
+                <span>Microservice Fleet</span>
+              </Link>
+            )}
+          </div>
         </div>
       </nav>
 
