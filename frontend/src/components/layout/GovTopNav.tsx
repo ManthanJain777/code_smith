@@ -173,9 +173,9 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
       allowed: hasAccess('compliance_matrix'),
       children: isVendor ? undefined : [
         {
-          label: t('nav.matrix'),
+          label: t('nav.matrixAndReports'),
           path: '/compliance',
-          description: 'Detailed requirement breakdown with multi-stage reasoning chain',
+          description: 'Detailed requirement breakdown with multi-stage reasoning chain and executive audit reports',
           icon: CheckCircle2,
           allowed: hasAccess('compliance_matrix')
         },
@@ -185,13 +185,6 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
           description: 'Side-by-side technical evaluation across all tender bidders',
           icon: Users,
           allowed: hasAccess('multi_bidder_compare')
-        },
-        {
-          label: t('nav.reports'),
-          path: '/reports',
-          description: 'Executive Award Summary Memorandum and statutory audit sheets',
-          icon: ClipboardList,
-          allowed: hasAccess('compliance_reports')
         }
       ],
       path: isVendor ? '/compliance' : undefined
@@ -367,19 +360,19 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
       <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 text-white px-4 sm:px-6 lg:px-8 py-1.5 border-b border-indigo-900/40 flex flex-wrap items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-2">
           <span className="font-mono text-[10px] uppercase font-bold tracking-widest text-amber-400 bg-amber-950/90 px-2 py-0.5 rounded border border-amber-500/40 flex items-center gap-1 shadow-xs">
-            <Zap className="w-3 h-3 text-amber-400 fill-amber-400" /> DEMO ROLE SWITCHER
+            <Zap className="w-3 h-3 text-amber-400 fill-amber-400" /> {lang === 'HI' ? 'डेमो भूमिका स्विचर' : 'DEMO ROLE SWITCHER'}
           </span>
           <span className="text-slate-400 hidden sm:inline text-[11px]">
-            Switch identity to test any stakeholder perspective:
+            {lang === 'HI' ? 'हितधारक परिप्रेक्ष्य का परीक्षण करने हेतु भूमिका बदलें:' : 'Switch identity to test any stakeholder perspective:'}
           </span>
         </div>
         <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
           {[
-            { role: 'BIDDER_VENDOR', label: 'Bidder / Vendor', icon: UploadCloud },
-            { role: 'PROCUREMENT_OFFICER', label: 'Procurement Officer', icon: FileText },
-            { role: 'COMPLIANCE_REVIEWER', label: 'Compliance Reviewer', icon: CheckCircle2 },
-            { role: 'AUDITOR', label: 'Auditor & Vigilance', icon: ShieldCheck },
-            { role: 'SYSTEM_ADMIN', label: 'System Admin', icon: Server },
+            { role: 'BIDDER_VENDOR', label: lang === 'HI' ? 'बोलीदाता / विक्रेता' : 'Bidder / Vendor', icon: UploadCloud },
+            { role: 'PROCUREMENT_OFFICER', label: lang === 'HI' ? 'खरीद अधिकारी' : 'Procurement Officer', icon: FileText },
+            { role: 'COMPLIANCE_REVIEWER', label: lang === 'HI' ? 'अनुपालन समीक्षक' : 'Compliance Reviewer', icon: CheckCircle2 },
+            { role: 'AUDITOR', label: lang === 'HI' ? 'लेखा परीक्षक एवं सतर्कता' : 'Auditor & Vigilance', icon: ShieldCheck },
+            { role: 'SYSTEM_ADMIN', label: lang === 'HI' ? 'सिस्टम प्रशासक' : 'System Admin', icon: Server },
           ].map(r => {
             const isCurrent = user?.role === r.role || (r.role === 'BIDDER_VENDOR' && user?.role === 'BIDDER');
             return (
@@ -413,7 +406,7 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
             title="Start First-Time User Experience (FTUE) Guided Demo Tour"
           >
             <Sparkles className="w-3.5 h-3.5 fill-slate-950" />
-            <span>Interactive Tour</span>
+            <span>{lang === 'HI' ? 'इंटरैक्टिव टूर' : 'Interactive Tour'}</span>
           </button>
         </div>
       </div>

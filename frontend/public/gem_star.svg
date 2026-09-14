@@ -1,31 +1,58 @@
 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="redGrad" x1="32" y1="4" x2="32" y2="48" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#FF334B" />
-      <stop offset="100%" stop-color="#C81E32" />
+    <linearGradient id="redTopLeft" x1="9.48" y1="45" x2="32" y2="6" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#DC2626" />
+      <stop offset="50%" stop-color="#EF4444" />
+      <stop offset="100%" stop-color="#F87171" />
     </linearGradient>
-    <linearGradient id="blueGrad" x1="32" y1="16" x2="32" y2="60" gradientUnits="userSpaceOnUse">
+    <linearGradient id="redTopRight" x1="54.52" y1="45" x2="32" y2="6" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#991B1B" />
+      <stop offset="50%" stop-color="#B91C1C" />
+      <stop offset="100%" stop-color="#DC2626" />
+    </linearGradient>
+    <linearGradient id="blueBotLeft" x1="9.48" y1="19" x2="32" y2="58" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="50%" stop-color="#3B82F6" />
       <stop offset="100%" stop-color="#1D4ED8" />
     </linearGradient>
-    <linearGradient id="greenGrad" x1="32" y1="18" x2="32" y2="46" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#10B981" />
-      <stop offset="100%" stop-color="#059669" />
+    <linearGradient id="blueBotRight" x1="54.52" y1="19" x2="32" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1E40AF" />
+      <stop offset="50%" stop-color="#1D4ED8" />
+      <stop offset="100%" stop-color="#172554" />
     </linearGradient>
-    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#000000" flood-opacity="0.25" />
+    <radialGradient id="greenCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#34D399" />
+      <stop offset="60%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#047857" />
+    </radialGradient>
+    <linearGradient id="goldTrim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FDE047" />
+      <stop offset="100%" stop-color="#CA8A04" />
+    </linearGradient>
+    <filter id="starShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1.8" flood-color="#0F172A" flood-opacity="0.28" />
     </filter>
   </defs>
-  <circle cx="32" cy="32" r="30" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="3 3" opacity="0.6" />
-  <g filter="url(#shadow)">
-    <!-- Downward Triangle (Blue) -->
-    <polygon points="7.8,18.5 56.2,18.5 32,60.5" fill="url(#blueGrad)" stroke="#1E40AF" stroke-width="1.5" stroke-linejoin="round" />
-    <!-- Upward Triangle (Red) -->
-    <polygon points="32,3.5 56.2,45.5 7.8,45.5" fill="url(#redGrad)" stroke="#991B1B" stroke-width="1.5" stroke-linejoin="round" />
-    <!-- Overlap Hexagon (Green) -->
-    <polygon points="24,18.5 40,18.5 48.1,32 40,45.5 24,45.5 15.9,32" fill="url(#greenGrad)" stroke="#047857" stroke-width="1.2" stroke-linejoin="round" />
-    <!-- Center Core -->
-    <circle cx="32" cy="32" r="5" fill="#FFFFFF" opacity="0.9" />
+
+  <circle cx="32" cy="32" r="30" stroke="url(#goldTrim)" stroke-width="0.75" stroke-dasharray="2 3" opacity="0.45" />
+
+  <g filter="url(#starShadow)">
+    <!-- Downward Triangle (Blue Scheme) -->
+    <polygon points="32,58 54.52,19 9.48,19" fill="url(#blueBotLeft)" stroke="#1E3A8A" stroke-width="1.2" stroke-linejoin="round" />
+    <polygon points="32,58 54.52,19 32,32" fill="url(#blueBotRight)" opacity="0.85" />
+
+    <!-- Upward Triangle (Red Scheme) -->
+    <polygon points="32,6 54.52,45 9.48,45" fill="url(#redTopLeft)" stroke="#991B1B" stroke-width="1.2" stroke-linejoin="round" />
+    <polygon points="32,6 54.52,45 32,32" fill="url(#redTopRight)" opacity="0.85" />
+
+    <!-- Central Hexagon Core (Green Scheme) -->
+    <polygon points="32,19 43.26,25.5 43.26,38.5 32,45 20.74,38.5 20.74,25.5" fill="url(#greenCore)" stroke="#064E3B" stroke-width="1.2" stroke-linejoin="round" />
+    <polygon points="32,19 43.26,25.5 32,32" fill="#6EE7B7" opacity="0.3" />
+    <polygon points="20.74,25.5 32,19 32,32" fill="#FFFFFF" opacity="0.25" />
+    <polygon points="32,45 43.26,38.5 32,32" fill="#065F46" opacity="0.4" />
+
+    <!-- Center Node -->
+    <circle cx="32" cy="32" r="5" fill="#FFFFFF" stroke="url(#goldTrim)" stroke-width="1" />
     <circle cx="32" cy="32" r="2.8" fill="#10B981" />
   </g>
 </svg>

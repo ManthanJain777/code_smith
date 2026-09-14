@@ -68,9 +68,9 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
       <div className="bg-slate-900 text-slate-300 text-xs py-1 px-4 sm:px-8 flex flex-wrap justify-between items-center border-b border-slate-800 font-medium">
         <div className="flex items-center space-x-2">
           <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span>भारत सरकार | Government of India</span>
+          <span>{lang === 'HI' ? 'भारत सरकार' : 'भारत सरकार | Government of India'}</span>
           <span className="text-slate-600 hidden md:inline">•</span>
-          <span className="text-slate-300 font-semibold hidden md:inline">Ministry of Petroleum & Natural Gas</span>
+          <span className="text-slate-300 font-semibold hidden md:inline">{t('brand.ministry')}</span>
         </div>
         <div className="flex items-center space-x-4">
           <div className="hidden lg:flex items-center space-x-1 text-slate-400 text-[11px]">
@@ -107,14 +107,14 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
           <div className="flex flex-col">
             <div className="flex items-center space-x-2">
               <span className="font-extrabold text-lg sm:text-xl tracking-tight text-slate-900 flex items-center">
-                GeM <span className="text-amber-600 ml-1">Compliance</span>
+                GeM <span className="text-amber-600 ml-1">{lang === 'HI' ? 'अनुपालन' : 'Compliance'}</span>
               </span>
               <span className="hidden sm:inline-block bg-amber-100 text-amber-900 font-bold text-[10px] px-2 py-0.5 rounded border border-amber-200">
-                GFR 2017 CERTIFIED
+                {t('brand.tag')}
               </span>
             </div>
             <p className="text-[11px] sm:text-xs text-slate-500 font-medium leading-tight">
-              AI-Powered Integrated Bid Compliance Verification Platform • SIH26100
+              {t('brand.subtitle')} • SIH26100
             </p>
           </div>
         </div>
@@ -165,7 +165,7 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
                 <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-slate-200 p-2 z-50 text-xs animate-in fade-in slide-in-from-top-2">
                   <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between">
                     <span className="font-bold text-slate-800 text-[11px] uppercase tracking-wider">
-                      Demo Persona Switcher
+                      {lang === 'HI' ? 'डेमो भूमिका स्विचर' : 'Demo Persona Switcher'}
                     </span>
                     <button
                       data-tour="logout-btn"
@@ -175,7 +175,7 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
                       }}
                       className="text-[10px] bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold px-2 py-0.5 rounded transition cursor-pointer"
                     >
-                      Sign Out
+                      {lang === 'HI' ? 'लॉग आउट' : 'Sign Out'}
                     </button>
                   </div>
                   <div className="py-1 space-y-1">

@@ -35,6 +35,9 @@ app:
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   ai-service:
     url: ${AI_SERVICE_URL:http://localhost:8000}
+  gemini:
+    api-key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_MODEL:gemini-1.5-flash}
   blockchain:
     enabled: ${BLOCKCHAIN_ENABLED:true}
     rpc-url: ${BLOCKCHAIN_RPC_URL:http://localhost:8545}

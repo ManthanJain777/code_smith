@@ -7,9 +7,13 @@ export interface GemStarLogoProps {
 }
 
 /**
- * GemStarLogo — Star made up of two overlapping equilateral triangles.
- * Color Scheme: Red (top triangle), Blue (inverted triangle), Green (central intersecting hexagram).
- * Pure SVG vector format, fully responsive and scalable.
+ * GemStarLogo — Sovereign Star of Integrity
+ * Composed of two intersecting geometric equilateral triangles forming a hexagram.
+ * Color Scheme:
+ * - Upward Triangle: Radiant Ruby / Crimson Red (#DC2626 -> #EF4444)
+ * - Inverted Triangle: Royal Sapphire / Deep Navy Blue (#1D4ED8 -> #3B82F6)
+ * - Intersecting Core: Luminous Emerald Green (#059669 -> #10B981) with Golden Accent
+ * Pure SVG vector format, 100% scalable with precision 3D beveled light facets.
  */
 export const GemStarLogo: React.FC<GemStarLogoProps> = ({
   className = '',
@@ -18,6 +22,25 @@ export const GemStarLogo: React.FC<GemStarLogoProps> = ({
 }) => {
   const uniqueId = React.useId().replace(/:/g, '');
 
+  if (variant === 'white') {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 64 64"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={`select-none shrink-0 ${className}`}
+        aria-label="GeM Star Logo (White)"
+        role="img"
+      >
+        <polygon points="32,6 54.52,45 9.48,45" stroke="#FFFFFF" strokeWidth="2.5" fill="rgba(255,255,255,0.15)" strokeLinejoin="round" />
+        <polygon points="32,58 54.52,19 9.48,19" stroke="#FFFFFF" strokeWidth="2.5" fill="rgba(255,255,255,0.15)" strokeLinejoin="round" />
+        <circle cx="32" cy="32" r="4.5" fill="#FFFFFF" />
+      </svg>
+    );
+  }
+
   return (
     <svg
       width={size}
@@ -25,73 +48,119 @@ export const GemStarLogo: React.FC<GemStarLogoProps> = ({
       viewBox="0 0 64 64"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={`select-none shrink-0 ${className}`}
+      className={`select-none shrink-0 drop-shadow-sm hover:scale-105 transition-transform duration-200 ${className}`}
       aria-label="GeM Star Logo"
       role="img"
     >
       <defs>
-        {/* Upward Triangle Red Gradient */}
-        <linearGradient id={`redGrad-${uniqueId}`} x1="32" y1="4" x2="32" y2="48" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#FF334B" />
-          <stop offset="100%" stopColor="#C81E32" />
+        {/* Red Triangle Gradients (Upward) */}
+        <linearGradient id={`redTopLeft-${uniqueId}`} x1="9.48" y1="45" x2="32" y2="6" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#DC2626" />
+          <stop offset="50%" stopColor="#EF4444" />
+          <stop offset="100%" stopColor="#F87171" />
+        </linearGradient>
+        <linearGradient id={`redTopRight-${uniqueId}`} x1="54.52" y1="45" x2="32" y2="6" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#991B1B" />
+          <stop offset="50%" stopColor="#B91C1C" />
+          <stop offset="100%" stopColor="#DC2626" />
         </linearGradient>
 
-        {/* Downward Triangle Blue Gradient */}
-        <linearGradient id={`blueGrad-${uniqueId}`} x1="32" y1="16" x2="32" y2="60" gradientUnits="userSpaceOnUse">
+        {/* Blue Triangle Gradients (Downward) */}
+        <linearGradient id={`blueBotLeft-${uniqueId}`} x1="9.48" y1="19" x2="32" y2="58" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stopColor="#2563EB" />
+          <stop offset="50%" stopColor="#3B82F6" />
           <stop offset="100%" stopColor="#1D4ED8" />
         </linearGradient>
-
-        {/* Central Hexagon Green Gradient */}
-        <linearGradient id={`greenGrad-${uniqueId}`} x1="32" y1="18" x2="32" y2="46" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#10B981" />
-          <stop offset="100%" stopColor="#059669" />
+        <linearGradient id={`blueBotRight-${uniqueId}`} x1="54.52" y1="19" x2="32" y2="58" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#1E40AF" />
+          <stop offset="50%" stopColor="#1D4ED8" />
+          <stop offset="100%" stopColor="#172554" />
         </linearGradient>
 
-        {/* Soft Drop Shadow for depth */}
-        <filter id={`shadow-${uniqueId}`} x="-10%" y="-10%" width="120%" height="120%">
-          <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#000000" floodOpacity="0.25" />
+        {/* Green Core Gradient */}
+        <radialGradient id={`greenCore-${uniqueId}`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#34D399" />
+          <stop offset="60%" stopColor="#10B981" />
+          <stop offset="100%" stopColor="#047857" />
+        </radialGradient>
+
+        {/* Gold Trim Gradient */}
+        <linearGradient id={`goldTrim-${uniqueId}`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#FDE047" />
+          <stop offset="100%" stopColor="#CA8A04" />
+        </linearGradient>
+
+        {/* Crisp Shadow */}
+        <filter id={`starShadow-${uniqueId}`} x="-15%" y="-15%" width="130%" height="130%">
+          <feDropShadow dx="0" dy="1.5" stdDeviation="1.8" floodColor="#0F172A" floodOpacity="0.28" />
         </filter>
       </defs>
 
-      {/* Outer Glow Ring / Shield Accents */}
-      <circle cx="32" cy="32" r="30" stroke="#E2E8F0" strokeWidth="1" strokeDasharray="3 3" opacity="0.6" />
+      {/* Decorative Sovereign Ring */}
+      <circle cx="32" cy="32" r="30" stroke="url(#goldTrim-${uniqueId})" strokeWidth="0.75" strokeDasharray="2 3" opacity="0.45" />
 
-      <g filter={`url(#shadow-${uniqueId})`}>
-        {/* 1. Downward Equilateral Triangle — Blue */}
-        {/* Vertices: (7.8, 18.5) -> (56.2, 18.5) -> (32, 60.5) */}
+      <g filter={`url(#starShadow-${uniqueId})`}>
+        {/* 1. Downward Triangle (Blue Scheme) */}
+        {/* Full base polygon */}
         <polygon
-          points="7.8,18.5 56.2,18.5 32,60.5"
-          fill={`url(#blueGrad-${uniqueId})`}
-          stroke="#1E40AF"
-          strokeWidth="1.5"
+          points="32,58 54.52,19 9.48,19"
+          fill={`url(#blueBotLeft-${uniqueId})`}
+          stroke="#1E3A8A"
+          strokeWidth="1.2"
           strokeLinejoin="round"
-          opacity="0.95"
+        />
+        {/* Blue shaded right facet for 3D depth */}
+        <polygon
+          points="32,58 54.52,19 32,32"
+          fill={`url(#blueBotRight-${uniqueId})`}
+          opacity="0.85"
         />
 
-        {/* 2. Upward Equilateral Triangle — Red */}
-        {/* Vertices: (32, 3.5) -> (56.2, 45.5) -> (7.8, 45.5) */}
+        {/* 2. Upward Triangle (Red Scheme) */}
+        {/* Full base polygon */}
         <polygon
-          points="32,3.5 56.2,45.5 7.8,45.5"
-          fill={`url(#redGrad-${uniqueId})`}
+          points="32,6 54.52,45 9.48,45"
+          fill={`url(#redTopLeft-${uniqueId})`}
           stroke="#991B1B"
-          strokeWidth="1.5"
+          strokeWidth="1.2"
           strokeLinejoin="round"
-          opacity="0.95"
+        />
+        {/* Red shaded right facet for 3D depth */}
+        <polygon
+          points="32,6 54.52,45 32,32"
+          fill={`url(#redTopRight-${uniqueId})`}
+          opacity="0.85"
         />
 
-        {/* 3. Central Overlapping Hexagon — Green (Where Both Triangles Intersect) */}
-        {/* Intersect points: (20,18.5) -> (44,18.5) -> (50.1,29) -> (44,45.5) -> (20,45.5) -> (13.9,29) */}
+        {/* 3. Central Hexagon Core (Green Scheme - Intersection of Both Triangles) */}
+        {/* Exact intersection vertices: (32,19) -> (43.26,25.5) -> (43.26,38.5) -> (32,45) -> (20.74,38.5) -> (20.74,25.5) */}
         <polygon
-          points="24,18.5 40,18.5 48.1,32 40,45.5 24,45.5 15.9,32"
-          fill={`url(#greenGrad-${uniqueId})`}
-          stroke="#047857"
+          points="32,19 43.26,25.5 43.26,38.5 32,45 20.74,38.5 20.74,25.5"
+          fill={`url(#greenCore-${uniqueId})`}
+          stroke="#064E3B"
           strokeWidth="1.2"
           strokeLinejoin="round"
         />
 
-        {/* Central Core Accents */}
-        <circle cx="32" cy="32" r="5" fill="#FFFFFF" opacity="0.9" />
+        {/* Internal Facet Highlights in the Green Core */}
+        <polygon
+          points="32,19 43.26,25.5 32,32"
+          fill="#6EE7B7"
+          opacity="0.3"
+        />
+        <polygon
+          points="20.74,25.5 32,19 32,32"
+          fill="#FFFFFF"
+          opacity="0.25"
+        />
+        <polygon
+          points="32,45 43.26,38.5 32,32"
+          fill="#065F46"
+          opacity="0.4"
+        />
+
+        {/* Sovereign Central Node */}
+        <circle cx="32" cy="32" r="5" fill="#FFFFFF" stroke={`url(#goldTrim-${uniqueId})`} strokeWidth="1" />
         <circle cx="32" cy="32" r="2.8" fill="#10B981" />
       </g>
     </svg>

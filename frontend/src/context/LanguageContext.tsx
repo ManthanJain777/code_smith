@@ -107,6 +107,69 @@ const TRANSLATIONS: Record<string, Record<Language, string>> = {
   // Top Nav Controls
   'topnav.helpline': { EN: 'Toll-Free 1800-419-3436', HI: 'टोल-फ्री 1800-419-3436' },
   'topnav.langToggle': { EN: 'English (EN)', HI: 'हिन्दी (HI)' },
+  'nav.matrixAndReports': { EN: 'Compliance Matrix & Reports', HI: 'अनुपालन मैट्रिक्स एवं रिपोर्ट' },
+
+  // Dashboard & Metrics
+  'dashboard.title': { EN: 'Executive Procurement Overview', HI: 'कार्यकारी खरीद अवलोकन' },
+  'dashboard.subtitle': { EN: 'Real-time sovereign procurement monitoring under GFR 2017 standards', HI: 'GFR 2017 मानकों के तहत वास्तविक समय संप्रभु खरीद निगरानी' },
+  'dashboard.activeTenders': { EN: 'Active Tenders', HI: 'सक्रिय निविदाएं' },
+  'dashboard.pendingBids': { EN: 'Pending Bid Reviews', HI: 'लंबित बोली समीक्षाएं' },
+  'dashboard.avgCompliance': { EN: 'Avg Compliance Score', HI: 'औसत अनुपालन स्कोर' },
+  'dashboard.blockchainBlocks': { EN: 'Blockchain Proofs Anchored', HI: 'ब्लॉकचेन प्रमाणित रिकॉर्ड' },
+  'dashboard.recentActivity': { EN: 'Recent System Activity', HI: 'हाल की प्रणाली गतिविधियां' },
+  'dashboard.quickActions': { EN: 'Quick Administrative Actions', HI: 'त्वरित प्रशासनिक कार्रवाइयां' },
+  'dashboard.evaluateBids': { EN: 'Evaluate Submitted Bids', HI: 'जमा की गई बोलियों का मूल्यांकन करें' },
+  'dashboard.auditTrail': { EN: 'View Cryptographic Audit Trail', HI: 'क्रिप्टोग्राफिक ऑडिट ट्रेल देखें' },
+
+  // Compliance Matrix & Reports
+  'matrix.requirementCode': { EN: 'Requirement Code', HI: 'आवश्यकता कोड' },
+  'matrix.category': { EN: 'Category', HI: 'श्रेणी' },
+  'matrix.threshold': { EN: 'Statutory Threshold', HI: 'वैधानिक सीमा' },
+  'matrix.bidderValue': { EN: 'Bidder Submitted Value', HI: 'बोलीदाता द्वारा प्रस्तुत मूल्य' },
+  'matrix.status': { EN: 'Evaluation Status', HI: 'मूल्यांकन स्थिति' },
+  'matrix.confidence': { EN: 'Confidence Score', HI: 'विश्वास स्कोर' },
+  'matrix.reasoning': { EN: 'AI Legal Reasoning Chain', HI: 'एआई कानूनी तर्क श्रृंखला' },
+  'matrix.evidence': { EN: 'Evidence Document Citation', HI: 'साक्ष्य दस्तावेज उद्धरण' },
+  'matrix.override': { EN: 'Officer Override', HI: 'अधिकारी ओवरराइड' },
+  'matrix.runPipeline': { EN: 'Run GFR Compliance Pipeline', HI: 'GFR अनुपालन पाइपलाइन चलाएं' },
+  'matrix.exportReport': { EN: 'Export Audit Dossier (PDF)', HI: 'ऑडिट दस्तावेज डाउनलोड (PDF)' },
+  'matrix.allRequirements': { EN: 'All Requirements', HI: 'सभी आवश्यकताएं' },
+  'matrix.compliant': { EN: 'Compliant', HI: 'पूर्णतः अनुपालित' },
+  'matrix.nonCompliant': { EN: 'Non-Compliant', HI: 'गैर-अनुपालित' },
+  'matrix.unverified': { EN: 'Unverified', HI: 'असत्यापित' },
+  'matrix.contradictions': { EN: 'Contradictions & Variances', HI: 'विसंगतियाँ एवं भिन्नताएं' },
+  'matrix.detailedView': { EN: 'Detailed Matrix View', HI: 'विस्तृत मैट्रिक्स दृश्य' },
+  'matrix.reportView': { EN: 'Executive Audit Report', HI: 'कार्यकारी ऑडिट रिपोर्ट' },
+
+  // Reviews & Verification
+  'review.pending': { EN: 'Pending Human Reviews', HI: 'लंबित मानव समीक्षाएं' },
+  'review.resolve': { EN: 'Resolve Discrepancy', HI: 'विसंगति का समाधान करें' },
+  'review.approved': { EN: 'Approved & Sealed', HI: 'स्वीकृत एवं मुहरबंद' },
+  'review.rationale': { EN: 'Mandatory Legal Justification', HI: 'अनिवार्य कानूनी औचित्य' },
+  'review.submitOverride': { EN: 'Record Officer Decision', HI: 'अधिकारी निर्णय दर्ज करें' },
+
+  // Copilot & AI
+  'copilot.title': { EN: 'National Procurement AI Copilot', HI: 'राष्ट्रीय खरीद एआई सह-पायलट' },
+  'copilot.subtitle': { EN: 'GFR 2017 Grounded Statutory Assistant', HI: 'GFR 2017 आधारित वैधानिक सहायक' },
+  'copilot.askPlaceholder': { EN: 'Ask any GFR 2017 legal or tender compliance question...', HI: 'कोई भी GFR 2017 कानूनी अथवा निविदा अनुपालन प्रश्न पूछें...' },
+  'copilot.send': { EN: 'Submit Query', HI: 'प्रश्न भेजें' },
+  'copilot.suggestedPrompt': { EN: 'Suggested Inquiry', HI: 'सुझाया गया प्रश्न' },
+
+  // Multimodal OCR
+  'ocr.title': { EN: 'Statutory Certificate OCR Scanner', HI: 'वैधानिक प्रमाणपत्र ओसीआर स्कैनर' },
+  'ocr.upload': { EN: 'Upload Certificate for Instant Verification', HI: 'तत्काल सत्यापन हेतु प्रमाणपत्र अपलोड करें' },
+  'ocr.scanNow': { EN: 'Scan Document with Gemini', HI: 'जेमिनी द्वारा दस्तावेज स्कैन करें' },
+  'ocr.extracting': { EN: 'Extracting Statutory Entities...', HI: 'वैधानिक विवरण निकाले जा रहे हैं...' },
+  'ocr.verifiedGenuine': { EN: 'Cryptographically Verified Genuine', HI: 'क्रिप्टोग्राफिक रूप से सत्यापित असली' },
+  'ocr.confidence': { EN: 'Authenticity Confidence', HI: 'सत्यता विश्वास स्तर' },
+
+  // Blockchain Audit
+  'blockchain.title': { EN: 'Immutable EVM Audit Ledger', HI: 'अपरिवर्तनीय EVM ऑडिट लेज़र' },
+  'blockchain.blockNumber': { EN: 'Block Number', HI: 'ब्लॉक संख्या' },
+  'blockchain.txHash': { EN: 'Transaction Hash', HI: 'लेनदेन हैश' },
+  'blockchain.merkleRoot': { EN: 'Merkle Root Proof', HI: 'मर्कल रूट प्रमाण' },
+  'blockchain.timestamp': { EN: 'Timestamp (IST)', HI: 'समय मुहर (IST)' },
+  'blockchain.verified': { EN: 'Verified On-Chain', HI: 'ब्लॉकचेन पर सत्यापित' },
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);

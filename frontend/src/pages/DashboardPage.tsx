@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthProvider';
 import { useToast } from '../context/ToastContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Can } from '../components/auth/Can';
 import { BlockchainProofBadge } from '../components/ui/BlockchainProofBadge';
 import { CalibrationChart } from '../components/CalibrationChart';
@@ -96,6 +97,7 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, sub, icon }) => (
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
+  const { lang, t } = useLanguage();
   const role = user?.role || 'PROCUREMENT_OFFICER';
   const isVendor = role === 'BIDDER_VENDOR' || role === 'BIDDER';
   const isAuditor = role === 'AUDITOR' || role === 'VIEWER';
@@ -1450,13 +1452,17 @@ export const DashboardPage: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-              Procurement Officer Active
+              {lang === 'HI' ? 'खरीद अधिकारी सक्रिय' : 'Procurement Officer Active'}
             </span>
             <span className="text-xs text-slate-400">SIH26100 GeM Platform</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white mb-1">GeM Integrated Bid Compliance Intelligence</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white mb-1">
+            {lang === 'HI' ? 'GeM एकीकृत बोली अनुपालन बुद्धिमत्ता' : 'GeM Integrated Bid Compliance Intelligence'}
+          </h1>
           <p className="text-slate-300 text-xs mt-1 max-w-2xl leading-relaxed">
-            Deterministic evaluation engine, cross-document contradiction detection, collusion signals, and Ethereum tamper-proof ledger.
+            {lang === 'HI'
+              ? 'नियतात्मक मूल्यांकन इंजन, दस्तावेज विसंगति पहचान, मिलीभगत संकेत एवं एथेरियम ब्लॉकचेन छेड़छाड़-रोधी लेज़र।'
+              : 'Deterministic evaluation engine, cross-document contradiction detection, collusion signals, and Ethereum tamper-proof ledger.'}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
@@ -1465,7 +1471,7 @@ export const DashboardPage: React.FC = () => {
             onClick={() => setIsCreateModalOpen(true)}
             className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm cursor-pointer"
           >
-            <Plus className="w-4 h-4" /> Create Tender (NIT)
+            <Plus className="w-4 h-4" /> {lang === 'HI' ? 'नई निविदा बनाएं (NIT)' : 'Create Tender (NIT)'}
           </button>
           <button
             type="button"
@@ -1481,13 +1487,13 @@ export const DashboardPage: React.FC = () => {
             }}
             className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-sm cursor-pointer"
           >
-            <Play className="w-4 h-4" /> Run Compliance Pipeline
+            <Play className="w-4 h-4" /> {lang === 'HI' ? 'अनुपालन पाइपलाइन चलाएं' : 'Run Compliance Pipeline'}
           </button>
           <Link
             to={selectedTenderId ? `/tenders/${selectedTenderId}/compare` : '/compare'}
             className="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-sm"
           >
-            <Users className="w-4 h-4" /> Compare Bids (L1)
+            <Users className="w-4 h-4" /> {lang === 'HI' ? 'बोलियों की तुलना करें (L1)' : 'Compare Bids (L1)'}
           </Link>
         </div>
       </div>
@@ -1502,7 +1508,9 @@ export const DashboardPage: React.FC = () => {
       <div data-tour="kpi-metrics" className="bg-white rounded-xl border border-slate-200 p-3 shadow-xs flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <FileText className="w-4 h-4 text-blue-600 shrink-0" />
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Monitoring Tender:</span>
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+            {lang === 'HI' ? 'निगरानीधीन निविदा:' : 'Monitoring Tender:'}
+          </span>
           <select
             value={selectedTenderId}
             onChange={(e) => setSelectedTenderId(e.target.value)}
