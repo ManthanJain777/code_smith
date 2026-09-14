@@ -13,7 +13,7 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
   onToggleNotifications,
   unreadNotificationCount
 }) => {
-  const { user, login } = useAuth();
+  const { user, login, logout } = useAuth();
   const { lang, toggleLang, t } = useLanguage();
   const [currentTime, setCurrentTime] = useState<string>('');
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
@@ -99,9 +99,9 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
       {/* 3. Main Brand & Identity Header */}
       <div className="px-4 sm:px-8 py-2.5 flex items-center justify-between">
         <div className="flex items-center space-x-3 sm:space-x-4">
-          {/* GeM Shield Logo */}
+          {/* Official Emblem Logo */}
           <div className="relative flex-shrink-0 flex items-center justify-center">
-            <GemStarLogo size={38} variant="navy" />
+            <GemStarLogo size={44} />
           </div>
 
           <div className="flex flex-col">
@@ -140,6 +140,7 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
           {user && (
             <div className="relative border-l border-slate-200 pl-3">
               <button
+                data-tour="user-profile-menu"
                 type="button"
                 onClick={() => setIsRoleDropdownOpen(prev => !prev)}
                 className="flex items-center space-x-2 text-left hover:bg-slate-50 p-1 rounded-lg transition border border-transparent hover:border-slate-200"
@@ -166,9 +167,16 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
                     <span className="font-bold text-slate-800 text-[11px] uppercase tracking-wider">
                       Demo Persona Switcher
                     </span>
-                    <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded">
-                      Live RBAC
-                    </span>
+                    <button
+                      data-tour="logout-btn"
+                      onClick={() => {
+                        logout();
+                        setIsRoleDropdownOpen(false);
+                      }}
+                      className="text-[10px] bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold px-2 py-0.5 rounded transition cursor-pointer"
+                    >
+                      Sign Out
+                    </button>
                   </div>
                   <div className="py-1 space-y-1">
                     {DEMO_PERSONAS.map(p => {

@@ -4,9 +4,11 @@ import { AuthProvider, useAuth } from './context/AuthProvider';
 import { PermissionsProvider } from './context/PermissionsContext';
 import { ToastProvider } from './context/ToastContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { GuidedTourProvider } from './context/GuidedTourContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AppShell } from './components/layout/AppShell';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
+import { GuidedTourOverlay } from './components/ui/GuidedTourOverlay';
 
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
@@ -80,75 +82,78 @@ export const App: React.FC = () => {
           <PermissionsProvider>
             <ToastProvider>
               <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-              <Routes>
-                {/* ============================================================ */}
-                {/* PUBLIC ROUTES                                                */}
-                {/* ============================================================ */}
-                <Route path="/" element={<HomeRoute />} />
-                <Route path="/login" element={<LoginRoute />} />
+                <GuidedTourProvider>
+                  <GuidedTourOverlay />
+                  <Routes>
+                    {/* ============================================================ */}
+                    {/* PUBLIC ROUTES                                                */}
+                    {/* ============================================================ */}
+                    <Route path="/" element={<HomeRoute />} />
+                    <Route path="/login" element={<LoginRoute />} />
 
-              {/* ============================================================ */}
-              {/* PROTECTED APPLICATION SHELL — All routes inside AppShell     */}
-              {/* ============================================================ */}
-              <Route
-                path="/*"
-                element={
-                  <AppShell>
-                    <Routes>
-                      {/* Dashboard — all authenticated users; primary entry after login */}
-                      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+                    {/* ============================================================ */}
+                    {/* PROTECTED APPLICATION SHELL — All routes inside AppShell     */}
+                    {/* ============================================================ */}
+                    <Route
+                      path="/*"
+                      element={
+                        <AppShell>
+                          <Routes>
+                            {/* Dashboard — all authenticated users; primary entry after login */}
+                            <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
 
-                      {/* Tenders, Creation, Results and Compliance Matrix */}
-                      <Route path="/tenders" element={<ProtectedRoute feature="tender_spec"><TendersPage /></ProtectedRoute>} />
-                      <Route path="/tenders/:tenderId/results" element={<ProtectedRoute><TenderResultsPage /></ProtectedRoute>} />
-                      <Route path="/tenders/:tenderId/bids/create" element={<ProtectedRoute feature="bid_upload"><BidUploadPage /></ProtectedRoute>} />
-                      <Route path="/compliance" element={<ProtectedRoute feature="compliance_matrix"><ComplianceMatrixPage /></ProtectedRoute>} />
+                            {/* Tenders, Creation, Results and Compliance Matrix */}
+                            <Route path="/tenders" element={<ProtectedRoute feature="tender_spec"><TendersPage /></ProtectedRoute>} />
+                            <Route path="/tenders/:tenderId/results" element={<ProtectedRoute><TenderResultsPage /></ProtectedRoute>} />
+                            <Route path="/tenders/:tenderId/bids/create" element={<ProtectedRoute feature="bid_upload"><BidUploadPage /></ProtectedRoute>} />
+                            <Route path="/compliance" element={<ProtectedRoute feature="compliance_matrix"><ComplianceMatrixPage /></ProtectedRoute>} />
 
-                      {/* Bid Submission / Ingestion */}
-                      <Route path="/bids/upload" element={<ProtectedRoute feature="bid_upload"><BidUploadPage /></ProtectedRoute>} />
-                      <Route path="/bids/:bidId/upload" element={<ProtectedRoute feature="bid_upload"><BidUploadPage /></ProtectedRoute>} />
+                            {/* Bid Submission / Ingestion */}
+                            <Route path="/bids/upload" element={<ProtectedRoute feature="bid_upload"><BidUploadPage /></ProtectedRoute>} />
+                            <Route path="/bids/:bidId/upload" element={<ProtectedRoute feature="bid_upload"><BidUploadPage /></ProtectedRoute>} />
 
-                      {/* DigiLocker Simulation Gateway inside AppShell */}
-                      <Route path="/digilocker-simulation" element={<ProtectedRoute><DigiLockerSimulationPage /></ProtectedRoute>} />
+                            {/* DigiLocker Simulation Gateway inside AppShell */}
+                            <Route path="/digilocker-simulation" element={<ProtectedRoute><DigiLockerSimulationPage /></ProtectedRoute>} />
 
-                      {/* Multi-bidder comparison */}
-                      <Route path="/compare" element={<ProtectedRoute feature="multi_bidder_compare"><MultiBidderPage /></ProtectedRoute>} />
-                      <Route path="/tenders/:tenderId/compare" element={<ProtectedRoute feature="multi_bidder_compare"><MultiBidderPage /></ProtectedRoute>} />
+                            {/* Multi-bidder comparison */}
+                            <Route path="/compare" element={<ProtectedRoute feature="multi_bidder_compare"><MultiBidderPage /></ProtectedRoute>} />
+                            <Route path="/tenders/:tenderId/compare" element={<ProtectedRoute feature="multi_bidder_compare"><MultiBidderPage /></ProtectedRoute>} />
 
-                      {/* Copilot */}
-                      <Route path="/copilot" element={<ProtectedRoute feature="copilot_query"><CopilotPage /></ProtectedRoute>} />
+                            {/* Copilot */}
+                            <Route path="/copilot" element={<ProtectedRoute feature="copilot_query"><CopilotPage /></ProtectedRoute>} />
 
-                      {/* Analytics dashboard */}
-                      <Route path="/analytics" element={<ProtectedRoute feature="analytics_overview"><AnalyticsDashboard /></ProtectedRoute>} />
+                            {/* Analytics dashboard */}
+                            <Route path="/analytics" element={<ProtectedRoute feature="analytics_overview"><AnalyticsDashboard /></ProtectedRoute>} />
 
-                      {/* Seller Verification Routes */}
-                      <Route path="/sellers/me" element={<ProtectedRoute><SellerDetailPage /></ProtectedRoute>} />
-                      <Route path="/sellers" element={<ProtectedRoute feature="seller_queue"><SellersPage /></ProtectedRoute>} />
-                      <Route path="/sellers/:sellerId" element={<ProtectedRoute feature="seller_queue"><SellerDetailPage /></ProtectedRoute>} />
+                            {/* Seller Verification Routes */}
+                            <Route path="/sellers/me" element={<ProtectedRoute><SellerDetailPage /></ProtectedRoute>} />
+                            <Route path="/sellers" element={<ProtectedRoute feature="seller_queue"><SellersPage /></ProtectedRoute>} />
+                            <Route path="/sellers/:sellerId" element={<ProtectedRoute feature="seller_queue"><SellerDetailPage /></ProtectedRoute>} />
 
-                      {/* Human Review Queue */}
-                      <Route path="/reviews" element={<ProtectedRoute feature="human_review"><ReviewsPage /></ProtectedRoute>} />
+                            {/* Human Review Queue */}
+                            <Route path="/reviews" element={<ProtectedRoute feature="human_review"><ReviewsPage /></ProtectedRoute>} />
 
-                      {/* Compliance Reports */}
-                      <Route path="/reports" element={<ProtectedRoute feature="compliance_reports"><ReportsPage /></ProtectedRoute>} />
+                            {/* Compliance Reports */}
+                            <Route path="/reports" element={<ProtectedRoute feature="compliance_reports"><ReportsPage /></ProtectedRoute>} />
 
-                      {/* Blockchain Audit Trail */}
-                      <Route path="/audit" element={<ProtectedRoute feature="blockchain_audit"><AuditLogPage /></ProtectedRoute>} />
+                            {/* Blockchain Audit Trail */}
+                            <Route path="/audit" element={<ProtectedRoute feature="blockchain_audit"><AuditLogPage /></ProtectedRoute>} />
 
-                      {/* Government Portal Verification */}
-                      <Route path="/portals" element={<ProtectedRoute feature="portal_verification"><PortalVerificationPage /></ProtectedRoute>} />
+                            {/* Government Portal Verification */}
+                            <Route path="/portals" element={<ProtectedRoute feature="portal_verification"><PortalVerificationPage /></ProtectedRoute>} />
 
-                      {/* Catch-all 404 Route */}
-                      <Route path="*" element={<NotFoundPage />} />
-                    </Routes>
-                  </AppShell>
-                }
-              />
-            </Routes>
-          </BrowserRouter>
-          </ToastProvider>
-        </PermissionsProvider>
-      </AuthProvider>
+                            {/* Catch-all 404 Route */}
+                            <Route path="*" element={<NotFoundPage />} />
+                          </Routes>
+                        </AppShell>
+                      }
+                    />
+                  </Routes>
+                </GuidedTourProvider>
+              </BrowserRouter>
+            </ToastProvider>
+          </PermissionsProvider>
+        </AuthProvider>
       </LanguageProvider>
     </ErrorBoundary>
   );

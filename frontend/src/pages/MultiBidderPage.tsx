@@ -120,7 +120,7 @@ export const MultiBidderPage: React.FC = () => {
   if (loading) return <div className="p-8 text-center text-slate-500">Loading multi-bidder comparison...</div>;
 
   return (
-    <div className="space-y-6">
+    <div data-tour="multi-compare" className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">

@@ -1499,7 +1499,7 @@ export const DashboardPage: React.FC = () => {
       />
 
       {/* Tender Scope Selector */}
-      <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-xs flex flex-wrap items-center justify-between gap-3">
+      <div data-tour="kpi-metrics" className="bg-white rounded-xl border border-slate-200 p-3 shadow-xs flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <FileText className="w-4 h-4 text-blue-600 shrink-0" />
           <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Monitoring Tender:</span>
