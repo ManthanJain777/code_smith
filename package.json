@@ -14,6 +14,7 @@
     "dev:blockchain": "cd blockchain && npx hardhat node",
     "build": "npm run build:frontend && npm run build:backend",
     "build:frontend": "npm --prefix frontend run build",
+    "vercel-build": "npm --prefix frontend run build",
     "build:backend": "cd backend && mvn clean compile",
     "test": "npm run test:frontend && npm run test:backend && npm run test:ai && npm run test:blockchain",
     "test:frontend": "npm --prefix frontend run build",
