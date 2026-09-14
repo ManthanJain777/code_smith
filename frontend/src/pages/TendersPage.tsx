@@ -246,8 +246,8 @@ export const TendersPage: React.FC = () => {
           filteredTenders.map((tender) => (
             <div key={tender.id} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden hover:border-slate-300 transition">
               {/* Tender Header Banner */}
-              <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white p-5 flex flex-wrap items-center justify-between gap-4">
-                <div className="space-y-1.5 max-w-2xl">
+              <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="space-y-1.5 flex-1 min-w-0 pr-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-mono bg-blue-500/20 text-blue-300 border border-blue-400/30 px-2.5 py-0.5 rounded font-semibold">
                       {tender.tenderNumber}
@@ -267,7 +267,12 @@ export const TendersPage: React.FC = () => {
                       </span>
                     )}
                   </div>
-                  <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">{tender.title}</h2>
+                  <h2 
+                    className="text-lg sm:text-xl font-bold text-white tracking-tight truncate" 
+                    title={tender.title}
+                  >
+                    {tender.title.length > 52 ? `${tender.title.slice(0, 50)}...` : tender.title}
+                  </h2>
                   <div className="flex items-center gap-4 text-xs text-slate-300 flex-wrap">
                     <span className="flex items-center gap-1">
                       <Building2 className="w-3.5 h-3.5 text-slate-400" />
@@ -287,7 +292,7 @@ export const TendersPage: React.FC = () => {
                 </div>
 
                 {/* Right side: Value and Key Action */}
-                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4">
+                <div className="flex flex-wrap sm:flex-nowrap items-center justify-end gap-4 shrink-0">
                   <div className="text-right">
                     <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Estimated Value</span>
                     <span className="text-2xl font-extrabold text-white">
