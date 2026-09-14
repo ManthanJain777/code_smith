@@ -12,7 +12,7 @@ This document records the exact web addresses, ports, environments, and deployme
 |---|---|---|---|
 | **Local Development** | `http://localhost:3000` | **ONLINE** | Live Vite dev server with HMR |
 | **Local Production Build** | `http://localhost:4173` | **READY** | Tested via `npm run preview` |
-| **Vercel Production** | `https://code-smith-manthanjain777s-projects.vercel.app` (or custom assigned `https://code-smith.vercel.app`) | **CONFIGURED & READY** | Single-click deploy from GitHub repository |
+| **Vercel Production** | `https://code-smith-frontend.vercel.app` | **ONLINE & LIVE** | Deployed on Vercel Edge CDN |
 | **GitHub Repository** | `https://github.com/ManthanJain777/code_smith` | **SYNCED & LIVE** | Branch: `main` |
 
 ---
@@ -23,8 +23,8 @@ This document records the exact web addresses, ports, environments, and deployme
 | Environment | Web Address | Status | Notes |
 |---|---|---|---|
 | **Local Development** | `http://localhost:8080/api/v1` | **ONLINE** | Port 8080, H2 JPA Database, Flyway Migrations |
-| **Local Health Probe** | `http://localhost:8080/api/v1/health` | **ONLINE** | Health endpoint & system metrics |
-| **Vercel Serverless Gateway** | `https://<your-vercel-domain>/api/v1` | **DEPLOYED (Built-in)** | Native Vercel Serverless Function proxy via `/api/index.js` |
+| **Render Cloud Production** | `https://code-smith-iy3z.onrender.com/api/v1` | **DEPLOYED & LIVE** | Web Service on Render Cloud |
+| **Render Health Probe** | `https://code-smith-iy3z.onrender.com/api/v1/health` | **ONLINE** | Health endpoint & system metrics |
 | **Docker Container** | `http://localhost:8080` | **CONFIGURED** | Built via `docker-compose.yml` service `backend` |
 
 ---

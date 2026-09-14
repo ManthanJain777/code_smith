@@ -128,7 +128,11 @@ public class SecurityConfig {
             "http://localhost:[*]",
             "http://127.0.0.1:[*]",
             "https://*.gembid.local",
-            "https://*.gov.in"
+            "https://*.gov.in",
+            "https://*.vercel.app",
+            "https://code-smith-frontend.vercel.app",
+            "https://*.onrender.com",
+            "*"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
