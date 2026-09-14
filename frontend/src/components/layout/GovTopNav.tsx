@@ -147,23 +147,7 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
       label: isVendor ? 'Browse Tenders' : 'Tenders',
       path: '/tenders',
       icon: FileText,
-      allowed: hasAccess('tender_spec'),
-      children: isOfficer || isAdmin ? [
-        {
-          label: 'Tenders & Specifications',
-          path: '/tenders',
-          description: 'View active tender requisitions, constraints, and clauses',
-          icon: FileText,
-          allowed: hasAccess('tender_spec')
-        },
-        {
-          label: 'Tender Results & Rank Lists',
-          path: '/tenders/TND-PUMP-001/results',
-          description: 'Public blockchain-anchored rank lists and awardee determinations',
-          icon: Award,
-          allowed: true
-        }
-      ] : undefined
+      allowed: hasAccess('tender_spec')
     },
     {
       id: 'submission',
