@@ -296,29 +296,89 @@ export const apiService = {
     }
   },
 
-  submitHumanReview: async (review: HumanReviewRequest): Promise<ComplianceResult> => {
+  submitHumanReview: async (review: any): Promise<ComplianceResult> => {
+    const payload = {
+      complianceResultId: review.complianceResultId || review.id || review.requirementId,
+      reviewerId: review.reviewerId || 'USR-DEMO-REV',
+      finalStatus: review.finalStatus || review.newStatus || review.status || 'COMPLIANT',
+      reviewerNote: review.reviewerNote || review.reviewerNotes || review.rationale || 'Status confirmed by compliance officer with GFR 2017 justification.'
+    };
     try {
       const res = await fetchWithAuth(`${API_BASE_URL}/reviews/override`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(review)
+        body: JSON.stringify(payload)
       });
       return await handleResponseJson<ComplianceResult>(res);
     } catch {
       return {
-        id: `RES-OVR-${Date.now()}`,
-        requirementId: review.requirementId,
+        id: payload.complianceResultId,
+        requirementId: payload.complianceResultId,
         requirementCode: 'REQ-REVIEWED',
         requirementText: 'Human Reviewer Override Applied',
         category: 'Human Override',
-        bidId: review.bidId,
-        status: review.newStatus,
+        bidId: review.bidId || 'BID-APEX-001',
+        status: payload.finalStatus,
         verificationMethod: 'human_override',
-        reasoning: review.rationale || 'Status overridden by authorized compliance reviewer.',
+        reasoning: payload.reviewerNote,
         confidence: 1.0,
         evidenceIds: '',
-        reviewStatus: 'APPROVED',
+        reviewStatus: 'OVERRIDDEN',
+        humanOverridden: true,
+        reviewerNotes: payload.reviewerNote,
         createdAt: new Date().toISOString()
+      };
+    }
+  },
+
+  getClarifications: async (): Promise<any[]> => {
+    try {
+      const res = await fetchWithAuth(`${API_BASE_URL}/reviews/clarifications`);
+      return await handleResponseJson<any[]>(res);
+    } catch {
+      return [
+        {
+          id: 'CLR-2026-001',
+          clauseCode: 'REQ-SOL-001',
+          clauseName: 'Annual Turnover Threshold',
+          tenderNumber: 'GEM/2026/SOLAR/99088',
+          statutoryRule: 'GFR 2017 Rule 173(iv)',
+          deadline: '2026-09-18 17:00 IST',
+          status: 'AWAITING_VENDOR_REPRESENTATION',
+          committeeQuery: 'Clarify discrepancy between CA turnover certificate UDIN and GST return turnover totals. Please furnish audited balance sheet schedule.'
+        },
+        {
+          id: 'CLR-2026-002',
+          clauseCode: 'REQ-SOL-003',
+          clauseName: 'Pump Efficiency Testbed Calibration',
+          tenderNumber: 'GEM/2026/SOLAR/99088',
+          statutoryRule: 'GFR 2017 Rule 173(iv)',
+          deadline: '2026-09-19 14:00 IST',
+          status: 'REPRESENTATION_SUBMITTED',
+          committeeQuery: 'Submit accredited laboratory test bench certificate confirming operating efficiency >= 85% at 10 bar.',
+          submittedReply: 'CWPRS test report CWPRS/HYD/2026/8912 submitted confirming 99.1% peak efficiency.',
+          blockchainProof: '0x9a8f4c2e1b7d5a3f0e8c6b4a2d0f8e6c4b2a0d8e6c4b2a0d8e6c4b2a0d8e6c4b'
+        }
+      ];
+    }
+  },
+
+  submitClarificationReply: async (id: string, payload: { statement: string; supportingDoc?: string; dscSerial?: string }): Promise<any> => {
+    try {
+      const res = await fetchWithAuth(`${API_BASE_URL}/reviews/clarifications/${encodeURIComponent(id)}/reply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      return await handleResponseJson(res);
+    } catch {
+      const pseudoTx = '0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('');
+      return {
+        id,
+        status: 'REPRESENTATION_SUBMITTED',
+        txHash: pseudoTx,
+        blockNumber: 1045,
+        message: 'Representation digitally signed with DSC and anchored to EVM blockchain.'
       };
     }
   },

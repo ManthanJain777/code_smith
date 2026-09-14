@@ -331,6 +331,15 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
               A+
             </button>
           </div>
+          {/* Public Portal Link */}
+          <Link
+            to="/landing"
+            className="hidden sm:flex items-center space-x-1 text-slate-300 hover:text-amber-300 transition-colors text-[10px] border-l border-slate-700 pl-3 font-semibold"
+            title="View Public GeM Portal Landing Page"
+          >
+            <Home className="w-3 h-3 text-amber-400" />
+            <span>{lang === 'HI' ? 'सार्वजनिक पोर्टल' : 'Public Portal'}</span>
+          </Link>
 
           {/* Language Toggle */}
           <div className="flex items-center space-x-2 border-l border-slate-700 pl-3">
@@ -351,63 +360,6 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
               <span>{t('topnav.helpline')}</span>
             </a>
           </div>
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* LIVE DEMO ROLE SWITCHER TOOLBAR (EXPERIENCE ALL 5 ROLES INSTANTLY)        */}
-      {/* ========================================================================= */}
-      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 text-white px-4 sm:px-6 lg:px-8 py-1.5 border-b border-indigo-900/40 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-[10px] uppercase font-bold tracking-widest text-amber-400 bg-amber-950/90 px-2 py-0.5 rounded border border-amber-500/40 flex items-center gap-1 shadow-xs">
-            <Zap className="w-3 h-3 text-amber-400 fill-amber-400" /> {lang === 'HI' ? 'डेमो भूमिका स्विचर' : 'DEMO ROLE SWITCHER'}
-          </span>
-          <span className="text-slate-400 hidden sm:inline text-[11px]">
-            {lang === 'HI' ? 'हितधारक परिप्रेक्ष्य का परीक्षण करने हेतु भूमिका बदलें:' : 'Switch identity to test any stakeholder perspective:'}
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
-          {[
-            { role: 'BIDDER_VENDOR', label: lang === 'HI' ? 'बोलीदाता / विक्रेता' : 'Bidder / Vendor', icon: UploadCloud },
-            { role: 'PROCUREMENT_OFFICER', label: lang === 'HI' ? 'खरीद अधिकारी' : 'Procurement Officer', icon: FileText },
-            { role: 'COMPLIANCE_REVIEWER', label: lang === 'HI' ? 'अनुपालन समीक्षक' : 'Compliance Reviewer', icon: CheckCircle2 },
-            { role: 'AUDITOR', label: lang === 'HI' ? 'लेखा परीक्षक एवं सतर्कता' : 'Auditor & Vigilance', icon: ShieldCheck },
-            { role: 'SYSTEM_ADMIN', label: lang === 'HI' ? 'सिस्टम प्रशासक' : 'System Admin', icon: Server },
-          ].map(r => {
-            const isCurrent = user?.role === r.role || (r.role === 'BIDDER_VENDOR' && user?.role === 'BIDDER');
-            return (
-              <button
-                key={r.role}
-                type="button"
-                onClick={() => {
-                  switchRole(r.role);
-                  navigate('/dashboard');
-                }}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                  isCurrent
-                    ? 'bg-amber-500 text-slate-950 shadow-md font-black ring-1 ring-amber-300'
-                    : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60'
-                }`}
-                title={`Switch active perspective to ${r.label}`}
-              >
-                <r.icon className={`w-3 h-3 ${isCurrent ? 'text-slate-950' : 'text-amber-400'}`} />
-                <span>{r.label}</span>
-                {isCurrent && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-700 animate-pulse ml-0.5" />
-                )}
-              </button>
-            );
-          })}
-
-          <button
-            type="button"
-            onClick={startTour}
-            className="px-3 py-1 rounded-md text-[11px] font-black bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 hover:from-amber-400 hover:to-amber-300 transition flex items-center gap-1.5 cursor-pointer shadow-md border border-amber-300 ml-1.5 shrink-0"
-            title="Start First-Time User Experience (FTUE) Guided Demo Tour"
-          >
-            <Sparkles className="w-3.5 h-3.5 fill-slate-950" />
-            <span>{lang === 'HI' ? 'इंटरैक्टिव टूर' : 'Interactive Tour'}</span>
-          </button>
         </div>
       </div>
 
@@ -436,7 +388,7 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
           </div>
         </Link>
 
-        {/* Center: Global Search Bar for Tenders & Bids */}
+        {/* Center: Global GeM Omnibar Search */}
         <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-md mx-4">
           <div className="relative w-full flex items-center">
             <select
@@ -465,8 +417,20 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
           </div>
         </form>
 
-        {/* Right: Notifications, User Avatar & PROMINENT LOGOUT BUTTON */}
+        {/* Right: Interactive Tour Button, Notifications, User Identity & PROMINENT LOGOUT BUTTON */}
         <div className="flex items-center space-x-3 flex-shrink-0">
+          {/* JUDGES INTERACTIVE TOUR BUTTON */}
+          <button
+            type="button"
+            onClick={startTour}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 transition shadow-sm border border-amber-300 cursor-pointer animate-pulse ring-1 ring-amber-400/40"
+            title="Start Automated 7-Minute Judge Walkthrough"
+          >
+            <Sparkles className="w-3.5 h-3.5 fill-slate-950" />
+            <span className="hidden sm:inline">{lang === 'HI' ? '🏆 निर्णायक मंडल टूर' : '🏆 Judges Interactive Tour'}</span>
+            <span className="sm:hidden">{lang === 'HI' ? 'टूर' : 'Tour'}</span>
+          </button>
+
           {/* Notifications Drawer Button */}
           <button
             onClick={onToggleNotifications}

@@ -31,24 +31,10 @@ import { NotFoundPage } from './pages/NotFoundPage';
 
 /**
  * Public Home Route:
- * If user is authenticated, redirect to /dashboard immediately.
- * If user is guest, display the public GeM landing page.
+ * Always displays the public GeM sovereign landing page.
+ * If user is logged in, the landing page includes a prominent "Access Command Dashboard" button.
  */
 const HomeRoute: React.FC = () => {
-  const { user, isLoading } = useAuth();
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-600 font-mono text-xs">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
-          <span>Verifying GeM security session...</span>
-        </div>
-      </div>
-    );
-  }
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
-  }
   return <LandingPage />;
 };
 
@@ -86,9 +72,10 @@ export const App: React.FC = () => {
                   <GuidedTourOverlay />
                   <Routes>
                     {/* ============================================================ */}
-                    {/* PUBLIC ROUTES                                                */}
+                    {/* PUBLIC ROUTES — Landing page always opens directly           */}
                     {/* ============================================================ */}
                     <Route path="/" element={<HomeRoute />} />
+                    <Route path="/landing" element={<LandingPage />} />
                     <Route path="/login" element={<LoginRoute />} />
 
                     {/* ============================================================ */}

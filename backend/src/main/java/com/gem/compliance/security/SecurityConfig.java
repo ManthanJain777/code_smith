@@ -43,7 +43,7 @@ public class SecurityConfig {
             .exceptionHandling(exception -> exception.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
             .authorizeHttpRequests(auth -> auth
                 // Public Documentation, Health & Error Dispatch Endpoints
-                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/health", "/api/v1/health", "/api/v1/ai/health", "/error").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/health", "/api/v1/health", "/api/v1/ai/health", "/api/v1/ai/security/**", "/error").permitAll()
                 // Explicit Public Auth Endpoint for Dev/Demo Token Generation
                 .requestMatchers("/api/v1/auth/**").permitAll()
 
@@ -74,6 +74,9 @@ public class SecurityConfig {
                     "COMPLIANCE_REVIEWER", "SYSTEM_ADMIN",
                     "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN"
                 )
+
+                // Vendor Clarification Inquiries & Representations under GFR Rule 173(iv) (Registered BEFORE broader /reviews/**)
+                .requestMatchers("/api/v1/reviews/clarifications", "/api/v1/reviews/clarifications/**").authenticated()
 
                 // Human Reviews & Overrides - strictly officers, reviewers, and admin
                 .requestMatchers("/api/v1/reviews", "/api/v1/reviews/**", "/api/v1/compliance/override").hasAnyAuthority(

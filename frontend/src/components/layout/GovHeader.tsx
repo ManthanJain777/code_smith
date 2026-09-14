@@ -17,22 +17,6 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
   const { lang, toggleLang, t } = useLanguage();
   const [currentTime, setCurrentTime] = useState<string>('');
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
-  const [isSwitchingRole, setIsSwitchingRole] = useState(false);
-
-  const DEMO_PERSONAS = [
-    { role: 'PROCUREMENT_OFFICER', name: 'Sh. Rajesh Sharma', email: 'procurement.demo@gembid.local', label: 'Procurement Officer (TIA)' },
-    { role: 'COMPLIANCE_REVIEWER', name: 'Smt. Priya Verma', email: 'reviewer.demo@gembid.local', label: 'Compliance Reviewer (SME)' },
-    { role: 'AUDITOR', name: 'CAG Audit Directorate', email: 'auditor.demo@gembid.local', label: 'Chief Vigilance Auditor' },
-    { role: 'BIDDER_VENDOR', name: 'Apex Pumps & Motors', email: 'bidder.demo@gembid.local', label: 'Registered Bidder / OEM' },
-    { role: 'SYSTEM_ADMIN', name: 'Dr. Amit Patel', email: 'admin.demo@gembid.local', label: 'System Admin (DevSecOps)' },
-  ];
-
-  const handleSwitchPersona = async (email: string) => {
-    setIsSwitchingRole(true);
-    await login(email, 'Password123!');
-    setIsSwitchingRole(false);
-    setIsRoleDropdownOpen(false);
-  };
 
   useEffect(() => {
     const updateTime = () => {
@@ -160,12 +144,23 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
                 </div>
               </button>
 
-              {/* Persona Switcher Dropdown */}
+              {/* Clean Official User Profile Dropdown */}
               {isRoleDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-slate-200 p-2 z-50 text-xs animate-in fade-in slide-in-from-top-2">
-                  <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between">
-                    <span className="font-bold text-slate-800 text-[11px] uppercase tracking-wider">
-                      {lang === 'HI' ? 'डेमो भूमिका स्विचर' : 'Demo Persona Switcher'}
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-slate-200 p-3 z-50 text-xs animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center gap-2.5 pb-2.5 border-b border-slate-100">
+                    <div className="w-10 h-10 rounded-full bg-slate-900 text-amber-400 font-bold flex items-center justify-center text-sm shadow-inner">
+                      {user.fullName?.charAt(0) || 'U'}
+                    </div>
+                    <div>
+                      <div className="font-bold text-slate-900 text-xs">{user.fullName}</div>
+                      <div className="text-[10px] text-amber-700 font-semibold uppercase">{user.role?.replace('ROLE_', '')}</div>
+                      <div className="text-[10px] text-slate-400 font-mono">{user.email}</div>
+                    </div>
+                  </div>
+                  <div className="pt-2 flex items-center justify-between">
+                    <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      {lang === 'HI' ? 'सक्रिय सत्र' : 'Active Session'}
                     </span>
                     <button
                       data-tour="logout-btn"
@@ -173,36 +168,10 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
                         logout();
                         setIsRoleDropdownOpen(false);
                       }}
-                      className="text-[10px] bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold px-2 py-0.5 rounded transition cursor-pointer"
+                      className="text-[10px] bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold px-2.5 py-1 rounded transition cursor-pointer"
                     >
                       {lang === 'HI' ? 'लॉग आउट' : 'Sign Out'}
                     </button>
-                  </div>
-                  <div className="py-1 space-y-1">
-                    {DEMO_PERSONAS.map(p => {
-                      const isCurrent = user.role === p.role;
-                      return (
-                        <button
-                          key={p.role}
-                          onClick={() => handleSwitchPersona(p.email)}
-                          disabled={isSwitchingRole}
-                          className={`w-full text-left px-3 py-2 rounded-lg transition flex flex-col ${
-                            isCurrent
-                              ? 'bg-amber-50 text-amber-900 font-bold border border-amber-200'
-                              : 'hover:bg-slate-50 text-slate-700'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold">{p.name}</span>
-                            {isCurrent && <span className="text-[10px] text-amber-600 font-extrabold">ACTIVE</span>}
-                          </div>
-                          <span className="text-[10px] text-slate-500">{p.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="pt-2 border-t border-slate-100 px-2 text-[10px] text-slate-400 text-center">
-                    Instant zero-reload RBAC switching for jury evaluation
                   </div>
                 </div>
               )}

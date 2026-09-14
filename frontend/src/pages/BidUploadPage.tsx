@@ -253,7 +253,7 @@ export const BidUploadPage: React.FC = () => {
         formData.append('file', fileItem.file);
         formData.append('bid_id', activeBidId);
 
-        const res = await fetch(`${aiServiceUrl}/api/v1/ai/documents/upload-async`, {
+        const res = await fetch(`${aiServiceUrl}/ai/documents/upload-async`, {
           method: 'POST',
           body: formData,
         });
@@ -268,7 +268,7 @@ export const BidUploadPage: React.FC = () => {
           while (attempts < 10) {
             attempts++;
             await new Promise(r => setTimeout(r, 400));
-            const pollRes = await fetch(`${aiServiceUrl}/api/v1/ai/jobs/${fileItem.jobId}`);
+            const pollRes = await fetch(`${aiServiceUrl}/ai/jobs/${fileItem.jobId}`);
             if (pollRes.ok) {
               const jobData = await pollRes.json();
               fileItem.progress = jobData.progress_percent || 80;

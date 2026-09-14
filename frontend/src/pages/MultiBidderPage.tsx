@@ -4,14 +4,16 @@ import { apiService } from '../services/api';
 import { Tender, ComplianceResult, ComplianceStatus } from '../types/compliance';
 import { CheckCircle2, XCircle, AlertCircle, HelpCircle, MinusCircle, Users, ArrowLeft, Download, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthProvider';
+import { useLanguage } from '../context/LanguageContext';
 
-const StatusBadge: React.FC<{ status: ComplianceStatus }> = ({ status }) => {
+const StatusBadge: React.FC<{ status: ComplianceStatus; lang: string }> = ({ status, lang }) => {
+  const isHi = lang === 'HI';
   const config: Record<string, { bg: string; text: string; icon: React.ReactNode; label: string }> = {
-    COMPLIANT:          { bg: 'bg-emerald-100', text: 'text-emerald-800', icon: <CheckCircle2 className="w-3 h-3" />, label: 'COMPLIANT' },
-    PARTIALLY_COMPLIANT:{ bg: 'bg-amber-100',   text: 'text-amber-800',   icon: <AlertCircle className="w-3 h-3" />,  label: 'PARTIALLY_COMPLIANT' },
-    NON_COMPLIANT:      { bg: 'bg-rose-100',    text: 'text-rose-800',    icon: <XCircle className="w-3 h-3" />,      label: 'NON_COMPLIANT' },
-    UNVERIFIED:         { bg: 'bg-slate-100',   text: 'text-slate-600',   icon: <HelpCircle className="w-3 h-3" />,   label: 'UNVERIFIED' },
-    NOT_APPLICABLE:     { bg: 'bg-gray-100',    text: 'text-gray-600',    icon: <MinusCircle className="w-3 h-3" />,  label: 'NOT_APPLICABLE' },
+    COMPLIANT:          { bg: 'bg-emerald-100', text: 'text-emerald-800', icon: <CheckCircle2 className="w-3 h-3" />, label: isHi ? 'अनुपालक' : 'COMPLIANT' },
+    PARTIALLY_COMPLIANT:{ bg: 'bg-amber-100',   text: 'text-amber-800',   icon: <AlertCircle className="w-3 h-3" />,  label: isHi ? 'आंशिक अनुपालक' : 'PARTIALLY_COMPLIANT' },
+    NON_COMPLIANT:      { bg: 'bg-rose-100',    text: 'text-rose-800',    icon: <XCircle className="w-3 h-3" />,      label: isHi ? 'गैर-अनुपालक' : 'NON_COMPLIANT' },
+    UNVERIFIED:         { bg: 'bg-slate-100',   text: 'text-slate-600',   icon: <HelpCircle className="w-3 h-3" />,   label: isHi ? 'असत्यापित' : 'UNVERIFIED' },
+    NOT_APPLICABLE:     { bg: 'bg-gray-100',    text: 'text-gray-600',    icon: <MinusCircle className="w-3 h-3" />,  label: isHi ? 'लागू नहीं' : 'NOT_APPLICABLE' },
   };
   const c = config[status] || config.UNVERIFIED;
   return (
@@ -23,6 +25,8 @@ const StatusBadge: React.FC<{ status: ComplianceStatus }> = ({ status }) => {
 
 export const MultiBidderPage: React.FC = () => {
   const { user } = useAuth();
+  const { lang } = useLanguage();
+  const isHi = lang === 'HI';
   const isAuditor = user?.role === 'AUDITOR' || user?.role === 'VIEWER';
 
   const { tenderId: paramTenderId } = useParams<{ tenderId: string }>();
@@ -117,7 +121,7 @@ export const MultiBidderPage: React.FC = () => {
     document.body.removeChild(link);
   };
 
-  if (loading) return <div className="p-8 text-center text-slate-500">Loading multi-bidder comparison...</div>;
+  if (loading) return <div className="p-8 text-center text-slate-500">{isHi ? 'तुलना डेटा लोड हो रहा है...' : 'Loading multi-bidder comparison...'}</div>;
 
   return (
     <div data-tour="multi-compare" className="space-y-6">
@@ -130,7 +134,9 @@ export const MultiBidderPage: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-emerald-600" />
-              <h1 className="text-xl font-bold text-slate-900">Multi-Bidder Comparison Matrix</h1>
+              <h1 className="text-xl font-bold text-slate-900">
+                {isHi ? 'बहु-बोलीदाता तुलनात्मक मूल्यांकन मैट्रिक्स' : 'Multi-Bidder Comparison Matrix'}
+              </h1>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
               {tender?.title || 'Submersible Water Pump Sets'} ({tender?.tenderReferenceNumber || 'GEM/2026/B/892341'})
@@ -143,13 +149,13 @@ export const MultiBidderPage: React.FC = () => {
             onClick={exportToCsv}
             className="inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold cursor-pointer transition shadow-sm"
           >
-            <Download className="w-4 h-4" /> Download CSV Comparison
+            <Download className="w-4 h-4" /> {isHi ? 'सीएसवी तुलना डाउनलोड करें' : 'Download CSV Comparison'}
           </button>
           <Link
-            to={`/reports?tenderId=${activeTenderId}`}
+            to={`/compliance?tenderId=${activeTenderId}&view=report`}
             className="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold transition"
           >
-            GeM Executive Report
+            {isHi ? 'जीईएम कार्यकारी रिपोर्ट' : 'GeM Executive Report'}
           </Link>
         </div>
       </div>
@@ -160,7 +166,10 @@ export const MultiBidderPage: React.FC = () => {
           <div className="flex items-center gap-2.5">
             <Lock className="w-4 h-4 text-teal-700 shrink-0" />
             <span>
-              <strong>Auditor Vigilance Oversight:</strong> Reviewing comparative evaluations across all competing bidders to audit technical evaluation parity and detect favoritism under GFR 2017.
+              <strong>{isHi ? 'लेखा परीक्षक सतर्कता निगरानी:' : 'Auditor Vigilance Oversight:'}</strong>{' '}
+              {isHi
+                ? 'सभी प्रतिस्पर्धी बोलीदाताओं के बीच तकनीकी मूल्यांकन समानता की समीक्षा करना और पक्षपात का पता लगाना।'
+                : 'Reviewing comparative evaluations across all competing bidders to audit technical evaluation parity and detect favoritism under GFR 2017.'}
             </span>
           </div>
           <span className="px-2 py-0.5 rounded bg-teal-200 text-teal-900 font-mono text-[10px] font-bold shrink-0">
@@ -172,7 +181,9 @@ export const MultiBidderPage: React.FC = () => {
       {/* Tender Scope Selector Bar */}
       <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-xs flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Selected Tender:</span>
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+            {isHi ? 'चयनित निविदा:' : 'Selected Tender:'}
+          </span>
           <select
             value={activeTenderId}
             onChange={(e) => setActiveTenderId(e.target.value)}
@@ -185,7 +196,13 @@ export const MultiBidderPage: React.FC = () => {
             ))}
           </select>
         </div>
-        <span className="text-xs text-slate-500">Comparing <strong>{bidders.length}</strong> Bidders</span>
+        <span className="text-xs text-slate-500">
+          {isHi ? (
+            <>कुल <strong>{bidders.length}</strong> बोलीदाताओं की तुलना की जा रही है</>
+          ) : (
+            <>Comparing <strong>{bidders.length}</strong> Bidders</>
+          )}
+        </span>
       </div>
 
       {/* Bidder Score Cards */}
@@ -207,17 +224,25 @@ export const MultiBidderPage: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <div className={`text-2xl font-extrabold ${score !== null && score >= 75 ? 'text-emerald-700' : 'text-amber-700'}`}>
-                    {score !== null ? `${score}%` : 'Pending'}
+                    {score !== null ? `${score}%` : (isHi ? 'प्रतीक्षित' : 'Pending')}
                   </div>
-                  <div className="text-xs font-medium text-slate-600">Compliance Rate</div>
+                  <div className="text-xs font-medium text-slate-600">
+                    {isHi ? 'अनुपालन दर' : 'Compliance Rate'}
+                  </div>
                 </div>
               </div>
               <div className="flex gap-3 text-xs items-center">
-                <span className="text-emerald-700 font-semibold">{results.filter(r => r.status === 'COMPLIANT').length} Valid Pass</span>
-                <span className="text-rose-700 font-semibold">{nonCompliant} Invalid Fail</span>
-                <span className="text-amber-700 font-semibold">{partial} ◐ Partial</span>
+                <span className="text-emerald-700 font-semibold">
+                  {results.filter(r => r.status === 'COMPLIANT').length} {isHi ? 'मान्य पास' : 'Valid Pass'}
+                </span>
+                <span className="text-rose-700 font-semibold">
+                  {nonCompliant} {isHi ? 'अमान्य फेल' : 'Invalid Fail'}
+                </span>
+                <span className="text-amber-700 font-semibold">
+                  {partial} {isHi ? 'आंशिक' : '◐ Partial'}
+                </span>
                 <span className={`ml-auto font-bold px-2 py-0.5 rounded text-white text-[10px] ${riskColor}`}>
-                  Risk: {bidder.risk}/100
+                  {isHi ? 'जोखिम' : 'Risk'}: {bidder.risk}/100
                 </span>
               </div>
             </div>
@@ -228,14 +253,16 @@ export const MultiBidderPage: React.FC = () => {
       {/* Comparison Table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="p-4 border-b border-slate-100 bg-slate-50">
-          <h2 className="font-bold text-slate-900 text-sm">Requirement-by-Requirement Comparison</h2>
+          <h2 className="font-bold text-slate-900 text-sm">
+            {isHi ? 'शर्त-वार तुलनात्मक विवरण तालिका' : 'Requirement-by-Requirement Comparison'}
+          </h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
             <thead>
               <tr className="bg-slate-100 border-b border-slate-200">
-                <th className="p-3 font-bold text-slate-700 w-28">Req Code</th>
-                <th className="p-3 font-bold text-slate-700">Category / Requirement</th>
+                <th className="p-3 font-bold text-slate-700 w-28">{isHi ? 'नियम कोड' : 'Req Code'}</th>
+                <th className="p-3 font-bold text-slate-700">{isHi ? 'श्रेणी / शर्त' : 'Category / Requirement'}</th>
                 {bidders.map(b => (
                   <th key={b.id} className="p-3 font-bold text-slate-700 text-center min-w-[140px]">{b.name.split(' ')[0]}</th>
                 ))}
@@ -255,8 +282,10 @@ export const MultiBidderPage: React.FC = () => {
                       <td key={bidder.id} className="p-3 text-center">
                         {result ? (
                           <div>
-                            <StatusBadge status={result.status} />
-                            <div className="mt-1 text-[10px] text-slate-400">{(result.confidence * 100).toFixed(0)}% conf.</div>
+                            <StatusBadge status={result.status} lang={lang} />
+                            <div className="mt-1 text-[10px] text-slate-400">
+                              {(result.confidence * 100).toFixed(0)}% {isHi ? 'विश्वास' : 'conf.'}
+                            </div>
                           </div>
                         ) : (
                           <span className="text-slate-400 text-[11px]">—</span>
@@ -272,10 +301,21 @@ export const MultiBidderPage: React.FC = () => {
       </div>
 
       <div className="text-xs text-slate-400 text-center">
-        Status legend: <span className="text-emerald-600 font-semibold">COMPLIANT</span> = verified compliant •
-        <span className="text-rose-600 font-semibold mx-1">NON_COMPLIANT</span> = verified non-compliant •
-        <span className="text-amber-600 font-semibold mx-1">PARTIALLY_COMPLIANT</span> = some conditions met •
-        <span className="text-slate-600 font-semibold mx-1">UNVERIFIED</span> = insufficient evidence (system returns UNVERIFIED, never guesses)
+        {isHi ? (
+          <>
+            स्थिति संकेत: <span className="text-emerald-600 font-semibold">अनुपालक</span> = सत्यापित अनुपालक •
+            <span className="text-rose-600 font-semibold mx-1">गैर-अनुपालक</span> = सत्यापित गैर-अनुपालक •
+            <span className="text-amber-600 font-semibold mx-1">आंशिक अनुपालक</span> = कुछ शर्तें पूर्ण •
+            <span className="text-slate-600 font-semibold mx-1">असत्यापित</span> = अपर्याप्त साक्ष्य (प्रणाली कभी अनुमान नहीं लगाती)
+          </>
+        ) : (
+          <>
+            Status legend: <span className="text-emerald-600 font-semibold">COMPLIANT</span> = verified compliant •
+            <span className="text-rose-600 font-semibold mx-1">NON_COMPLIANT</span> = verified non-compliant •
+            <span className="text-amber-600 font-semibold mx-1">PARTIALLY_COMPLIANT</span> = some conditions met •
+            <span className="text-slate-600 font-semibold mx-1">UNVERIFIED</span> = insufficient evidence (system returns UNVERIFIED, never guesses)
+          </>
+        )}
       </div>
     </div>
   );
