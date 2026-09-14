@@ -4,7 +4,8 @@ import { apiService } from '../services/api';
 import { Tender } from '../types/compliance';
 import { ApiErrorState } from '../components/ui/ApiErrorState';
 import { CreateTenderModal } from '../components/tenders/CreateTenderModal';
-import { FileText, Plus, CheckCircle, ShieldCheck } from 'lucide-react';
+import { Can } from '../components/auth/Can';
+import { FileText, Plus, CheckCircle, ShieldCheck, Award } from 'lucide-react';
 
 export const TendersPage: React.FC = () => {
   const [tenders, setTenders] = useState<Tender[]>([]);
@@ -45,20 +46,24 @@ export const TendersPage: React.FC = () => {
           <p className="text-sm text-slate-500 mt-1">Manage active tender specifications and extracted requirement criteria.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Link
-            to="/bids/upload"
-            className="inline-flex items-center gap-2 bg-slate-100 border border-slate-300 text-slate-700 text-sm font-semibold px-3.5 py-2.5 rounded-lg hover:bg-slate-200 transition shadow-xs cursor-pointer"
-            title="Simulate vendor submitting documents against a tender"
-          >
-            <span>📤 Simulate Vendor Bid</span>
-          </Link>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 bg-emerald-600 text-white text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-emerald-500 transition shadow-sm cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            Create / Upload Tender Document
-          </button>
+          <Can role={['SYSTEM_ADMIN', 'BIDDER_VENDOR', 'BIDDER']}>
+            <Link
+              to="/bids/upload"
+              className="inline-flex items-center gap-2 bg-slate-100 border border-slate-300 text-slate-700 text-sm font-semibold px-3.5 py-2.5 rounded-lg hover:bg-slate-200 transition shadow-xs cursor-pointer"
+              title="Simulate vendor submitting documents against a tender"
+            >
+              <span> Simulate Vendor Bid</span>
+            </Link>
+          </Can>
+          <Can role={['PROCUREMENT_OFFICER', 'SYSTEM_ADMIN']}>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="inline-flex items-center gap-2 bg-emerald-600 text-white text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-emerald-500 transition shadow-sm cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              Create / Upload Tender Document
+            </button>
+          </Can>
         </div>
       </div>
 
@@ -93,32 +98,44 @@ export const TendersPage: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        const res = await apiService.runCompliancePipeline(tender.id);
-                        alert(`Compliance evaluation executed for ${tender.tenderNumber}: ${res.message || 'Complete'}`);
-                      } catch (e: any) {
-                        alert(`Evaluation error: ${e.message}`);
-                      }
-                    }}
-                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
-                    title="Execute deterministic & AI evaluation on submitted bids"
-                  >
-                    <span>⚡ Run Evaluation</span>
-                  </button>
-                  <Link
-                    to={`/tenders/${tender.id}/compare`}
-                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition flex items-center gap-1"
-                  >
-                    <span>👥 Compare Bids</span>
-                  </Link>
+                  <Can role={['PROCUREMENT_OFFICER', 'COMPLIANCE_REVIEWER', 'SYSTEM_ADMIN']}>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const res = await apiService.runCompliancePipeline(tender.id);
+                          alert(`Compliance evaluation executed for ${tender.tenderNumber}: ${res.message || 'Complete'}`);
+                        } catch (e: any) {
+                          alert(`Evaluation error: ${e.message}`);
+                        }
+                      }}
+                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+                      title="Execute deterministic & AI evaluation on submitted bids"
+                    >
+                      <span> Run Evaluation</span>
+                    </button>
+                  </Can>
+                  <Can role={['SYSTEM_ADMIN', 'PROCUREMENT_OFFICER']}>
+                    <Link
+                      to={`/tenders/${tender.id}/compare`}
+                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition flex items-center gap-1"
+                    >
+                      <span>Compare Bids</span>
+                    </Link>
+                  </Can>
                   <Link
                     to={`/compliance?tenderId=${tender.id}`}
                     className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1"
                   >
-                    <span>⚖️ Matrix</span>
+                    <span>Matrix</span>
+                  </Link>
+                  <Link
+                    to={`/tenders/${tender.id}/results`}
+                    className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1 shadow-xs"
+                    title="View public award determination and on-chain proof"
+                  >
+                    <Award className="w-3.5 h-3.5" />
+                    <span>Standings & Results</span>
                   </Link>
                 </div>
               </div>

@@ -280,6 +280,28 @@ public class GovernmentVerificationService {
         return toJson(resp);
     }
 
+    // ── SINGLE PORTAL VERIFICATION ────────────────────────────────────────
+    public Map<String, Object> runSinglePortalCheck(Seller seller, String portalKey) {
+        String pan = extractPan(seller.getCinOrPan());
+        
+        switch (portalKey.toUpperCase()) {
+            case "GSTN": return parseJson(queryGstnConnector(seller.getGstin(), seller.getOrganizationName()));
+            case "PAN_INCOME_TAX": return parseJson(queryPanIncomeTaxConnector(pan, seller.getOrganizationName()));
+            case "MCA21": return parseJson(queryMca21Connector(seller.getCinOrPan(), seller.getOrganizationName()));
+            case "UDYAM_MSME": return parseJson(queryUdyamConnector(seller.getUdyamRegistration(), seller.getOrganizationName()));
+            case "STARTUP_INDIA_DPIIT": return parseJson(queryDpiitConnector(seller.getDpiitNumber()));
+            case "NSIC": return parseJson(queryNsicConnector(null, seller.getOrganizationName()));
+            case "OEM_AUTHORIZATION": return parseJson(queryOemAuthorizationConnector(null, seller.getOrganizationName()));
+            case "MAKE_IN_INDIA": return parseJson(queryMakeInIndiaConnector(null, seller.getOrganizationName()));
+            case "BIS_DPIIT": return parseJson(queryBisConnector(seller.getBisLicense()));
+            case "EPFO": return parseJson(queryEpfoConnector(seller.getEpfoCode()));
+            case "ESIC": return parseJson(queryEsicConnector(null, seller.getOrganizationName()));
+            case "DIGILOCKER": return parseJson(queryDigiLockerConnector("SHA256-DEMO-" + (seller.getId() != null ? seller.getId() : "000")));
+            case "DEBARMENT_BLACKLIST": return parseJson(queryDebarmentConnector(pan, seller.getCinOrPan()));
+            default: return Map.of("error", "Unknown portal key: " + portalKey);
+        }
+    }
+
     // ── ORCHESTRATOR: All-Portal Full Verification ─────────────────────────
     public Map<String, Object> runAllPortalChecks(Seller seller) {
         Map<String, Object> report = new LinkedHashMap<>();

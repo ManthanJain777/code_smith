@@ -1,4 +1,4 @@
-﻿const { expect } = require("chai");
+const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("ComplianceAuditLedger", function () {
@@ -54,5 +54,19 @@ describe("ComplianceAuditLedger", function () {
     await contract.anchorEvent(h1, "EVENT_1", "SYSTEM");
     await contract.anchorEvent(h2, "EVENT_2", "SYSTEM");
     expect(await contract.totalEvents()).to.equal(2);
+  });
+
+  it("Should reject empty eventType", async function () {
+    const eventHash = ethers.keccak256(ethers.toUtf8Bytes("AUD-EMPTY-TYPE"));
+    await expect(
+      contract.anchorEvent(eventHash, "", "USR-OFFICER-01")
+    ).to.be.revertedWith("ComplianceAuditLedger: empty eventType");
+  });
+
+  it("Should reject empty actorId", async function () {
+    const eventHash = ethers.keccak256(ethers.toUtf8Bytes("AUD-EMPTY-ACTOR"));
+    await expect(
+      contract.anchorEvent(eventHash, "TENDER_CREATED", "")
+    ).to.be.revertedWith("ComplianceAuditLedger: empty actorId");
   });
 });

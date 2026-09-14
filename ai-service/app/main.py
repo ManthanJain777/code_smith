@@ -38,13 +38,53 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+import os
+import re
+
+ALLOWED_ORIGINS_ENV = os.environ.get("ALLOWED_ORIGINS")
+ALLOWED_ORIGINS = [orig.strip() for orig in ALLOWED_ORIGINS_ENV.split(",")] if ALLOWED_ORIGINS_ENV else [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+ALLOWED_EXTENSIONS = {".pdf", ".doc", ".docx", ".xls", ".xlsx"}
+MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024  # 50MB
+
+def sanitize_filename(filename: str) -> str:
+    """Sanitize filename to prevent path traversal and shell injection attacks."""
+    clean = os.path.basename(filename.replace("\\", "/"))
+    clean = re.sub(r"[^\w\.\-]", "_", clean)
+    return clean
+
+async def validate_upload_file(file: UploadFile) -> bytes:
+    """Validates file existence, 50MB size boundary, allowed extensions, and path safety."""
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Uploaded file must include a valid filename.")
+    clean_name = sanitize_filename(file.filename)
+    file.filename = clean_name
+    ext = os.path.splitext(clean_name)[1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File extension '{ext}' is not permitted. Allowed extensions: {', '.join(sorted(ALLOWED_EXTENSIONS))}"
+        )
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE_BYTES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File exceeds maximum allowed upload size of 50MB (received {len(content)} bytes)."
+        )
+    return content
 
 
 @app.get("/health", tags=["System"])
@@ -72,7 +112,7 @@ def parse_tender_requirements(request: RequirementParseRequest):
 @app.post("/api/v1/ai/tender/upload-pdf", tags=["Tender Understanding"])
 async def upload_and_parse_tender_pdf(file: UploadFile = File(...), tender_id: str = Form("TND-001")):
     try:
-        file_bytes = await file.read()
+        file_bytes = await validate_upload_file(file)
         pages = extract_text_from_bytes(file_bytes, file.filename)
         full_text = "\n".join(p["text"] for p in pages)
         requirements = TenderUnderstandingEngine.extract_requirements(tender_id, full_text)
@@ -81,6 +121,8 @@ async def upload_and_parse_tender_pdf(file: UploadFile = File(...), tender_id: s
             "page_count": len(pages), "requirements_extracted": len(requirements),
             "requirements": [r.model_dump() for r in requirements], "pages": pages,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -88,9 +130,11 @@ async def upload_and_parse_tender_pdf(file: UploadFile = File(...), tender_id: s
 @app.post("/api/v1/ai/documents/upload-async", tags=["Document Intelligence Pipeline"])
 async def upload_document_async(file: UploadFile = File(...), bid_id: str = Form("BID-A-01")):
     try:
-        file_bytes = await file.read()
+        file_bytes = await validate_upload_file(file)
         job_id = DocumentJobWorker.create_job(file.filename, file_bytes, bid_id)
         return {"job_id": job_id, "filename": file.filename, "status": "QUEUED"}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -108,13 +152,8 @@ def search_evidence_rag(requirement: ExtractedRequirement, bid_id: str = "BID-A-
     try:
         vector_index = DocumentJobWorker.get_vector_index()
         evidences = HybridEvidenceRetriever.retrieve_candidates(bid_id, requirement, vector_index)
-        if not evidences:
-            evidences = DocumentIntelligenceEngine.extract_evidence_from_text(
-                bid_id=bid_id, document_id="DOC-07", document_name="Financial_Statements.pdf",
-                content_text="FY2025 Turnover: Rs.94 Crore\nPump efficiency: 88.4%\nFY2023: Rs.112 Crore\nFY2024: Rs.127 Crore",
-                requirement=requirement
-            )
-        return evidences
+        # Evidence-first principle: Never fabricate evidence if none is found
+        return evidences if evidences is not None else []
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -139,9 +178,13 @@ def detect_contradictions(evidences: List[ExtractedEvidence], bid_id: str = "BID
 @app.post("/api/v1/ai/documents/forgery-check", tags=["Document Integrity"])
 async def check_document_forgery(file: UploadFile = File(...)):
     try:
-        file_bytes = await file.read()
+        file_bytes = await validate_upload_file(file)
         report = ForgeryDetectionEngine.analyze(file_bytes, file.filename)
         return report.dict()
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -181,14 +224,37 @@ def verify_seller_ai(request: SellerVerificationRequest):
 @app.post("/copilot/query", response_model=CopilotQueryResponse, tags=["Procurement Copilot"])
 def query_copilot(request: CopilotQueryRequest):
     try:
+        role = (request.role or "").upper()
+        question_lower = request.question.lower()
+
+        if "BIDDER" in role:
+            if "compare" in question_lower or "competitor" in question_lower or "other bid" in question_lower:
+                return CopilotQueryResponse(
+                    answer="Access Denied (GFR Rule 173): Bidders are strictly prohibited from inspecting competitor bids or comparative compliance data.",
+                    source_results=[],
+                    confidence=1.0
+                )
+            
+        if "REVIEWER" in role:
+            if "compare" in question_lower or "competitor" in question_lower:
+                return CopilotQueryResponse(
+                    answer="Scope Refusal: Reviewers are restricted to their assigned queue. Cross-bidder comparison is reserved for Procurement Officers.",
+                    source_results=[],
+                    confidence=1.0
+                )
+
         DocumentJobWorker.ensure_demo_indexed()
         index = DocumentJobWorker.get_vector_index()
+        
+        # Scoped search in vector index
         retrieved_chunks = index.search(request.question, top_k=request.max_results, bid_id=request.bid_id)
-        if not retrieved_chunks:
-            # Fallback across all chunks if specific bid chunk didn't match
+        if not retrieved_chunks and role not in ["BIDDER", "BIDDER_VENDOR", "REVIEWER"]:
+            # Fallback across all chunks if specific bid chunk didn't match and not restricted
             retrieved_chunks = index.search(request.question, top_k=request.max_results)
+
         return ProcurementCopilotEngine.answer_query(
             request=request,
+            compliance_results=getattr(request, 'compliance_results', None),
             retrieved_evidence=retrieved_chunks
         )
     except Exception as e:
@@ -205,9 +271,9 @@ def get_copilot_transcripts():
 
 @app.post("/documents/extract", tags=["Document Intelligence Pipeline"])
 @app.post("/api/v1/ai/documents/extract", tags=["Document Intelligence Pipeline"])
-async def extract_document_sync(file: UploadFile = File(...), bid_id: str = Form("BID-APEX-001")):
+async def extract_document_sync(file: UploadFile = File(...), bid_id: str = Form("")):
     try:
-        file_bytes = await file.read()
+        file_bytes = await validate_upload_file(file)
         pages = extract_text_from_bytes(file_bytes, file.filename)
         return {
             "filename": file.filename,
@@ -216,6 +282,8 @@ async def extract_document_sync(file: UploadFile = File(...), bid_id: str = Form
             "pages": pages,
             "status": "PARSED"
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

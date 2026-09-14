@@ -11,17 +11,16 @@ import lombok.*;
 @Builder
 public class ContradictionResolveRequest {
 
-    @Builder.Default
+    @NotBlank(message = "Bid ID is mandatory")
     @JsonAlias({"bidId", "bid_id"})
-    private String bidId = "BID-APEX-001";
+    private String bidId;
 
-    @Builder.Default
+    @NotBlank(message = "Requirement ID / Contradiction ID is mandatory")
     @JsonAlias({"requirementId", "requirement_id", "contradictionId", "contradiction_id"})
-    private String requirementId = "REQ-FIN-TURNOVER";
+    private String requirementId;
 
-    @Builder.Default
     @JsonAlias({"precedentDocumentName", "chosenPrecedentDoc", "precedent_document_name", "chosen_precedent_doc"})
-    private String precedentDocumentName = "AUDITED_BALANCE_SHEET";
+    private String precedentDocumentName;
 
     @NotBlank(message = "Resolution rationale is mandatory")
     @Size(min = 15, message = "Resolution rationale must be at least 15 characters long")

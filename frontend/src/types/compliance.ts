@@ -43,11 +43,21 @@ export interface Bid {
   tenderId: string;
   bidderName: string;
   gstin: string;
+  bidderGstin?: string;
   cin?: string;
   pan?: string;
+  bidderPan?: string;
+  bidderEmail?: string;
   status: string;
   submittedAt: string;
   riskScore?: number;
+  totalAmount?: number;
+  complianceScore?: number;
+  blockchainTx?: string;
+  blockchainTxHash?: string;
+  dscSerial?: string;
+  forgeryRisk?: number;
+  debarmentStatus?: string;
 }
 
 export interface ComplianceResult {
@@ -63,7 +73,18 @@ export interface ComplianceResult {
   confidence: number;
   evidenceIds: string;
   reviewStatus: 'PENDING' | 'APPROVED' | 'OVERRIDDEN';
+  humanOverridden?: boolean;
+  reviewerNotes?: string;
+  blockchainTxHash?: string;
   createdAt: string;
+  /** Structured document-level citations extracted by AI */
+  evidenceCitations?: Array<{
+    documentName: string;
+    pageNum: number;
+    extractedText?: string;
+    snippet?: string;
+    confidence?: number;
+  }>;
 }
 
 export interface AuditLog {

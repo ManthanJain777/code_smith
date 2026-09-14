@@ -106,3 +106,73 @@ def test_contradiction_detection():
     assert len(flags) == 1
     assert flags[0].severity == "HIGH"
     assert "800.0" in flags[0].description and "500.0" in flags[0].description
+
+
+def test_numeric_threshold_exact_equality():
+    """Regression test for operator '==' exact equality edge case."""
+    req = ExtractedRequirement(
+        requirement_id="REQ-EQ-001",
+        tender_id="TND-001",
+        category="Technical",
+        text_raw="Pump discharge port diameter must equal exactly 150 mm",
+        type=RequirementType.NUMERIC_THRESHOLD,
+        operator="==",
+        threshold=150.0,
+        unit="mm",
+        mandatory=True,
+        source_page=5
+    )
+
+    evidences = [
+        ExtractedEvidence(
+            evidence_id="EVD-EQ-01",
+            bid_id="BID-A-01",
+            document_id="DOC-08",
+            document_name="Technical_Specs.pdf",
+            page=4,
+            extracted_value=150.0,
+            extracted_unit="mm",
+            raw_snippet="Flange Discharge Diameter: 150.0 mm",
+            extraction_confidence=0.99
+        )
+    ]
+
+    res = ComplianceReasoningEngine.evaluate(req, evidences, "BID-A-01")
+    # Must be COMPLIANT, NOT Non-Compliant fall-through
+    assert res.status == ComplianceStatus.COMPLIANT
+    assert res.verification_method == VerificationMethod.DETERMINISTIC
+    assert "150.0" in res.reasoning
+
+
+def test_canonical_compliance_status_serializer():
+    from app.schemas.compliance import canonical_compliance_status
+    assert canonical_compliance_status(ComplianceStatus.COMPLIANT) == "COMPLIANT"
+    assert canonical_compliance_status("compliant") == "COMPLIANT"
+    assert canonical_compliance_status("NON_COMPLIANT") == "NON_COMPLIANT"
+    assert canonical_compliance_status("Partially_Compliant") == "PARTIALLY_COMPLIANT"
+    assert canonical_compliance_status(None) == "UNVERIFIED"
+    assert canonical_compliance_status("unknown_status") == "UNVERIFIED"
+
+
+def test_copilot_database_transcripts_persistence():
+    from app.engines.copilot import ProcurementCopilotEngine
+    from app.schemas.compliance import CopilotQueryRequest
+
+    req = CopilotQueryRequest(
+        tender_id="TND-TEST-001",
+        bid_id="BID-TEST-001",
+        question="What is the testing status of the pumps?",
+        user_name="Testing Officer",
+        role="PROCUREMENT_OFFICER"
+    )
+
+    resp = ProcurementCopilotEngine.answer_query(req)
+    assert resp is not None
+    assert resp.answer is not None
+
+    transcripts = ProcurementCopilotEngine.get_query_transcripts()
+    assert len(transcripts) >= 1
+    latest = transcripts[0]
+    assert latest["question"] == "What is the testing status of the pumps?"
+    assert latest["user_name"] == "Testing Officer"
+

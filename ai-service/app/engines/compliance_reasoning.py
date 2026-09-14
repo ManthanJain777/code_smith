@@ -60,21 +60,28 @@ class ComplianceReasoningEngine:
                 )
 
             threshold = requirement.threshold
-            operator = requirement.operator or ">="
+            operator = (requirement.operator or ">=").strip()
+            norm_op = operator.lower()
 
             compliant_count = 0
             non_compliant_count = 0
 
             for val in extracted_numbers:
-                if operator == ">=" and val >= threshold:
+                # Direct or floating-point equality tolerance
+                is_equal = abs(val - threshold) < 1e-5 or val == threshold
+
+                if norm_op in (">=", "gte") and (val >= threshold or is_equal):
                     compliant_count += 1
-                elif operator == ">" and val > threshold:
+                elif norm_op in (">", "gt") and val > threshold:
                     compliant_count += 1
-                elif operator == "<=" and val <= threshold:
+                elif norm_op in ("<=", "lte") and (val <= threshold or is_equal):
                     compliant_count += 1
-                elif operator == "<" and val < threshold:
+                elif norm_op in ("<", "lt") and val < threshold:
                     compliant_count += 1
-                elif operator == "==" and val == threshold:
+                elif norm_op in ("==", "=", "eq", "equals") and is_equal:
+                    compliant_count += 1
+                elif is_equal and norm_op in ("==", "=", "eq"):
+                    # Explicit equality guard before else
                     compliant_count += 1
                 else:
                     non_compliant_count += 1

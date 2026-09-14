@@ -2,7 +2,10 @@ package com.gem.compliance.service;
 
 import com.gem.compliance.domain.User;
 import com.gem.compliance.repository.UserRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,10 +15,29 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Environment env;
+
+    @PostConstruct
+    public void validateProfileSecurity() {
+        boolean isProd = Arrays.asList(env.getActiveProfiles()).contains("prod") 
+                      || Arrays.asList(env.getActiveProfiles()).contains("production");
+        boolean isDemo = Arrays.asList(env.getActiveProfiles()).contains("demo");
+        if (isProd && isDemo) {
+            throw new IllegalStateException("FATAL SECURITY VIOLATION: The 'demo' profile cannot be active concurrently with 'prod' profile!");
+        }
+        if (isProd) {
+            log.info("PRODUCTION SECURITY GUARD ACTIVE: All password bypasses and synthetic demo user fallbacks are strictly disabled.");
+        }
+    }
+
+    private boolean isDemoProfileActive() {
+        return Arrays.asList(env.getActiveProfiles()).contains("demo");
+    }
 
     public Optional<User> authenticate(String email, String password) {
         if (email == null || password == null) {
@@ -27,20 +49,25 @@ public class UserService {
 
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            if (passwordEncoder.matches(password, user.getPasswordHash()) 
-                || "Password123!".equals(password) 
+            // Production cryptographic password check
+            if (passwordEncoder.matches(password, user.getPasswordHash())) {
+                return Optional.of(user);
+            }
+            // Demo plaintext password bypass strictly permitted ONLY under explicit 'demo' profile
+            if (isDemoProfileActive() && ("Password123!".equals(password) 
                 || "demo".equalsIgnoreCase(password)
                 || "pass".equalsIgnoreCase(password)
-                || "password".equalsIgnoreCase(password)) {
+                || "password".equalsIgnoreCase(password))) {
+                log.warn("DEMO PROFILE AUTH: Plaintext password bypass permitted for user '{}'", cleanEmail);
                 return Optional.of(user);
             }
         }
 
-        // Demo Fallback for standard demo accounts if DB seed was delayed
-        if ("Password123!".equals(password) 
+        // Demo Fallback for standard demo accounts strictly isolated to 'demo' profile
+        if (isDemoProfileActive() && ("Password123!".equals(password) 
             || "demo".equalsIgnoreCase(password) 
             || "pass".equalsIgnoreCase(password)
-            || "password".equalsIgnoreCase(password)) {
+            || "password".equalsIgnoreCase(password))) {
             User demoUser = buildFallbackDemoUser(cleanEmail);
             if (demoUser != null) {
                 return Optional.of(demoUser);
@@ -62,8 +89,11 @@ public class UserService {
         u = userRepository.findByEmailIgnoreCase(clean);
         if (u.isPresent()) return u;
 
-        // Fallback demo user match
-        return Optional.ofNullable(buildFallbackDemoUser(clean));
+        // Fallback demo user match strictly isolated to 'demo' profile
+        if (isDemoProfileActive()) {
+            return Optional.ofNullable(buildFallbackDemoUser(clean));
+        }
+        return Optional.empty();
     }
 
     public Optional<User> findByEmail(String email) {

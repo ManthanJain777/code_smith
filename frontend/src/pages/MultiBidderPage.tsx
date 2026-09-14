@@ -88,26 +88,14 @@ export const MultiBidderPage: React.FC = () => {
     return allResults[bidderId]?.find(r => r.requirementCode === reqCode);
   }
 
-  function getBidderScore(bidderId: string): number {
+  function getBidderScore(bidderId: string): number | null {
     const results = allResults[bidderId] || [];
-    if (results.length === 0) return bidderId.includes('GFL') ? 86 : 60;
+    if (results.length === 0) return null;
     const compliant = results.filter(r => r.status === 'COMPLIANT').length;
     return Math.round((compliant / results.length) * 100);
   }
 
-  const fallbackRequirements = [
-    { id: '1', reqCode: 'REQ-TECH-001', category: 'Technical', rawText: 'Pumping capacity: minimum 500 LPM at 40m head' },
-    { id: '2', reqCode: 'REQ-TECH-002', category: 'Technical', rawText: 'Motor rating: 7.5 HP (5.5 kW) three phase 415V' },
-    { id: '3', reqCode: 'REQ-FIN-001', category: 'Financial', rawText: 'Average annual turnover of past 3 years >= Rs. 2.5 Crore' },
-    { id: '4', reqCode: 'REQ-EXP-001', category: 'Experience', rawText: 'Minimum 3 completed government supply contracts for water pumps' },
-    { id: '5', reqCode: 'REQ-CERT-001', category: 'Certification', rawText: 'Valid ISO 9001:2015 certification at time of bid submission' },
-    { id: '6', reqCode: 'REQ-COMM-001', category: 'Commercial', rawText: 'Delivery period: maximum 45 days from purchase order date' },
-    { id: '7', reqCode: 'REQ-DOC-001', category: 'Documentary', rawText: 'Submission of Audited Balance Sheet for FY 2022-23, 2023-24, 2024-25' },
-  ];
-
-  const requirements = (tender?.requirements && tender.requirements.length > 0)
-    ? tender.requirements
-    : fallbackRequirements;
+  const requirements = tender?.requirements || [];
 
   const exportToCsv = () => {
     const headers = ['Req Code', 'Category', 'Requirement Text', ...bidders.map(b => `${b.name} (${b.id})`)];
@@ -123,7 +111,7 @@ export const MultiBidderPage: React.FC = () => {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Multi_Bidder_Comparison_${tenderId}.csv`);
+    link.setAttribute('download', `Multi_Bidder_Comparison_${activeTenderId}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -218,16 +206,16 @@ export const MultiBidderPage: React.FC = () => {
                   <p className="text-xs text-slate-500 font-mono">{bidder.gstin}</p>
                 </div>
                 <div className="text-right">
-                  <div className={`text-2xl font-extrabold ${score >= 75 ? 'text-emerald-700' : 'text-amber-700'}`}>
-                    {score}%
+                  <div className={`text-2xl font-extrabold ${score !== null && score >= 75 ? 'text-emerald-700' : 'text-amber-700'}`}>
+                    {score !== null ? `${score}%` : 'Pending'}
                   </div>
                   <div className="text-xs font-medium text-slate-600">Compliance Rate</div>
                 </div>
               </div>
               <div className="flex gap-3 text-xs items-center">
-                <span className="text-emerald-700 font-semibold">{results.filter(r => r.status === 'COMPLIANT').length || (bidder.id.includes('GFL') ? 6 : 4)} ✓ Pass</span>
-                <span className="text-rose-700 font-semibold">{nonCompliant || (bidder.id.includes('GFL') ? 0 : 2)} ✗ Fail</span>
-                <span className="text-amber-700 font-semibold">{partial || (bidder.id.includes('GFL') ? 1 : 1)} ◐ Partial</span>
+                <span className="text-emerald-700 font-semibold">{results.filter(r => r.status === 'COMPLIANT').length} Valid Pass</span>
+                <span className="text-rose-700 font-semibold">{nonCompliant} Invalid Fail</span>
+                <span className="text-amber-700 font-semibold">{partial} ◐ Partial</span>
                 <span className={`ml-auto font-bold px-2 py-0.5 rounded text-white text-[10px] ${riskColor}`}>
                   Risk: {bidder.risk}/100
                 </span>
@@ -284,9 +272,9 @@ export const MultiBidderPage: React.FC = () => {
       </div>
 
       <div className="text-xs text-slate-400 text-center">
-        Status legend: <span className="text-emerald-600 font-semibold">PASS</span> = verified compliant •
-        <span className="text-rose-600 font-semibold mx-1">FAIL</span> = verified non-compliant •
-        <span className="text-amber-600 font-semibold mx-1">PARTIAL</span> = some conditions met •
+        Status legend: <span className="text-emerald-600 font-semibold">COMPLIANT</span> = verified compliant •
+        <span className="text-rose-600 font-semibold mx-1">NON_COMPLIANT</span> = verified non-compliant •
+        <span className="text-amber-600 font-semibold mx-1">PARTIALLY_COMPLIANT</span> = some conditions met •
         <span className="text-slate-600 font-semibold mx-1">UNVERIFIED</span> = insufficient evidence (system returns UNVERIFIED, never guesses)
       </div>
     </div>

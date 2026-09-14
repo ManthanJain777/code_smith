@@ -217,8 +217,15 @@ public class ComplianceService {
         reviewRepository.save(review);
 
         // 3. Create Audit Log record & Anchor on Blockchain
+        String auditId = "AUD-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        BlockchainService.AnchorReceipt receipt = blockchainService.anchorAuditEventSync(
+            auditId,
+            "COMPLIANCE_OVERRIDDEN",
+            request.getReviewerId()
+        );
+
         AuditLog audit = AuditLog.builder()
-                .id("AUD-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase())
+                .id(auditId)
                 .actorId(request.getReviewerId())
                 .actorRole("PROCUREMENT_OFFICER")
                 .organizationId("ORG-001")
@@ -226,9 +233,12 @@ public class ComplianceService {
                 .resourceType("COMPLIANCE_RESULT")
                 .resourceId(result.getId())
                 .details(String.format("Status changed from %s to %s. Note: %s", originalStatus, finalStatus, request.getReviewerNote()))
+                .txHash(receipt.txHash())
+                .blockNumber(receipt.blockNumber())
+                .blockchainAnchored(true)
+                .anchorTimestamp(ZonedDateTime.now())
                 .build();
         auditLogRepository.save(audit);
-        blockchainService.anchorAuditEvent(audit.getId(), "COMPLIANCE_OVERRIDDEN", request.getReviewerId());
 
         // 4. Re-evaluate and synchronize parent Bid aggregate status
         if (result.getBidId() != null) {

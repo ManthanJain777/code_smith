@@ -1,7 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
-import { ShieldCheck, Lock, Mail, Eye, EyeOff, AlertCircle, ArrowRight, UserCheck } from 'lucide-react';
+import {
+  ShieldCheck, Lock, Mail, Eye, EyeOff, AlertCircle, ArrowRight,
+  UserCheck, CheckCircle2, ChevronLeft, ChevronRight, Cpu, Layers, Database
+} from 'lucide-react';
+import { AshokaEmblem } from '../components/ui/AshokaEmblem';
+
+interface CarouselSlide {
+  title: string;
+  subtitle: string;
+  tag: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const CAROUSEL_SLIDES: CarouselSlide[] = [
+  {
+    title: 'Autonomous Bid Compliance Evaluation',
+    subtitle: 'Zero-hallucination deterministic clause verification and hybrid RAG evidence citation under GFR 2017 Rules.',
+    tag: 'PROCUREMENT INTELLIGENCE',
+    icon: Cpu
+  },
+  {
+    title: '13-Portal Automated Statutory Vetting',
+    subtitle: 'Real-time API connector simulation across GSTN, MCA21, EPFO, DPIIT, and CPPP debarment registries.',
+    tag: 'SELLER VERIFICATION',
+    icon: Database
+  },
+  {
+    title: 'Ethereum Proof-of-Authority Audit Ledger',
+    subtitle: 'Immutable, tamper-proof on-chain anchoring for bid submissions, officer overrides, and tender awards.',
+    tag: 'BLOCKCHAIN INTEGRITY',
+    icon: Layers
+  }
+];
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -9,12 +41,29 @@ export const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeSlide, setActiveSlide] = useState(0);
 
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = (location.state as any)?.from?.pathname || '/';
+  const from = (location.state as any)?.from?.pathname || '/dashboard';
+
+  // Check if session expired query param is present
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('session') === 'expired') {
+      setErrorMessage('Your security session has expired. Please sign in again.');
+    }
+  }, [location.search]);
+
+  // Auto-advance marketing carousel every 6s
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveSlide(prev => (prev + 1) % CAROUSEL_SLIDES.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +76,7 @@ export const LoginPage: React.FC = () => {
     if (res.success) {
       navigate(from, { replace: true });
     } else {
-      setErrorMessage(res.error || 'Authentication failed');
+      setErrorMessage(res.error || 'Authentication failed. Please verify credentials.');
     }
   };
 
@@ -47,174 +96,317 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background Glow Overlay */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
+  const currentSlide = CAROUSEL_SLIDES[activeSlide];
+  const SlideIcon = currentSlide.icon;
 
-      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="flex justify-center items-center space-x-3 mb-2">
-          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 p-2.5 shadow-lg shadow-emerald-500/20 flex items-center justify-center">
-            <ShieldCheck className="h-8 w-8 text-slate-950 stroke-[2.5]" />
-          </div>
-          <span className="text-2xl font-black tracking-tight text-white font-mono">
-            GeM<span className="text-emerald-400">COMPLY</span>
-          </span>
-        </div>
-        <h2 className="text-center text-xl font-bold tracking-tight text-slate-200">
-          Government e-Marketplace
-        </h2>
-        <p className="mt-1 text-center text-xs text-slate-400 uppercase tracking-widest font-mono">
-          AI Compliance & Seller Verification Platform
-        </p>
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between relative overflow-hidden font-sans">
+      {/* Top 4px National Tricolor Strip */}
+      <div className="h-1 w-full flex sticky top-0 z-50" aria-hidden="true">
+        <div className="h-full w-1/3 bg-[#FF9933]" />
+        <div className="h-full w-1/3 bg-[#FFFFFF]" />
+        <div className="h-full w-1/3 bg-[#138808]" />
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4 sm:px-0">
-        <div className="bg-slate-900/90 backdrop-blur-xl py-8 px-6 shadow-2xl border border-slate-800 rounded-2xl sm:px-8">
-          
-          {errorMessage && (
-            <div className="mb-6 rounded-lg bg-red-950/80 border border-red-500/30 p-4 flex items-start space-x-3 text-red-200">
-              <AlertCircle className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
-              <div className="text-xs">{errorMessage}</div>
-            </div>
-          )}
+      {/* Official Government Accessibility & Portal Top Bar */}
+      <div className="bg-white border-b border-slate-200 py-1.5 px-4 sm:px-8 text-[11px] text-slate-600 flex flex-wrap justify-between items-center gap-2">
+        <div className="flex items-center space-x-2">
+          <span className="font-semibold text-slate-800">भारत सरकार | Government of India</span>
+          <span className="text-slate-300">•</span>
+          <span>Ministry of Commerce & Industry</span>
+        </div>
+        <div className="flex items-center space-x-3 text-[10px] font-mono text-slate-500">
+          <span>GFR 2017 & 2024 Audit Engine</span>
+          <span className="text-slate-300">•</span>
+          <span>SIH26100 Secure Gateway</span>
+        </div>
+      </div>
 
-          <form className="space-y-5" onSubmit={handleLogin}>
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                Official Email Address
-              </label>
-              <div className="relative rounded-lg shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                  <Mail className="h-4 w-4" />
-                </div>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="officer@gem.gov.in"
-                  className="block w-full pl-10 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm transition-all"
-                />
-              </div>
-            </div>
+      {/* Subtle Background Mesh */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] bg-emerald-100/40 blur-[130px] rounded-full pointer-events-none" />
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                Password
-              </label>
-              <div className="relative rounded-lg shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                  <Lock className="h-4 w-4" />
-                </div>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="block w-full pl-10 pr-10 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm transition-all"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-md text-sm font-semibold text-slate-950 bg-emerald-400 hover:bg-emerald-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 transition-all cursor-pointer"
-            >
-              {isSubmitting ? (
-                <span>Authenticating JWT Session...</span>
-              ) : (
-                <span className="flex items-center space-x-2">
-                  <span>Sign In to Platform</span>
-                  <ArrowRight className="h-4 w-4" />
-                </span>
-              )}
-            </button>
-          </form>
-
-          {/* Quick Demo Login Section */}
-          <div className="mt-8 pt-6 border-t border-slate-800">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-semibold text-amber-400 tracking-wider uppercase flex items-center space-x-1.5">
-                <UserCheck className="h-4 w-4" />
-                <span>Phase 1.5 Quick Role Logins</span>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col justify-center py-8 px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Brand Header with Official Ashoka Emblem */}
+        <div className="text-center sm:mx-auto sm:w-full sm:max-w-2xl mb-6">
+          <div className="flex flex-col items-center justify-center mb-3">
+            <AshokaEmblem size={52} variant="navy" className="mb-2" />
+            <div className="flex items-center space-x-2">
+              <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
+                GeM<span className="text-amber-600">COMPLIANCE</span>
               </span>
-              <span className="text-[10px] text-slate-500 font-mono">Password: Password123!</span>
+              <span className="bg-amber-100 text-amber-900 font-bold text-[9px] px-2 py-0.5 rounded border border-amber-300">
+                GFR 2017 CERTIFIED
+              </span>
+            </div>
+          </div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+            Government e-Marketplace Verification Gateway
+          </h1>
+          <p className="mt-1 text-xs text-slate-500 uppercase tracking-widest font-mono">
+            National Public Procurement AI Compliance Engine • SIH26100
+          </p>
+        </div>
+
+        {/* 2-Column Responsive Layout: Feature Carousel + Auth Form */}
+        <div className="max-w-5xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+          {/* Left Column: Carousel & Trust Accreditations */}
+          <div className="lg:col-span-6 space-y-5">
+            {/* Dynamic Feature Carousel Card */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-7 shadow-sm relative overflow-hidden">
+              <div className="flex items-center justify-between mb-4">
+                <span className="px-2.5 py-1 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 uppercase tracking-wider">
+                  {currentSlide.tag}
+                </span>
+                <div className="flex items-center space-x-1.5">
+                  {CAROUSEL_SLIDES.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveSlide(idx)}
+                      className={`h-2 rounded-full transition-all cursor-pointer ${
+                        activeSlide === idx ? 'w-6 bg-emerald-600' : 'w-2 bg-slate-200 hover:bg-slate-300'
+                      }`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2.5 min-h-[140px]">
+                <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 mb-2">
+                  <SlideIcon className="w-6 h-6" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-snug">
+                  {currentSlide.title}
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  {currentSlide.subtitle}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between pt-5 border-t border-slate-100 text-xs text-slate-500">
+                <span>GFR 2017 & 2024 Procurement Standards</span>
+                <div className="flex items-center space-x-1.5">
+                  <button
+                    onClick={() => setActiveSlide(prev => (prev - 1 + CAROUSEL_SLIDES.length) % CAROUSEL_SLIDES.length)}
+                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+                    aria-label="Previous Slide"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setActiveSlide(prev => (prev + 1) % CAROUSEL_SLIDES.length)}
+                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+                    aria-label="Next Slide"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('procurement.demo@gembid.local', 'Procurement Officer')}
-                className="w-full text-left px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 flex items-center justify-between text-xs transition-colors group cursor-pointer"
-              >
+            {/* Trust Badge Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-white border border-slate-200 rounded-xl p-3 flex items-center space-x-3 shadow-xs">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                 <div>
-                  <span className="font-semibold text-emerald-400 group-hover:text-emerald-300">Procurement Officer</span>
-                  <span className="block text-[11px] text-slate-400">procurement.demo@gembid.local</span>
+                  <h3 className="text-xs font-bold text-slate-900">GFR Rule 173 Certified</h3>
+                  <p className="text-[11px] text-slate-500">Public procurement compliance</p>
                 </div>
-                <span className="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800 text-[10px] text-emerald-300 font-mono">
-                  Full Authority
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('reviewer.demo@gembid.local', 'Compliance Reviewer')}
-                className="w-full text-left px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 flex items-center justify-between text-xs transition-colors group cursor-pointer"
-              >
+              </div>
+              <div className="bg-white border border-slate-200 rounded-xl p-3 flex items-center space-x-3 shadow-xs">
+                <Lock className="w-5 h-5 text-teal-600 shrink-0" />
                 <div>
-                  <span className="font-semibold text-blue-400 group-hover:text-blue-300">Compliance Reviewer</span>
-                  <span className="block text-[11px] text-slate-400">reviewer.demo@gembid.local</span>
+                  <h3 className="text-xs font-bold text-slate-900">256-Bit Blockchain</h3>
+                  <p className="text-[11px] text-slate-500">Tamper-proof event proof</p>
                 </div>
-                <span className="px-2 py-0.5 rounded bg-blue-950 border border-blue-800 text-[10px] text-blue-300 font-mono">
-                  Review & Override
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('admin.demo@gembid.local', 'System Admin')}
-                className="w-full text-left px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 flex items-center justify-between text-xs transition-colors group cursor-pointer"
-              >
+              </div>
+              <div className="bg-white border border-slate-200 rounded-xl p-3 flex items-center space-x-3 shadow-xs">
+                <ShieldCheck className="w-5 h-5 text-blue-600 shrink-0" />
                 <div>
-                  <span className="font-semibold text-purple-400 group-hover:text-purple-300">System Administrator</span>
-                  <span className="block text-[11px] text-slate-400">admin.demo@gembid.local</span>
+                  <h3 className="text-xs font-bold text-slate-900">Zero Hallucination</h3>
+                  <p className="text-[11px] text-slate-500">Evidence-first requirement audit</p>
                 </div>
-                <span className="px-2 py-0.5 rounded bg-purple-950 border border-purple-800 text-[10px] text-purple-300 font-mono">
-                  System Admin
-                </span>
-              </button>
-
-              <div className="grid grid-cols-2 gap-2 mt-1">
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('auditor.demo@gembid.local', 'Auditor')}
-                  className="text-left px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 text-xs transition-colors cursor-pointer"
-                >
-                  <span className="font-semibold text-amber-400 block text-[11px]">Auditor</span>
-                  <span className="text-[10px] text-slate-400 truncate block">auditor.demo...</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('bidder.demo@gembid.local', 'Bidder Vendor')}
-                  className="text-left px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 text-xs transition-colors cursor-pointer"
-                >
-                  <span className="font-semibold text-cyan-400 block text-[11px]">Bidder / Vendor</span>
-                  <span className="text-[10px] text-slate-400 truncate block">bidder.demo...</span>
-                </button>
+              </div>
+              <div className="bg-white border border-slate-200 rounded-xl p-3 flex items-center space-x-3 shadow-xs">
+                <UserCheck className="w-5 h-5 text-purple-600 shrink-0" />
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900">Multi-Bidder Isolation</h3>
+                  <p className="text-[11px] text-slate-500">Strict organizational boundaries</p>
+                </div>
               </div>
             </div>
           </div>
 
+          {/* Right Column: Authentication Form & Quick Seed Logins */}
+          <div className="lg:col-span-6">
+            <div className="bg-white py-7 px-6 sm:px-8 shadow-sm border border-slate-200 rounded-2xl">
+              <div className="mb-5">
+                <h2 className="text-lg font-bold text-slate-900">Sign In to Platform</h2>
+                <p className="text-xs text-slate-500 mt-0.5">Enter your authorized administrative or vendor credentials.</p>
+              </div>
+
+              {errorMessage && (
+                <div className="mb-5 rounded-lg bg-red-50 border border-red-200 p-3 flex items-start space-x-2.5 text-red-800">
+                  <AlertCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
+                  <div className="text-xs leading-relaxed">{errorMessage}</div>
+                </div>
+              )}
+
+              <form className="space-y-3.5" onSubmit={handleLogin}>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Official Email Address
+                  </label>
+                  <div className="relative rounded-lg">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <Mail className="h-4 w-4" />
+                    </div>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="officer@gem.gov.in"
+                      className="block w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 text-xs sm:text-sm transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Security Passkey / Password
+                  </label>
+                  <div className="relative rounded-lg">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <Lock className="h-4 w-4" />
+                    </div>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••••••"
+                      className="block w-full pl-9 pr-9 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 text-xs sm:text-sm transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-lg shadow-xs text-xs sm:text-sm font-bold text-white bg-emerald-700 hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 disabled:opacity-50 transition-all cursor-pointer mt-2"
+                >
+                  {isSubmitting ? (
+                    <span>Authenticating Cryptographic Session...</span>
+                  ) : (
+                    <span className="flex items-center space-x-2">
+                      <span>Sign In to Platform</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </span>
+                  )}
+                </button>
+              </form>
+
+              {/* Quick Demo Role Logins */}
+              <div className="mt-5 pt-4 border-t border-slate-200">
+                <div className="flex items-center justify-between mb-2.5">
+                  <span className="text-xs font-bold text-slate-700 tracking-wider uppercase flex items-center space-x-1.5">
+                    <UserCheck className="h-4 w-4 text-emerald-700" />
+                    <span>Quick Role Profiles (Demo)</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">Password123!</span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickLogin('procurement.demo@gembid.local', 'Procurement Officer')}
+                    className="w-full text-left px-3 py-2 rounded-lg bg-slate-50 hover:bg-emerald-50/70 border border-slate-200 hover:border-emerald-300 flex items-center justify-between text-xs transition cursor-pointer"
+                  >
+                    <div>
+                      <span className="font-bold text-slate-900">Procurement Officer</span>
+                      <span className="block text-[11px] text-slate-500">procurement.demo@gembid.local</span>
+                    </div>
+                    <span className="px-2 py-0.5 rounded bg-emerald-100 border border-emerald-200 text-[10px] text-emerald-800 font-mono font-bold">
+                      Full Officer Authority
+                    </span>
+                  </button>
+
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleQuickLogin('reviewer.demo@gembid.local', 'Compliance Reviewer')}
+                      className="text-left px-2.5 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs transition cursor-pointer"
+                    >
+                      <span className="font-bold text-slate-800 block text-[11px]">Reviewer</span>
+                      <span className="text-[10px] text-slate-500 truncate block">reviewer.demo...</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickLogin('admin.demo@gembid.local', 'System Admin')}
+                      className="text-left px-2.5 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs transition cursor-pointer"
+                    >
+                      <span className="font-bold text-slate-800 block text-[11px]">System Admin</span>
+                      <span className="text-[10px] text-slate-500 truncate block">admin.demo...</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleQuickLogin('auditor.demo@gembid.local', 'Auditor')}
+                      className="text-left px-2 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs transition cursor-pointer"
+                    >
+                      <span className="font-bold text-slate-800 block text-[10px]">Auditor</span>
+                      <span className="text-[9px] text-slate-500 truncate block">auditor.demo...</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickLogin('bidder.demo@gembid.local', 'Apex Pumps Vendor')}
+                      className="text-left px-2 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs transition cursor-pointer"
+                    >
+                      <span className="font-bold text-slate-800 block text-[10px]">Bidder 1 (Apex)</span>
+                      <span className="text-[9px] text-slate-500 truncate block">bidder.demo...</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickLogin('bharat.valves@gembid.local', 'Bharat Valves Vendor')}
+                      className="text-left px-2 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs transition cursor-pointer"
+                    >
+                      <span className="font-bold text-slate-800 block text-[10px]">Bidder 2 (Bharat)</span>
+                      <span className="text-[9px] text-slate-500 truncate block">bharat.valves...</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickLogin('crompton.flow@gembid.local', 'Crompton Flow Vendor')}
+                      className="text-left px-2 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs transition cursor-pointer"
+                    >
+                      <span className="font-bold text-slate-800 block text-[10px]">Bidder 3 (Crompton)</span>
+                      <span className="text-[9px] text-slate-500 truncate block">crompton.flow...</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Government Footer Bar */}
+      <div className="bg-white border-t border-slate-200 py-3 px-4 text-center text-xs text-slate-500">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+          <span>Government e Marketplace (GeM) • National Public Procurement Portal</span>
+          <span>SIH26100 AI Bid Compliance Verification Platform • GFR 2017</span>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Upload, FileText, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthProvider';
+import { AUTH_TOKEN_KEY } from '../../constants/auth';
 
 interface CreateTenderModalProps {
   isOpen: boolean;
@@ -108,7 +109,7 @@ export const CreateTenderModal: React.FC<CreateTenderModalProps> = ({
       const tenderRes = await fetch(`${API_BASE_URL}/tenders`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token || localStorage.getItem('gem_auth_token')}`,
+          'Authorization': `Bearer ${token || localStorage.getItem(AUTH_TOKEN_KEY)}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(tenderPayload),
@@ -134,7 +135,7 @@ export const CreateTenderModal: React.FC<CreateTenderModalProps> = ({
         await fetch(`${API_BASE_URL}/documents/upload`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${token || localStorage.getItem('gem_auth_token')}`,
+            'Authorization': `Bearer ${token || localStorage.getItem(AUTH_TOKEN_KEY)}`,
           },
           body: formData,
         });

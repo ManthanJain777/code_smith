@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
+import { AUTH_TOKEN_KEY } from '../constants/auth';
 import { BlockchainProofBadge } from '../components/ui/BlockchainProofBadge';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
@@ -36,7 +37,7 @@ export const ReviewsPage: React.FC = () => {
   const [overrideStatus, setOverrideStatus] = useState<ComplianceStatus>('COMPLIANT');
   const [overrideJustification, setOverrideJustification] = useState<string>('');
   const [isSubmittingOverride, setIsSubmittingOverride] = useState(false);
-  const [overrideFeedback, setOverrideFeedback] = useState<{ type: 'success' | 'error'; msg: string; txHash?: string } | null>(null);
+  const [overrideFeedback, setOverrideFeedback] = useState<{ type: 'success' | 'error'; msg: string; txHash?: string | null } | null>(null);
 
   // Contradiction Resolution Modal State
   const [contradictionItem, setContradictionItem] = useState<ComplianceResult | null>(null);
@@ -46,6 +47,17 @@ export const ReviewsPage: React.FC = () => {
 
   // Auditor Scrutiny Modal State
   const [auditScrutinyItem, setAuditScrutinyItem] = useState<ComplianceResult | null>(null);
+
+  // Personal Reviewer Calibration State
+  const [personalCalibration, setPersonalCalibration] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (isReviewer || isAdmin) {
+      apiService.getMyCalibration()
+        .then(data => setPersonalCalibration(data || []))
+        .catch(err => console.warn('Could not load personal calibration:', err));
+    }
+  }, [isReviewer, isAdmin]);
 
   useEffect(() => {
     async function init() {
@@ -81,9 +93,6 @@ export const ReviewsPage: React.FC = () => {
       for (const b of bids) {
         const r = await apiService.getComplianceResults(b.id).catch(() => []);
         allRes.push(...r);
-      }
-      if (allRes.length === 0) {
-        allRes = await apiService.getComplianceResults('BID-APEX-001').catch(() => []);
       }
       setResults(allRes);
     } catch (err: any) {
@@ -140,7 +149,7 @@ export const ReviewsPage: React.FC = () => {
       const res = await fetch(`${API_BASE_URL}/reviews/override`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token || localStorage.getItem('gem_auth_token')}`,
+          'Authorization': `Bearer ${token || localStorage.getItem(AUTH_TOKEN_KEY)}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload)
@@ -159,13 +168,13 @@ export const ReviewsPage: React.FC = () => {
         reviewStatus: 'OVERRIDDEN',
         humanOverridden: true,
         reviewerNotes: overrideJustification.trim(),
-        blockchainTxHash: updated.blockchainTxHash || `0x${Math.random().toString(16).substring(2, 42)}`
+        blockchainTxHash: updated.blockchainTxHash || undefined
       } : r));
 
       setOverrideFeedback({
         type: 'success',
         msg: `Override anchored successfully on EVM ledger. Requirement status changed to ${overrideStatus}.`,
-        txHash: updated.blockchainTxHash || '0x4a9b2c8f10e7...'
+        txHash: updated.blockchainTxHash || null
       });
 
       setTimeout(() => {
@@ -175,27 +184,11 @@ export const ReviewsPage: React.FC = () => {
       }, 1500);
 
     } catch (err: any) {
-      // Graceful fallback simulation
-      setResults(prev => prev.map(r => r.id === activeModalItem.id ? {
-        ...r,
-        status: overrideStatus,
-        reviewStatus: 'OVERRIDDEN',
-        humanOverridden: true,
-        reviewerNotes: overrideJustification.trim(),
-        blockchainTxHash: `0x${Math.random().toString(16).substring(2, 42)}`
-      } : r));
-
+      console.error('Failed to submit compliance override:', err);
       setOverrideFeedback({
-        type: 'success',
-        msg: `Override verified & anchored on EVM audit ledger (Status: ${overrideStatus}).`,
-        txHash: '0x9d2b1f8e4c7a...'
+        type: 'error',
+        msg: `Failed to commit override: ${err.message || 'Server or network error'}. Please check blockchain node and backend service.`
       });
-
-      setTimeout(() => {
-        setActiveModalItem(null);
-        setOverrideJustification('');
-        setOverrideFeedback(null);
-      }, 1500);
     } finally {
       setIsSubmittingOverride(false);
     }
@@ -211,19 +204,23 @@ export const ReviewsPage: React.FC = () => {
         reviewerNote: `Approved AI automated determination with confidence ${(item.confidence * 100).toFixed(0)}%. No exceptions noted.`
       };
 
-      await fetch(`${API_BASE_URL}/reviews/override`, {
+      const res = await fetch(`${API_BASE_URL}/reviews/override`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token || localStorage.getItem('gem_auth_token')}`,
+          'Authorization': `Bearer ${token || localStorage.getItem(AUTH_TOKEN_KEY)}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload)
-      }).catch(() => null);
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
 
       setResults(prev => prev.map(r => r.id === item.id ? { ...r, reviewStatus: 'APPROVED' } : r));
-    } catch {
-      // Local fallback
-      setResults(prev => prev.map(r => r.id === item.id ? { ...r, reviewStatus: 'APPROVED' } : r));
+    } catch (err: any) {
+      console.error('Failed to record quick approval:', err);
+      alert(`Approval failed: ${err.message}. Please verify backend service connectivity.`);
     }
   };
 
@@ -248,9 +245,6 @@ export const ReviewsPage: React.FC = () => {
         contradictionId: contradictionItem.id,
         chosenPrecedentDoc: selectedPrevailingDoc,
         resolutionRationale: contradictionRationale.trim()
-      }).catch(err => {
-        console.warn('Contradiction resolve error:', err);
-        return { status: 'RESOLVED', blockchainTxHash: `0x${Math.random().toString(16).substring(2, 42)}` };
       });
 
       setResults(prev => prev.map(r => r.id === contradictionItem.id ? {
@@ -259,11 +253,14 @@ export const ReviewsPage: React.FC = () => {
         reviewStatus: 'OVERRIDDEN',
         humanOverridden: true,
         reviewerNotes: note,
-        blockchainTxHash: resp?.blockchainTxHash || `0x${Math.random().toString(16).substring(2, 42)}`
+        blockchainTxHash: resp?.blockchainTxHash || undefined
       } : r));
 
       setContradictionItem(null);
       setContradictionRationale('');
+    } catch (contradictionErr: any) {
+      console.error('Contradiction resolution failed:', contradictionErr);
+      alert(`Contradiction resolution failed: ${contradictionErr.message || 'Backend or blockchain service unavailable. Please retry.'}`);
     } finally {
       setIsResolvingContradiction(false);
     }
@@ -330,6 +327,52 @@ export const ReviewsPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Reviewer Personal Calibration Score Card (Phase 0 Item 7) */}
+      {(isReviewer || isAdmin) && (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-white shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0">
+              <Sparkles className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-purple-300">My Reviewer Calibration</span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  {user?.fullName || 'Active Reviewer'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 mt-0.5">
+                Personal override tendencies against AI automated determinations. Helps detect reviewer drift and bias under GFR Clause 144.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-slate-800 pt-3 md:pt-0 md:pl-6 w-full md:w-auto justify-between md:justify-end">
+            <div>
+              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Decisions Reviewed</span>
+              <span className="text-xl font-black text-white">{personalCalibration.length}</span>
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Personal Overrides</span>
+              <span className="text-xl font-black text-amber-400">{personalCalibration.filter(p => p.overridden === 1).length}</span>
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Override Rate</span>
+              <span className="text-xl font-black text-purple-400">
+                {personalCalibration.length > 0 
+                  ? ((personalCalibration.filter(p => p.overridden === 1).length / personalCalibration.length) * 100).toFixed(1)
+                  : '0.0'}%
+              </span>
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Calibration Status</span>
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-400 mt-1">
+                <ShieldCheck className="w-3.5 h-3.5" /> Calibrated
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Reviewer / Officer Personal Calibration Metrics Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -592,7 +635,7 @@ export const ReviewsPage: React.FC = () => {
                 onClick={() => setActiveModalItem(null)}
                 className="text-purple-200 hover:text-white text-sm font-bold p-1 cursor-pointer"
               >
-                ✕
+                Close
               </button>
             </div>
 
@@ -695,7 +738,7 @@ export const ReviewsPage: React.FC = () => {
                 onClick={() => setContradictionItem(null)}
                 className="text-amber-100 hover:text-white text-sm font-bold p-1 cursor-pointer"
               >
-                ✕
+                Close
               </button>
             </div>
 
@@ -798,7 +841,7 @@ export const ReviewsPage: React.FC = () => {
                 onClick={() => setAuditScrutinyItem(null)}
                 className="text-teal-200 hover:text-white text-sm font-bold p-1 cursor-pointer"
               >
-                ✕
+                Close
               </button>
             </div>
 
@@ -840,10 +883,14 @@ export const ReviewsPage: React.FC = () => {
               <div className="p-3 bg-teal-50 border border-teal-200 rounded-xl space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-teal-900">Blockchain Ledger Proof:</span>
-                  <span className="text-[10px] font-mono bg-teal-100 text-teal-800 px-2 py-0.5 rounded font-bold">VERIFIED ON-CHAIN</span>
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${auditScrutinyItem.blockchainTxHash ? 'bg-teal-100 text-teal-800' : 'bg-amber-100 text-amber-800'}`}>
+                    {auditScrutinyItem.blockchainTxHash ? 'VERIFIED ON-CHAIN' : 'PENDING ANCHOR'}
+                  </span>
                 </div>
                 <p className="font-mono text-[11px] text-teal-800 break-all">
-                  Hash: {auditScrutinyItem.blockchainTxHash || '0x7f8a9b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a'}
+                  {auditScrutinyItem.blockchainTxHash
+                    ? `Hash: ${auditScrutinyItem.blockchainTxHash}`
+                    : 'Blockchain anchor not yet recorded for this record.'}
                 </p>
               </div>
 

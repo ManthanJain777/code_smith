@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, ExternalLink, Copy, Check, Lock, Database } from 'lucide-react';
+import { ShieldCheck, ExternalLink, Copy, Check, Lock, Database, Award } from 'lucide-react';
 
 interface BlockchainProofBadgeProps {
   txHash?: string;
@@ -10,14 +10,17 @@ interface BlockchainProofBadgeProps {
 }
 
 export const BlockchainProofBadge: React.FC<BlockchainProofBadgeProps> = ({
-  txHash = "0x7f8a9b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a",
-  blockNumber = 1000042,
+  txHash,
+  blockNumber,
   eventType = "COMPLIANCE_EVALUATION",
   timestamp = new Date().toISOString(),
   compact = false,
 }) => {
   const [copied, setCopied] = useState(false);
   const [showModal, setShowModal] = useState(false);
+
+  // Do not render if there is no real txHash
+  if (!txHash) return null;
 
   const shortHash = `${txHash.slice(0, 6)}...${txHash.slice(-4)}`;
 
@@ -47,12 +50,12 @@ export const BlockchainProofBadge: React.FC<BlockchainProofBadgeProps> = ({
         onClick={() => setShowModal(true)}
         className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/80 rounded-lg text-xs cursor-pointer hover:border-emerald-300 hover:shadow-sm transition-all"
       >
-        <div className="flex items-center gap-1.5 text-emerald-800 font-semibold">
-          <ShieldCheck className="w-4 h-4 text-emerald-600" />
+        <div className="flex items-center gap-1.5 text-emerald-800 font-semibold relative">
+          <Award className="w-5 h-5 text-red-700 drop-shadow-md" style={{ filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.3))' }} />
           <span>Ethereum Verified</span>
         </div>
         <span className="text-slate-400">|</span>
-        <span className="font-mono text-slate-600 text-[11px]">{shortHash}</span>
+        <span className="font-mono text-[#00FF41] bg-black px-1.5 py-0.5 rounded text-[11px] font-bold tracking-widest shadow-inner">{shortHash}</span>
         <button
           onClick={handleCopy}
           className="text-slate-400 hover:text-slate-700 p-0.5 rounded"
@@ -79,7 +82,7 @@ export const BlockchainProofBadge: React.FC<BlockchainProofBadgeProps> = ({
                 onClick={() => setShowModal(false)}
                 className="text-slate-400 hover:text-white text-lg font-bold px-2 py-1"
               >
-                ✕
+                Close
               </button>
             </div>
 
@@ -97,9 +100,9 @@ export const BlockchainProofBadge: React.FC<BlockchainProofBadgeProps> = ({
               <div className="space-y-2.5">
                 <div>
                   <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Transaction Hash</label>
-                  <div className="flex items-center justify-between p-2.5 mt-1 bg-slate-50 border border-slate-200 rounded-lg font-mono text-xs text-slate-800 break-all">
+                  <div className="flex items-center justify-between p-2.5 mt-1 bg-black border border-slate-700 shadow-inner rounded-lg font-mono text-xs text-[#00FF41] tracking-wider break-all">
                     <span>{txHash}</span>
-                    <button onClick={handleCopy} className="ml-2 text-slate-500 hover:text-slate-800">
+                    <button onClick={handleCopy} className="ml-2 text-slate-400 hover:text-white">
                       {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                     </button>
                   </div>
@@ -112,7 +115,7 @@ export const BlockchainProofBadge: React.FC<BlockchainProofBadgeProps> = ({
                   </div>
                   <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
                     <span className="text-xs text-slate-500 font-semibold">Network</span>
-                    <p className="font-medium text-slate-900 mt-0.5 text-xs">Ethereum EVM (Chain ID 1337) / Sepolia Network</p>
+                    <p className="font-medium text-slate-900 mt-0.5 text-xs">Ethereum EVM (Chain ID 31337) / Hardhat Local Node</p>
                   </div>
                 </div>
 

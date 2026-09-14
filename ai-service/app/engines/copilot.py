@@ -45,49 +45,34 @@ SANITIZATION_LOGS: List[Dict[str, Any]] = [
     }
 ]
 
-QUERY_TRANSCRIPTS: List[Dict[str, Any]] = [
-    {
-        "id": "TX-QRY-001",
-        "timestamp": "2026-09-11T09:15:30Z",
-        "user_name": "Rajesh Kumar",
-        "role": "PROCUREMENT_OFFICER",
-        "tender_id": "GEM/2026/B/90124",
-        "bid_id": "BID-APEX-001",
-        "question": "What is the reason for financial non-compliance on Apex Pumps?",
-        "answer": "Apex Pumps submitted an Audited Balance Sheet showing FY 2024-25 turnover at ₹94.00 Cr, which fails the mandatory ₹100.00 Cr threshold. A cross-document contradiction was also flagged against the CA Turnover Certificate claiming ₹112.40 Cr.",
-        "citations": [
-            {"document_name": "Audited_Balance_Sheet_FY25.pdf", "page": 1, "snippet": "Revenue from Operations (FY 2024-25): INR 94.00 Crores"},
-            {"document_name": "CA_Turnover_Certificate.pdf", "page": 1, "snippet": "Annual Turnover Certified: FY 2024-25 = INR 112.40 Crores"}
-        ]
-    },
-    {
-        "id": "TX-QRY-002",
-        "timestamp": "2026-09-11T10:30:15Z",
-        "user_name": "Anita Sharma",
-        "role": "COMPLIANCE_REVIEWER",
-        "tender_id": "GEM/2026/B/90124",
-        "bid_id": "BID-APEX-001",
-        "question": "Does Apex Pumps have valid ISO 9001 certification?",
-        "answer": "Yes, ISO 9001:2015 Quality Management System Certificate was extracted from page 1 of ISO_9001_Quality_Certificate.pdf. However, the expiry date is 2025-11-15, which triggers an upcoming expiration review notice.",
-        "citations": [
-            {"document_name": "ISO_9001_Quality_Certificate.pdf", "page": 1, "snippet": "Certified to ISO 9001:2015 for Design & Manufacture of Industrial Pumps. Expiry: 15-Nov-2025"}
-        ]
-    },
-    {
-        "id": "TX-QRY-003",
-        "timestamp": "2026-09-11T11:45:00Z",
-        "user_name": "Rajesh Kumar",
-        "role": "PROCUREMENT_OFFICER",
-        "tender_id": "GEM/2026/B/90124",
-        "bid_id": "ALL_BIDDERS",
-        "question": "Compare pump efficiency across all evaluated bidders.",
-        "answer": "Apex Pumps achieved 88.4% hydraulic efficiency at BEP (ISO 9906 Class 1). Global Fluid Systems achieved 82.1% (below 85% requirement). Ganga Watertech achieved 87.2% (compliant).",
-        "citations": [
-            {"document_name": "Apex_Pumps_Technical_Datasheet.pdf", "page": 1, "snippet": "Hydraulic Efficiency at BEP: 88.4% at 1450 RPM"},
-            {"document_name": "Global_Fluid_Datasheet.pdf", "page": 2, "snippet": "Pump Efficiency: 82.1% at nominal duty"}
-        ]
-    }
-]
+import os
+import sqlite3
+import json
+import uuid
+
+# Database-backed transcript storage path
+DB_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "data"))
+os.makedirs(DB_DIR, exist_ok=True)
+TRANSCRIPT_DB_PATH = os.path.join(DB_DIR, "copilot_transcripts.db")
+
+def _init_transcript_db():
+    with sqlite3.connect(TRANSCRIPT_DB_PATH) as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS copilot_transcripts (
+                id TEXT PRIMARY KEY,
+                timestamp TEXT NOT NULL,
+                user_name TEXT,
+                role TEXT,
+                tender_id TEXT,
+                bid_id TEXT,
+                question TEXT NOT NULL,
+                answer TEXT NOT NULL,
+                citations_json TEXT
+            )
+        """)
+        conn.commit()
+
+_init_transcript_db()
 
 
 class ProcurementCopilotEngine:
@@ -124,8 +109,23 @@ class ProcurementCopilotEngine:
 
     @classmethod
     def _call_local_ollama(cls, prompt: str) -> Optional[tuple[str, str]]:
-        """Calls the specialized local Ollama model if running, returning (response_text, model_name)."""
-        for model_name in [PRIMARY_MODEL, FALLBACK_MODEL]:
+        """Calls the specialized local Ollama model if running, dynamically detecting installed local models."""
+        candidate_models = ["gem-copilot", "qwen2.5:3b", "llama3.2", "mistral"]
+        try:
+            req = urllib.request.Request("http://localhost:11434/api/tags")
+            with urllib.request.urlopen(req, timeout=1.0) as response:
+                if response.status == 200:
+                    tags = json.loads(response.read().decode("utf-8"))
+                    installed = [m.get("name") for m in tags.get("models", []) if m.get("name") and ":cloud" not in m.get("name")]
+                    for m in installed:
+                        if m not in candidate_models:
+                            candidate_models.insert(0, m)
+        except Exception:
+            pass
+
+        for model_name in candidate_models:
+            if ":cloud" in model_name:
+                continue
             try:
                 payload = json.dumps({
                     "model": model_name,
@@ -142,12 +142,12 @@ class ProcurementCopilotEngine:
                     data=payload,
                     headers={"Content-Type": "application/json"}
                 )
-                with urllib.request.urlopen(req, timeout=10) as response:
+                with urllib.request.urlopen(req, timeout=2.0) as response:
                     if response.status == 200:
                         resp_data = json.loads(response.read().decode("utf-8"))
                         ans = resp_data.get("response", "").strip()
                         if ans:
-                            display_name = "GeM Procurement Domain Engine" if model_name == PRIMARY_MODEL else "GeM Neural Intelligence Core"
+                            display_name = f"Ollama ({model_name})"
                             return (ans, display_name)
             except Exception:
                 continue
@@ -160,8 +160,28 @@ class ProcurementCopilotEngine:
 
     @classmethod
     def get_query_transcripts(cls) -> List[Dict[str, Any]]:
-        """Returns vigilance query audit transcripts for Auditor review."""
-        return QUERY_TRANSCRIPTS
+        """Returns vigilance query audit transcripts from persistent SQLite database."""
+        try:
+            with sqlite3.connect(TRANSCRIPT_DB_PATH) as conn:
+                conn.row_factory = sqlite3.Row
+                cur = conn.execute("SELECT * FROM copilot_transcripts ORDER BY timestamp DESC LIMIT 100")
+                rows = cur.fetchall()
+                results = []
+                for r in rows:
+                    results.append({
+                        "id": r["id"],
+                        "timestamp": r["timestamp"],
+                        "user_name": r["user_name"],
+                        "role": r["role"],
+                        "tender_id": r["tender_id"],
+                        "bid_id": r["bid_id"],
+                        "question": r["question"],
+                        "answer": r["answer"],
+                        "citations": json.loads(r["citations_json"]) if r["citations_json"] else []
+                    })
+                return results
+        except Exception:
+            return []
 
     @classmethod
     def answer_query(
@@ -191,16 +211,13 @@ class ProcurementCopilotEngine:
 
         # ── ROLE 5 GUARD: Bidder self-scoping and backend refusal ────────────────
         if "BIDDER" in role:
-            # Enforce bid isolation
-            request.bid_id = "BID-APEX-001"
-
             # Check for prohibited topics
             prohibited = ["competitor", "other bid", "global fluid", "ganga", "pricing of", "risk score of", "collusion", "internal committee"]
             if any(p in q_lower for p in prohibited):
                 return CopilotQueryResponse(
                     answer=(
                         "Refusal (Commercial Confidentiality): As a registered Bidder, you are strictly restricted under "
-                        "GFR Rule 173 to inquiries regarding your own submitted bid dossier (BID-APEX-001). Inquiries concerning "
+                        "GFR Rule 173 to inquiries regarding your own submitted bid dossier. Inquiries concerning "
                         "competitor bids, comparative pricing, committee risk deliberations, or collusion signals are prohibited."
                     ),
                     source_results=[],
@@ -235,28 +252,36 @@ class ProcurementCopilotEngine:
         # 1. Search in compliance evaluation results if provided
         if compliance_results:
             for res in compliance_results:
-                req_text = (getattr(res, "requirement_id", "") or "").lower()
-                reasoning = (getattr(res, "reasoning", "") or "").lower()
-                status = getattr(res, "status", "")
+                if isinstance(res, dict):
+                    req_id = res.get("requirement_id") or res.get("requirementCode") or "REQ"
+                    reasoning = res.get("reasoning") or ""
+                    status = res.get("status") or "VERIFIED"
+                    cits = res.get("citations") or []
+                else:
+                    req_id = getattr(res, "requirement_id", "") or "REQ"
+                    reasoning = getattr(res, "reasoning", "") or ""
+                    status = getattr(res, "status", "") or "VERIFIED"
+                    cits = getattr(res, "citations", None) or []
+
+                req_text = req_id.lower()
+                reasoning_lower = reasoning.lower()
 
                 keywords = [k for k in re.findall(r'\b\w{4,}\b', q_lower) if k not in ["show", "what", "which", "give", "tell", "explain", "about"]]
-                relevance = sum(1 for k in keywords if k in req_text or k in reasoning)
+                relevance = sum(1 for k in keywords if k in req_text or k in reasoning_lower)
 
-                if relevance > 0 or "all" in q_lower or "summary" in q_lower or "status" in q_lower:
+                if relevance > 0 or "all" in q_lower or "summary" in q_lower or "status" in q_lower or "turnover" in q_lower or "efficiency" in q_lower or "iso" in q_lower:
                     matched_results.append(res)
-                    sources.append(res.requirement_id)
+                    sources.append(req_id)
                     citation_text = ""
-                    if getattr(res, "citations", None):
-                        for c in res.citations[:2]:
+                    if cits:
+                        for c in cits[:2]:
                             citations.append({
-                                "document_name": c.document_name,
-                                "page": c.page,
-                                "snippet": c.snippet,
-                                "requirement_id": res.requirement_id
+                                "document_name": c.get("document_name") if isinstance(c, dict) else getattr(c, "document_name", "Evidence.pdf"),
+                                "page": c.get("page") if isinstance(c, dict) else getattr(c, "page", 1),
+                                "snippet": c.get("snippet") if isinstance(c, dict) else getattr(c, "snippet", "Extracted evidence"),
+                                "requirement_id": req_id
                             })
-                        c_list = [f"[{c.document_name} p.{c.page}: \"{c.snippet[:60]}...\"]" for c in res.citations[:2]]
-                        citation_text = " (Evidence: " + ", ".join(c_list) + ")"
-                    answer_parts.append(f"• Requirement {res.requirement_id}: Evaluated as {status}. Reason: {res.reasoning}{citation_text}")
+                    answer_parts.append(f"• Requirement {req_id}: Evaluated as {status}. Reason: {reasoning}")
 
         # 2. Search in retrieved evidence chunks if provided
         if retrieved_evidence:
@@ -289,7 +314,7 @@ class ProcurementCopilotEngine:
             system_role = "Procurement Committee Copilot"
             disclaimer_msg = "Answer synthesized by Procurement Committee Copilot with GeM Grounding Guard."
 
-        # 3. If evidence was found, attempt Local AI inference (qwen2.5:3b)
+        # 3. If evidence was found, attempt Local AI inference (nemotron-3-super / qwen2.5:3b)
         evidence_text = "\n".join(answer_parts[:6])
         if evidence_text:
             prompt = (
@@ -319,54 +344,29 @@ class ProcurementCopilotEngine:
                     cls._record_transcript(request, resp.answer, citations)
                     return resp
 
-        # 4. Fallback Grounded Synthesis if Local LLM is offline or unneeded
+        # 4. Transparent Deterministic Fallback if Local LLM is unavailable or offline
         if not answer_parts:
-            if "turnover" in q_lower or "financial" in q_lower:
-                resp = CopilotQueryResponse(
-                    answer="For financial and turnover evaluation: Audited balance sheets document FY24-25 turnover at ₹94.00 Cr, which fails the mandatory ₹100.00 Cr threshold. A contradiction was detected against the CA Turnover Certificate claiming ₹112.40 Cr.",
-                    source_results=["Audited_Balance_Sheet_FY25.pdf#P1", "CA_Turnover_Certificate.pdf#P1"],
-                    confidence=0.94,
-                    disclaimer=disclaimer_msg,
-                    model_used=f"{system_role} (Deterministic Grounded Engine)",
-                    citations=[
-                        {"document_name": "Audited_Balance_Sheet_FY25.pdf", "page": 1, "snippet": "Revenue from Operations (FY 2024-25): INR 94.00 Crores"},
-                        {"document_name": "CA_Turnover_Certificate.pdf", "page": 1, "snippet": "Annual Turnover Certified: FY 2024-25 = INR 112.40 Crores"}
-                    ]
-                )
-                cls._record_transcript(request, resp.answer, resp.citations or [])
-                return resp
-            if "efficiency" in q_lower or "pump" in q_lower or "technical" in q_lower:
-                resp = CopilotQueryResponse(
-                    answer="Technical pump efficiency at Best Efficiency Point (BEP) is verified as 88.4% at 1450 RPM (Tolerance Class 1 as per ISO 9906), meeting the mandatory technical threshold.",
-                    source_results=["Apex_Pumps_Technical_Datasheet.pdf#P1"],
-                    confidence=0.95,
-                    disclaimer=disclaimer_msg,
-                    model_used=f"{system_role} (Deterministic Grounded Engine)",
-                    citations=[
-                        {"document_name": "Apex_Pumps_Technical_Datasheet.pdf", "page": 1, "snippet": "Hydraulic Efficiency at BEP: 88.4% at 1450 RPM (Tolerance Class 1 as per ISO 9906)"}
-                    ]
-                )
-                cls._record_transcript(request, resp.answer, resp.citations or [])
-                return resp
-            return CopilotQueryResponse(
-                answer=f"Insufficient verified evidence found in submitted tender/bid documents to answer this specific query for {request.bid_id}. Please consult the Compliance Matrix or upload missing supporting documents.",
+            resp = CopilotQueryResponse(
+                answer=f"AI reasoning service unavailable — showing deterministic evidence only: Insufficient verified evidence found in submitted documents for Bid '{request.bid_id}'. Please consult the Compliance Matrix for verified criteria.",
                 source_results=[],
-                confidence=0.0,
-                disclaimer=disclaimer_msg,
-                model_used=f"{system_role} (Grounding Guard)",
+                confidence=0.85,
+                disclaimer="AI reasoning service unavailable — deterministic records only.",
+                model_used=f"{system_role} (Deterministic Evidence Only - AI Unavailable)",
                 citations=[]
             )
+            cls._record_transcript(request, resp.answer, [])
+            return resp
 
         unique_sources = list(dict.fromkeys(sources))[:request.max_results]
         top_answers = answer_parts[:request.max_results]
-        full_answer = f"Based on verified procurement records for Bid '{request.bid_id}':\n\n" + "\n".join(top_answers)
+        full_answer = f"AI reasoning service unavailable — showing deterministic evidence only for Bid '{request.bid_id}':\n\n" + "\n".join(top_answers)
 
         resp = CopilotQueryResponse(
             answer=full_answer,
             source_results=unique_sources,
-            confidence=0.92,
-            disclaimer=disclaimer_msg,
-            model_used=f"{system_role} (Local Grounded Vector RAG)",
+            confidence=0.90,
+            disclaimer="AI reasoning service unavailable — showing deterministic evidence only.",
+            model_used=f"{system_role} (Deterministic Evidence Only - AI Unavailable)",
             citations=citations[:request.max_results]
         )
         cls._record_transcript(request, resp.answer, citations)
@@ -375,17 +375,21 @@ class ProcurementCopilotEngine:
     @classmethod
     def _record_transcript(cls, request: CopilotQueryRequest, answer: str, citations: List[Dict[str, Any]]):
         try:
-            QUERY_TRANSCRIPTS.insert(0, {
-                "id": f"TX-QRY-{len(QUERY_TRANSCRIPTS) + 1:03d}",
-                "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                "user_name": request.user_name or "Procurement Officer",
-                "role": (request.role or "PROCUREMENT_OFFICER").upper().replace("ROLE_", ""),
-                "tender_id": request.tender_id,
-                "bid_id": request.bid_id,
-                "question": request.question,
-                "answer": answer,
-                "citations": citations[:3]
-            })
+            tx_id = f"TX-QRY-{uuid.uuid4().hex[:8].upper()}"
+            ts = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            user_name = request.user_name or "Procurement Officer"
+            role = (request.role or "PROCUREMENT_OFFICER").upper().replace("ROLE_", "")
+            citations_json = json.dumps(citations[:3] if citations else [])
+            with sqlite3.connect(TRANSCRIPT_DB_PATH) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO copilot_transcripts 
+                    (id, timestamp, user_name, role, tender_id, bid_id, question, answer, citations_json) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (tx_id, ts, user_name, role, request.tender_id or "", request.bid_id or "", request.question, answer, citations_json)
+                )
+                conn.commit()
         except Exception:
             pass
 

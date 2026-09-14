@@ -28,6 +28,12 @@ code_smith.zip
 .DS_Store
 Thumbs.db
 .env
+.env.*
+*.pem
 .agents/
 *.pdf
 ai-service/data/
+backend/data/
+*.mv.db
+*.trace.db
+test-login.json

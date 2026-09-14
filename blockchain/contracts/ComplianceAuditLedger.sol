@@ -43,6 +43,8 @@ contract ComplianceAuditLedger {
         string calldata actorId
     ) external onlyOwner returns (bool) {
         require(eventHash != bytes32(0), "ComplianceAuditLedger: empty hash");
+        require(bytes(eventType).length > 0, "ComplianceAuditLedger: empty eventType");
+        require(bytes(actorId).length > 0, "ComplianceAuditLedger: empty actorId");
         require(!_entries[eventHash].exists, "ComplianceAuditLedger: event already anchored");
 
         _entries[eventHash] = AuditEntry({

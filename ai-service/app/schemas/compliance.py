@@ -11,6 +11,28 @@ class ComplianceStatus(str, Enum):
     NOT_APPLICABLE = "NOT_APPLICABLE"
 
 
+def canonical_compliance_status(val: Any) -> str:
+    """
+    Standardize compliance-status string serialization across all AI engines and responses,
+    ensuring 1:1 match with Spring Boot Java backend ComplianceStatus enum.
+    """
+    if val is None:
+        return ComplianceStatus.UNVERIFIED.value
+    if isinstance(val, ComplianceStatus):
+        return val.value
+    clean = str(val).strip().upper()
+    if clean.startswith("COMPLIANCESTATUS."):
+        clean = clean.split(".", 1)[1]
+    valid_statuses = {
+        "COMPLIANT": ComplianceStatus.COMPLIANT.value,
+        "PARTIALLY_COMPLIANT": ComplianceStatus.PARTIALLY_COMPLIANT.value,
+        "NON_COMPLIANT": ComplianceStatus.NON_COMPLIANT.value,
+        "UNVERIFIED": ComplianceStatus.UNVERIFIED.value,
+        "NOT_APPLICABLE": ComplianceStatus.NOT_APPLICABLE.value,
+    }
+    return valid_statuses.get(clean, ComplianceStatus.UNVERIFIED.value)
+
+
 class VerificationMethod(str, Enum):
     DETERMINISTIC = "deterministic"
     AI_LANGUAGE = "ai_language"
@@ -122,11 +144,12 @@ class ForgeryAnalysisRequest(BaseModel):
 
 class CopilotQueryRequest(BaseModel):
     tender_id: str = "TND-PUMP-001"
-    bid_id: str = "BID-APEX-001"
+    bid_id: str = ""
     question: str
     max_results: int = 5
     role: Optional[str] = "PROCUREMENT_OFFICER"
     user_name: Optional[str] = "Procurement Officer"
+    compliance_results: Optional[List[Dict[str, Any]]] = None
 
 
 class CopilotQueryResponse(BaseModel):

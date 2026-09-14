@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
+import { AUTH_TOKEN_KEY } from '../constants/auth';
 import { Can } from '../components/auth/Can';
 import {
   UserCheck,
@@ -31,45 +32,6 @@ interface SellerItem {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
-const DEFAULT_SELLERS: SellerItem[] = [
-  {
-    id: 'SELLER-APEX-001',
-    organizationName: 'Apex Pumps & Motors Private Limited',
-    cinOrPan: 'U45201DL2015PTC284910 / AAACA1234F',
-    gstin: '07AAAAA0000A1Z5',
-    udyamRegistration: 'UDYAM-DL-01-0012345',
-    category: 'Industrial Machinery & Fluid Systems OEM',
-    isDebarred: false,
-    trustScore: 84,
-    verificationStatus: 'VERIFIED',
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'SELLER-GFL-001',
-    organizationName: 'GlobalFlow Engineers Limited',
-    cinOrPan: 'U29120MH2012PLC234567 / BBBBB1111B',
-    gstin: '29BBBBB1111B2Z6',
-    udyamRegistration: 'UDYAM-MH-02-0098765',
-    category: 'Centrifugal & Submersible Pumps',
-    isDebarred: false,
-    trustScore: 92,
-    verificationStatus: 'VERIFIED',
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'SELLER-BIS-001',
-    organizationName: 'Bharat Industrial Solutions Pvt Ltd',
-    cinOrPan: 'U31900DL2018PTC345678 / CCCCC2222C',
-    gstin: '07CCCCC2222C1Z8',
-    udyamRegistration: 'UDYAM-DL-03-0044556',
-    category: 'Pumping Sets & Motors',
-    isDebarred: false,
-    trustScore: 68,
-    verificationStatus: 'UNDER_REVIEW',
-    updatedAt: new Date().toISOString()
-  }
-];
-
 export const SellersPage: React.FC = () => {
   const { token } = useAuth();
   const [sellers, setSellers] = useState<SellerItem[]>([]);
@@ -84,23 +46,20 @@ export const SellersPage: React.FC = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/sellers`, {
         headers: {
-          'Authorization': `Bearer ${token || localStorage.getItem('gem_auth_token')}`,
+          'Authorization': `Bearer ${token || localStorage.getItem(AUTH_TOKEN_KEY)}`,
           'Content-Type': 'application/json',
         },
       });
 
       if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
       }
 
       const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        setSellers(data);
-      } else {
-        setSellers(DEFAULT_SELLERS);
-      }
+      setSellers(Array.isArray(data) ? data : []);
     } catch (err: any) {
-      setSellers(DEFAULT_SELLERS);
+      console.error('Failed to fetch sellers:', err);
+      setError(err.message || 'Unable to load seller directory.');
     } finally {
       setIsLoading(false);
     }
@@ -113,17 +72,24 @@ export const SellersPage: React.FC = () => {
   const handleRunVerification = async (sellerId: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setSellers(prev => prev.map(s => s.id === sellerId ? { ...s, verificationStatus: 'VERIFIED', trustScore: Math.max(s.trustScore || 80, 88) } : s));
     try {
-      await fetch(`${API_BASE_URL}/sellers/${sellerId}/verify`, {
+      const res = await fetch(`${API_BASE_URL}/sellers/${sellerId}/verify`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token || localStorage.getItem('gem_auth_token')}`,
+          'Authorization': `Bearer ${token || localStorage.getItem(AUTH_TOKEN_KEY)}`,
           'Content-Type': 'application/json',
         },
       });
+      if (res.ok) {
+        const updated = await res.json();
+        setSellers(prev => prev.map(s => s.id === sellerId ? {
+          ...s,
+          verificationStatus: updated.verificationStatus,
+          trustScore: updated.trustScore
+        } : s));
+      }
     } catch (err) {
-      console.warn('Simulated verification pipeline trigger:', err);
+      console.error('Verification pipeline trigger error:', err);
     }
   };
 

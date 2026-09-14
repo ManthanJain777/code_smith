@@ -6,10 +6,12 @@ import com.gem.compliance.domain.Requirement;
 import com.gem.compliance.domain.Tender;
 import com.gem.compliance.dto.DocumentUploadResponse;
 import com.gem.compliance.repository.AuditLogRepository;
+import com.gem.compliance.repository.BidRepository;
 import com.gem.compliance.repository.DocumentRepository;
 import com.gem.compliance.repository.RequirementRepository;
 import com.gem.compliance.repository.TenderRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,18 +19,19 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DocumentProcessingService {
 
     private final DocumentRepository documentRepository;
     private final AuditLogRepository auditLogRepository;
     private final TenderRepository tenderRepository;
     private final RequirementRepository requirementRepository;
+    private final BidRepository bidRepository;
+    private final AiServiceClient aiServiceClient;
 
     @Transactional
     public DocumentUploadResponse processDocumentUpload(String filename, String fileType, byte[] content, String bidId) {
@@ -57,10 +60,29 @@ public class DocumentProcessingService {
                 .build();
         documentRepository.save(doc);
 
-        // 2. OCR & Requirement Extraction
-        extractAndPersistDocumentRequirements(doc, content);
+        // 2. Delegate OCR & Extraction to FastAPI PyMuPDF
+        extractAndPersistDocumentRequirements(doc, filename, content);
 
-        // 3. Audit Event Log
+        // 3. Trigger Real Forgery Check via FastAPI and update bid
+        if (bidId != null && !bidId.isBlank()) {
+            try {
+                Map<String, Object> forgeryReport = aiServiceClient.checkForgery(filename, content);
+                Object riskScoreObj = forgeryReport.get("risk_score");
+                double forgeryRisk = 0.0;
+                if (riskScoreObj instanceof Number num) {
+                    forgeryRisk = num.doubleValue();
+                }
+                final double finalForgeryRisk = forgeryRisk;
+                bidRepository.findById(bidId).ifPresent(b -> {
+                    b.setForgeryRisk(BigDecimal.valueOf(finalForgeryRisk));
+                    bidRepository.save(b);
+                });
+            } catch (Exception e) {
+                log.warn("Failed to update forgery risk for bid {}: {}", bidId, e.getMessage());
+            }
+        }
+
+        // 4. Audit Event Log
         AuditLog audit = AuditLog.builder()
                 .id("AUD-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase())
                 .actorId("USR-PROC-01")
@@ -69,7 +91,7 @@ public class DocumentProcessingService {
                 .action("DOCUMENT_UPLOADED_AND_PARSED")
                 .resourceType("DOCUMENT")
                 .resourceId(docId)
-                .details(String.format("Uploaded & OCR Parsed %s (Checksum: %s)", filename, checksum))
+                .details(String.format("Uploaded & PyMuPDF Parsed %s (Checksum: %s)", filename, checksum))
                 .build();
         auditLogRepository.save(audit);
 
@@ -85,8 +107,7 @@ public class DocumentProcessingService {
                 .build();
     }
 
-    private void extractAndPersistDocumentRequirements(Document doc, byte[] content) {
-        String textContent = new String(content);
+    private void extractAndPersistDocumentRequirements(Document doc, String filename, byte[] content) {
         Tender tender = null;
         if (doc.getTenderId() != null) {
             tender = tenderRepository.findById(doc.getTenderId()).orElse(null);
@@ -97,9 +118,23 @@ public class DocumentProcessingService {
         }
         if (tender == null) return;
 
+        // Delegate to FastAPI PyMuPDF extraction
+        Map<String, Object> extracted = aiServiceClient.extractDocument(filename, content, doc.getBidId());
+        StringBuilder sb = new StringBuilder();
+        Object pagesObj = extracted.get("pages");
+        if (pagesObj instanceof List<?> pagesList) {
+            for (Object p : pagesList) {
+                if (p instanceof Map<?, ?> pMap) {
+                    Object text = pMap.get("text");
+                    if (text != null) sb.append(text).append(" ");
+                }
+            }
+        }
+        String textContent = sb.toString();
+
         List<Requirement> reqs = new ArrayList<>();
 
-        if (textContent.contains("turnover") || textContent.contains("Financial")) {
+        if (textContent.toLowerCase().contains("turnover") || textContent.toLowerCase().contains("financial")) {
             reqs.add(Requirement.builder()
                     .id("REQ-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase())
                     .tender(tender)
@@ -115,7 +150,7 @@ public class DocumentProcessingService {
                     .build());
         }
 
-        if (textContent.contains("GST") || textContent.contains("PAN")) {
+        if (textContent.toLowerCase().contains("gst") || textContent.toLowerCase().contains("pan")) {
             reqs.add(Requirement.builder()
                     .id("REQ-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase())
                     .tender(tender)

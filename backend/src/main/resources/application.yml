@@ -6,22 +6,23 @@ server:
 spring:
   application:
     name: sih26100-backend
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:demo}
   datasource:
-    url: ${DATABASE_URL:jdbc:h2:mem:sih26100_db;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE}
-    username: ${POSTGRES_USER:sih_admin}
-    password: ${POSTGRES_PASSWORD:sih_secure_password_2026}
+    url: ${DATABASE_URL:jdbc:h2:file:./data/sih26100_db;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH}
+    username: ${POSTGRES_USER:sa}
+    password: ${POSTGRES_PASSWORD:sa}
     driver-class-name: ${DB_DRIVER:org.h2.Driver}
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: false
+    database-platform: ${JPA_DIALECT:org.hibernate.dialect.H2Dialect}
   flyway:
     enabled: true
     baseline-on-migrate: true
+    clean-disabled: false
+    clean-on-validation-error: false
     locations: classpath:db/migration
   data:
     redis:
@@ -30,7 +31,7 @@ spring:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    secret: ${JWT_SECRET:GeM_Compliance_SecretKey_2026_Secure_Rotated_Token_Signing_Key_9918273645}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   ai-service:
     url: ${AI_SERVICE_URL:http://localhost:8000}

@@ -80,6 +80,10 @@ ALTER TABLE documents ADD COLUMN IF NOT EXISTS bid_id VARCHAR(64);
 -- Update compliance_results to reference bids properly
 ALTER TABLE compliance_results ADD COLUMN IF NOT EXISTS bid_id_ref VARCHAR(64);
 
+-- Re-establish foreign key constraint from compliance_results to bids
+ALTER TABLE compliance_results 
+ADD CONSTRAINT fk_compliance_bid FOREIGN KEY (bid_id) REFERENCES bids(id) ON DELETE CASCADE;
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_bids_tender_id ON bids(tender_id);
 CREATE INDEX IF NOT EXISTS idx_evidence_citations_result ON evidence_citations(compliance_result_id);

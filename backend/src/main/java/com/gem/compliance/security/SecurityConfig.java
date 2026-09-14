@@ -47,8 +47,13 @@ public class SecurityConfig {
                 // Explicit Public Auth Endpoint for Dev/Demo Token Generation
                 .requestMatchers("/api/v1/auth/**").permitAll()
 
-                // Vendor's own profile self-service (Auditor is strictly BLOCKED)
-                .requestMatchers("/api/v1/sellers/me", "/api/v1/sellers/my-status").hasAnyAuthority(
+                // Vendor's own profile self-service & DigiLocker sync (Specific patterns registered BEFORE broader /sellers/**)
+                .requestMatchers(
+                    "/api/v1/sellers/me",
+                    "/api/v1/sellers/me/**",
+                    "/api/v1/sellers/*/digilocker-sync",
+                    "/api/v1/sellers/my-status"
+                ).hasAnyAuthority(
                     "BIDDER_VENDOR", "BIDDER", "PROCUREMENT_OFFICER", "COMPLIANCE_REVIEWER", "SYSTEM_ADMIN",
                     "ROLE_BIDDER_VENDOR", "ROLE_BIDDER", "ROLE_PROCUREMENT_OFFICER", "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN"
                 )
@@ -64,26 +69,32 @@ public class SecurityConfig {
                     "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN"
                 )
 
+                // Reviewer Personal Calibration - Reviewer and Admin only
+                .requestMatchers("/api/v1/reviews/calibration/me").hasAnyAuthority(
+                    "COMPLIANCE_REVIEWER", "SYSTEM_ADMIN",
+                    "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN"
+                )
+
                 // Human Reviews & Overrides - strictly officers, reviewers, and admin
                 .requestMatchers("/api/v1/reviews", "/api/v1/reviews/**", "/api/v1/compliance/override").hasAnyAuthority(
                     "PROCUREMENT_OFFICER", "COMPLIANCE_REVIEWER", "SYSTEM_ADMIN",
                     "ROLE_PROCUREMENT_OFFICER", "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN"
                 )
 
-                // Multi-bidder listing per tender - Officer and Admin ONLY (Reviewer, Auditor, Bidder are strictly BLOCKED)
+                // Multi-bidder listing per tender - Officer, Reviewer, Auditor, Admin, and Bidder (Bidder scoped in controller)
                 .requestMatchers("/api/v1/bids/tender/**").hasAnyAuthority(
-                    "PROCUREMENT_OFFICER", "SYSTEM_ADMIN",
-                    "ROLE_PROCUREMENT_OFFICER", "ROLE_SYSTEM_ADMIN"
+                    "PROCUREMENT_OFFICER", "COMPLIANCE_REVIEWER", "AUDITOR", "VIEWER", "SYSTEM_ADMIN", "BIDDER_VENDOR", "BIDDER",
+                    "ROLE_PROCUREMENT_OFFICER", "ROLE_COMPLIANCE_REVIEWER", "ROLE_AUDITOR", "ROLE_VIEWER", "ROLE_SYSTEM_ADMIN", "ROLE_BIDDER_VENDOR", "ROLE_BIDDER"
                 )
 
-                // Dedicated Auditor & Admin views: Collusion flags, Debarment history, Human override log
+                // Dedicated Auditor, Officer & Admin views: Collusion flags, Debarment history, Human override log
                 .requestMatchers(
                     "/api/v1/audit/collusion-flags",
                     "/api/v1/audit/debarment-history",
                     "/api/v1/audit/overrides"
                 ).hasAnyAuthority(
-                    "AUDITOR", "VIEWER", "SYSTEM_ADMIN",
-                    "ROLE_AUDITOR", "ROLE_VIEWER", "ROLE_SYSTEM_ADMIN"
+                    "AUDITOR", "VIEWER", "SYSTEM_ADMIN", "PROCUREMENT_OFFICER",
+                    "ROLE_AUDITOR", "ROLE_VIEWER", "ROLE_SYSTEM_ADMIN", "ROLE_PROCUREMENT_OFFICER"
                 )
 
                 // Audit Trail & Blockchain verification - internal oversight (Bidder is BLOCKED)
@@ -91,6 +102,12 @@ public class SecurityConfig {
                     "PROCUREMENT_OFFICER", "COMPLIANCE_REVIEWER", "SYSTEM_ADMIN", "AUDITOR", "VIEWER",
                     "ROLE_PROCUREMENT_OFFICER", "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN", "ROLE_AUDITOR", "ROLE_VIEWER"
                 )
+
+                // System Admin Exclusive Panel Endpoints
+                .requestMatchers("/api/v1/admin/**").hasAnyAuthority("SYSTEM_ADMIN", "ROLE_SYSTEM_ADMIN")
+
+                // Dynamic Permissions, Copilot Configuration & Query Endpoints
+                .requestMatchers("/api/v1/permissions/**", "/api/v1/copilot/**").authenticated()
 
                 // Protected Business APIs Require Authentication
                 .requestMatchers("/api/v1/tenders", "/api/v1/tenders/**").authenticated()

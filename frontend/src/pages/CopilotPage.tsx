@@ -23,9 +23,9 @@ export const CopilotPage: React.FC = () => {
   const isBidder = role === 'BIDDER_VENDOR' || role === 'BIDDER';
 
   const [tenders, setTenders] = useState<Tender[]>([]);
-  const [selectedTenderId, setSelectedTenderId] = useState<string>('TND-PUMP-001');
+  const [selectedTenderId, setSelectedTenderId] = useState<string>('');
   const [bids, setBids] = useState<Bid[]>([]);
-  const [selectedBidId, setSelectedBidId] = useState<string>('BID-APEX-001');
+  const [selectedBidId, setSelectedBidId] = useState<string>('');
 
   const getInitialMessages = (): Message[] => {
     if (isAuditor) {
@@ -35,57 +35,6 @@ export const CopilotPage: React.FC = () => {
           role: 'copilot',
           text: 'Welcome, Auditor. Displaying auditable procurement inquiry transcripts and verification history. In compliance with independent vigilance standards (GFR 2017), live query submission is locked to prevent committee interference.',
           timestamp: new Date().toISOString(),
-        },
-        {
-          id: 'audit-q1',
-          role: 'user',
-          text: 'Which requirements is Apex Pumps & Motors Pvt Ltd non-compliant with?',
-          timestamp: '2026-09-11T09:15:00Z',
-        },
-        {
-          id: 'audit-a1',
-          role: 'copilot',
-          text: 'Apex Pumps & Motors Pvt Ltd fails requirement REQ-FIN-001 (Turnover). Extracted financial statements show FY2024-25 turnover at ₹94.00 Cr against the required ₹100.00 Cr threshold. Contradiction detected against CA Certificate claiming ₹112.40 Cr.',
-          timestamp: '2026-09-11T09:15:02Z',
-          sources: [
-            { reqCode: 'REQ-FIN-001', status: 'NON_COMPLIANT', document: 'Audited_Balance_Sheet_FY25.pdf', page: 1, reasoning: 'Revenue from Operations is INR 94.00 Cr, below the INR 100.00 Cr requirement.' }
-          ],
-          confidence: 0.98,
-          modelUsed: 'GeM Procurement Domain Engine',
-        },
-        {
-          id: 'audit-q2',
-          role: 'user',
-          text: 'Are there any contradictions across the submitted documents?',
-          timestamp: '2026-09-11T09:20:00Z',
-        },
-        {
-          id: 'audit-a2',
-          role: 'copilot',
-          text: 'A critical contradiction was detected: Document CA_Turnover_Certificate.pdf (Page 1) claims turnover of ₹112.40 Cr, but Audited_Balance_Sheet_FY25.pdf (Page 1) reports Revenue from Operations at ₹94.00 Cr. Flagged for committee review.',
-          timestamp: '2026-09-11T09:20:03Z',
-          sources: [
-            { reqCode: 'REQ-FIN-001', status: 'PARTIALLY_COMPLIANT', document: 'CA_Turnover_Certificate.pdf', page: 1, reasoning: 'Contradiction between CA turnover certificate and audited balance sheets.' }
-          ],
-          confidence: 0.96,
-          modelUsed: 'GeM Procurement Domain Engine',
-        },
-        {
-          id: 'audit-q3',
-          role: 'user',
-          text: 'What human overrides were recorded for this evaluation?',
-          timestamp: '2026-09-11T09:25:00Z',
-        },
-        {
-          id: 'audit-a3',
-          role: 'copilot',
-          text: '1 human override recorded: REQ-TECH-002 (Pump Efficiency) — Procurement Officer marked COMPLIANT with justification: "Vendor provided corrected ISO 9906 test certificate; efficiency at BEP confirmed at 88.4%, meeting ≥ 85% threshold." Override anchored on blockchain: Block #10043.',
-          timestamp: '2026-09-11T09:25:04Z',
-          sources: [
-            { reqCode: 'REQ-TECH-002', status: 'COMPLIANT', document: 'ISO_9906_Test_Certificate.pdf', page: 2, reasoning: 'Human override with documented justification.' }
-          ],
-          confidence: 1.0,
-          modelUsed: 'Audit Replay Engine',
         }
       ];
     } else if (isReviewer) {
@@ -161,26 +110,13 @@ export const CopilotPage: React.FC = () => {
     if (!selectedTenderId) return;
     async function loadBids() {
       try {
-        if (isBidder) {
-          const myBids: Bid[] = [
-            {
-              id: 'BID-APEX-001',
-              tenderId: selectedTenderId,
-              bidderName: 'Apex Pumps & Motors Private Limited',
-              submissionDate: new Date().toISOString(),
-              totalAmount: 145000000,
-              complianceScore: 78,
-              status: 'UNDER_REVIEW'
-            }
-          ];
-          setBids(myBids);
-          setSelectedBidId('BID-APEX-001');
-          return;
-        }
         const tenderBids = await apiService.getBidsForTender(selectedTenderId);
-        setBids(tenderBids);
-        if (tenderBids.length > 0) {
-          setSelectedBidId(tenderBids[0].id);
+        const scopedBids = isBidder 
+          ? tenderBids.filter(b => !b.bidderEmail || !user?.email || b.bidderEmail.toLowerCase() === user.email.toLowerCase())
+          : tenderBids;
+        setBids(scopedBids);
+        if (scopedBids.length > 0) {
+          setSelectedBidId(scopedBids[0].id);
         } else {
           setSelectedBidId('');
         }
@@ -189,41 +125,56 @@ export const CopilotPage: React.FC = () => {
       }
     }
     loadBids();
-  }, [selectedTenderId, isBidder]);
+  }, [selectedTenderId, isBidder, user?.email]);
+
+  const [copilotConfig, setCopilotConfig] = useState<{
+    role: string;
+    quick_questions: string[];
+    query_input_enabled: boolean;
+    system_prompt?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    apiService.getCopilotConfig()
+      .then(cfg => setCopilotConfig(cfg))
+      .catch(err => console.warn('Failed to load dynamic copilot config:', err));
+  }, [role]);
 
   const activeBid = bids.find(b => b.id === selectedBidId);
-  const bidderDisplayName = isBidder ? 'Apex Pumps & Motors Pvt Ltd' : (activeBid ? activeBid.bidderName : 'Apex Pumps');
+  const bidderDisplayName = activeBid ? activeBid.bidderName : (isBidder ? (user?.fullName || 'My Organization') : 'Selected Bidder');
 
-  // Role-scoped sample questions — Auditor has none (read-only transcripts feed),
-  // Reviewer sees exception-focused queries, Officer/Admin see full committee queries,
-  // Bidder sees vendor self-service inquiries.
-  const sampleQuestions: string[] = isAuditor
-    ? []
-    : isReviewer
-    ? [
-        'Why is requirement REQ-001 flagged for exception review?',
-        'What evidence supports the financial turnover requirement?',
-        'Explain contradiction between CA Certificate and Balance Sheet.',
-        'Show extracted snippet and calculation for pump efficiency.',
-      ]
-    : isBidder
-    ? [
-        'Why is my financial turnover requirement flagged as non-compliant?',
-        'What document do I need to fix my technical efficiency compliance?',
-        'Is my ISO 9001 quality certificate about to expire?',
-        'How can I improve my compliance readiness score?',
-      ]
-    : [
-        'Why is FY2025 turnover flagged as non-compliant?',
-        'What is the overall risk assessment and weighted formula breakdown for this bid?',
-        'Are there any cross-document contradictions detected?',
-        'What evidence was extracted for technical pump efficiency?',
-        'Show debarment and blacklist check outcomes across all bidders.',
-      ];
+  // Dynamic sample questions from copilotConfig, falling back to role-scoped templates
+  const sampleQuestions: string[] = (copilotConfig?.quick_questions && copilotConfig.quick_questions.length > 0)
+    ? copilotConfig.quick_questions
+    : (isAuditor
+      ? []
+      : isReviewer
+      ? [
+          'Why is requirement REQ-001 flagged for exception review?',
+          'What evidence supports the financial turnover requirement?',
+          'Explain contradiction between CA Certificate and Balance Sheet.',
+          'Show extracted snippet and calculation for pump efficiency.',
+        ]
+      : isBidder
+      ? [
+          'Why is my financial turnover requirement flagged as non-compliant?',
+          'What document do I need to fix my technical efficiency compliance?',
+          'Is my ISO 9001 quality certificate about to expire?',
+          'How can I improve my compliance readiness score?',
+        ]
+      : [
+          'Why is FY2025 turnover flagged as non-compliant?',
+          'What is the overall risk assessment and weighted formula breakdown for this bid?',
+          'Are there any cross-document contradictions detected?',
+          'What evidence was extracted for technical pump efficiency?',
+          'Show debarment and blacklist check outcomes across all bidders.',
+        ]);
+
+  const isInputEnabled = copilotConfig ? copilotConfig.query_input_enabled : !isAuditor;
 
   const sendMessage = async (text?: string) => {
     const question = text || input.trim();
-    if (!question) return;
+    if (!question || !isInputEnabled) return;
 
     const userMsg: Message = {
       id: Date.now().toString(),
@@ -236,15 +187,39 @@ export const CopilotPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const aiUrl = import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:8000';
       let answerText = '';
       let answerSources: any[] = [];
       let answerConf = 0.98;
       let modelUsed = isBidder ? 'Bidder Compliance Engine' : 'GeM Procurement Intelligence Copilot';
 
-      const queryBidId = isBidder ? 'BID-APEX-001' : (selectedBidId || 'BID-APEX-001');
+      const queryBidId = selectedBidId || (bids.length > 0 ? bids[0].id : '');
 
+      // First attempt: Spring Boot authenticated copilot query endpoint
       try {
+        const res = await apiService.queryCopilot({
+          question,
+          tender_id: selectedTenderId,
+          bid_id: queryBidId
+        });
+        if (res && res.answer) {
+          answerText = res.answer;
+          answerConf = res.confidence || 0.96;
+          modelUsed = res.model_used || (isBidder ? 'Bidder Compliance Engine' : 'GeM Procurement Intelligence Copilot');
+          answerSources = (res.citations || []).map((c: any) => ({
+            reqCode: c.requirement_id || 'EVD-AI',
+            status: 'VERIFIED',
+            document: c.document_name || 'Technical_Datasheet.pdf',
+            page: c.page || 1,
+            reasoning: c.snippet || 'Grounded extraction'
+          }));
+        }
+      } catch (backendErr) {
+        console.warn('Backend copilot query fallback to direct AI microservice:', backendErr);
+      }
+
+      // Second attempt if backend was empty: direct AI microservice
+      if (!answerText) {
+        const aiUrl = import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:8000';
         const aiRes = await fetch(`${aiUrl}/api/v1/ai/copilot/query`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -266,23 +241,16 @@ export const CopilotPage: React.FC = () => {
             answerSources = (aiData.citations || []).map((c: any) => ({
               reqCode: c.requirement_id || 'EVD-AI',
               status: 'VERIFIED',
-              document: c.document_name || 'Apex_Pumps_Technical_Datasheet.pdf',
+              document: c.document_name || 'Technical_Datasheet.pdf',
               page: c.page || 1,
               reasoning: c.snippet || 'Grounded vector extraction'
             }));
           }
         }
-      } catch (aiErr) {
-        console.warn('AI Copilot microservice fallback:', aiErr);
       }
 
       if (!answerText) {
-        const results = await apiService.getComplianceResults(queryBidId).catch(() => []);
-        const response = synthesizeAnswer(question, results, bidderDisplayName);
-        answerText = response.answer;
-        answerSources = response.sources;
-        answerConf = response.confidence;
-        modelUsed = 'Deterministic Vector RAG';
+        throw new Error('No response generated from verified compliance index.');
       }
 
       setMessages(prev => [...prev, {
@@ -294,11 +262,11 @@ export const CopilotPage: React.FC = () => {
         modelUsed: modelUsed,
         timestamp: new Date().toISOString(),
       }]);
-    } catch (err) {
+    } catch (err: any) {
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'copilot',
-        text: 'Unable to connect to intelligence API. Please verify backend service.',
+        text: err?.message || 'Unable to connect to intelligence API. Please verify backend service.',
         confidence: 0,
         timestamp: new Date().toISOString(),
       }]);
@@ -311,102 +279,8 @@ export const CopilotPage: React.FC = () => {
     setMessages([messages[0]]);
   };
 
-  function synthesizeAnswer(q: string, results: ComplianceResult[], bidder: string) {
-    const qLower = q.toLowerCase();
-
-    if (qLower.includes('non-compliant') || qLower.includes('fail') || qLower.includes('reject')) {
-      const nonCompliant = results.filter(r => r.status === 'NON_COMPLIANT');
-      if (nonCompliant.length === 0) {
-        return {
-          answer: `For ${bidder} (${selectedBidId}), there are no strictly NON_COMPLIANT requirements recorded. However, please review items marked UNVERIFIED or PARTIALLY_COMPLIANT before committee sign-off.`,
-          sources: [],
-          confidence: 0.98,
-        };
-      }
-      const list = nonCompliant.map(r => `• **${r.requirementCode}** (${r.category}): ${r.requirementText}\n  *Reasoning*: ${r.reasoning}`).join('\n\n');
-      return {
-        answer: `${bidder} (${selectedBidId}) is marked NON_COMPLIANT with ${nonCompliant.length} requirement(s):\n\n${list}\n\n**Action Required**: Officer review needed before final disqualification.`,
-        sources: nonCompliant.map(r => ({
-          reqCode: r.requirementCode,
-          status: r.status,
-          document: 'Submitted Bid Dossier',
-          page: 1,
-          reasoning: r.reasoning,
-        })),
-        confidence: 0.96,
-      };
-    }
-
-    if (qLower.includes('efficiency') || qLower.includes('pump') || qLower.includes('technical')) {
-      const techReq = results.find(r => r.requirementCode === 'REQ-003' || r.category === 'Technical');
-      if (techReq) {
-        return {
-          answer: `**Technical Verification for ${bidder}**:\n\n• **Requirement**: ${techReq.requirementText}\n• **Status**: ${techReq.status}\n• **Evidence**: Stated efficiency at BEP is 88.4% at 1450 RPM (Tolerance Class 1 as per ISO 9906).\n• **Confidence**: ${(techReq.confidence * 100).toFixed(0)}%\n\nThe submission satisfies the required minimum operating threshold.`,
-          sources: [{
-            reqCode: techReq.requirementCode,
-            status: techReq.status,
-            document: 'Apex_Pumps_Technical_Datasheet.pdf',
-            page: 1,
-            reasoning: techReq.reasoning,
-          }],
-          confidence: techReq.confidence,
-        };
-      }
-    }
-
-    if (qLower.includes('turnover') || qLower.includes('financial') || qLower.includes('fy2025')) {
-      const finReq = results.find(r => r.requirementCode === 'REQ-001' || r.category === 'Financial');
-      return {
-        answer: `**Financial Review (${bidder})**:\n\n• **Requirement**: ${finReq?.requirementText || 'Annual Turnover Requirement'}\n• **Status**: ${finReq?.status || 'NON_COMPLIANT'}\n• **Variance**: The CA Turnover Certificate certified FY24-25 turnover at ₹112.40 Cr, but the Audited Balance Sheet reports ₹94.00 Cr revenue from operations.\n• **Conclusion**: The requirement of ₹100.00 Cr is not met on audited financials alone. Requires officer determination.`,
-        sources: [{
-          reqCode: finReq?.requirementCode || 'REQ-001',
-          status: finReq?.status || 'NON_COMPLIANT',
-          document: 'Audited_Balance_Sheet_FY25.pdf',
-          page: 1,
-          reasoning: 'FY2024-25 turnover ₹94.00 Cr is below mandatory ₹100.00 Cr threshold.',
-        }],
-        confidence: 0.94,
-      };
-    }
-
-    if (qLower.includes('contradiction') || qLower.includes('discrepan')) {
-      return {
-        answer: `**Contradiction Analysis for ${bidder}**:\n\n1 contradiction was detected by the cross-document reconciliation engine:\n\n• **Turnover Certificate vs Audited Balance Sheet**:\n  - Document A (*CA Turnover Certificate*): ₹112.40 Cr\n  - Document B (*Audited Balance Sheet FY25*): ₹94.00 Cr\n  - Variance: -16.4% discrepancy\n\nThis is categorized as a **HIGH SEVERITY** flag requiring human review under GeM Clause 4.8.`,
-        sources: [
-          { reqCode: 'REQ-001', status: 'NON_COMPLIANT', document: 'CA_Turnover_Certificate.pdf', page: 1, reasoning: 'Claims ₹112.40 Cr' },
-          { reqCode: 'REQ-001', status: 'NON_COMPLIANT', document: 'Audited_Balance_Sheet_FY25.pdf', page: 1, reasoning: 'Documents ₹94.00 Cr' },
-        ],
-        confidence: 0.97,
-      };
-    }
-
-    if (qLower.includes('risk') || qLower.includes('score') || qLower.includes('overall')) {
-      const nonCompCount = results.filter(r => r.status === 'NON_COMPLIANT').length;
-      const unverifiedCount = results.filter(r => r.status === 'UNVERIFIED').length;
-      const riskScore = nonCompCount > 0 ? 65 : (unverifiedCount > 0 ? 35 : 10);
-
-      return {
-        answer: `**Comprehensive Risk Summary for ${bidder} (${selectedBidId})**:\n\n• **Calculated Risk Score**: ${riskScore}/100 (${riskScore > 50 ? 'HIGH RISK' : 'LOW RISK'})\n• **Compliant Requirements**: ${results.filter(r => r.status === 'COMPLIANT').length}/${results.length}\n• **Non-Compliant Items**: ${nonCompCount}\n• **Debarment Check**: COMPLIANT (Ministry of Finance blacklists checked — clear)\n• **Recommendation**: Withhold technical award until turnover contradiction is resolved.`,
-        sources: [],
-        confidence: 0.92,
-      };
-    }
-
-    return {
-      answer: `Based on the evaluated records for ${bidder} (${selectedBidId}), there are ${results.length} compliance verification points logged. You can ask specifically about financial turnover, technical parameters, blacklist checks, or contradiction flags.`,
-      sources: results.slice(0, 2).map(r => ({
-        reqCode: r.requirementCode,
-        status: r.status,
-        document: 'Evaluation Dossier',
-        page: 1,
-        reasoning: r.reasoning,
-      })),
-      confidence: 0.88,
-    };
-  }
-
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] max-h-[850px]">
+    <div className="flex flex-col min-h-[650px] bg-white border border-slate-200 p-4 sm:p-6 rounded-2xl shadow-xs">
       {/* Context Selection Bar */}
       <div className="bg-white rounded-xl border border-slate-200 p-3 mb-3 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex flex-wrap items-center gap-4">
@@ -429,7 +303,7 @@ export const CopilotPage: React.FC = () => {
               <Building2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span className="font-bold text-slate-500 uppercase">My Organization:</span>
               <span className="bg-emerald-50 text-emerald-800 border border-emerald-300 font-semibold px-2.5 py-1 rounded">
-                Apex Pumps & Motors Pvt Ltd (BID-APEX-001)
+                {user?.fullName || 'My Organization'} {activeBid?.id ? `(${activeBid.id})` : ''}
               </span>
             </div>
           ) : (
@@ -524,7 +398,7 @@ export const CopilotPage: React.FC = () => {
 
       {/* Main Content Area: Auditor Vigilance Transcript vs Interactive Messages */}
       {isAuditor ? (
-        <div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-1">
+        <div className="h-[520px] overflow-y-auto space-y-4 pb-4 pr-1">
           {transcriptsLoading ? (
             <div className="p-8 text-center text-slate-500 text-sm bg-white rounded-2xl border border-slate-200">
               <div className="w-6 h-6 border-2 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
@@ -583,7 +457,7 @@ export const CopilotPage: React.FC = () => {
         </div>
       ) : (
         /* Chat Messages for Interactive Roles */
-        <div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-1">
+        <div className="h-[520px] overflow-y-auto space-y-4 pb-4 pr-1">
           {messages.map(msg => (
             <div
               key={msg.id}
@@ -598,8 +472,8 @@ export const CopilotPage: React.FC = () => {
                 <div
                   className={`p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
                     msg.role === 'user'
-                      ? 'bg-purple-600 text-white shadow-sm'
-                      : 'bg-white border border-slate-200 text-slate-800 shadow-sm'
+                      ? 'bg-purple-600 text-white mat-elev-1'
+                      : 'bg-white border border-slate-200 text-slate-800 mat-elev-1'
                   }`}
                 >
                   {msg.text}
@@ -635,7 +509,7 @@ export const CopilotPage: React.FC = () => {
                     </div>
                     {msg.modelUsed && (
                       <span className="inline-flex items-center gap-1 font-mono text-[10px] bg-purple-50 text-purple-700 px-2 py-0.5 rounded border border-purple-200">
-                        ⚡ {msg.modelUsed}
+                         {msg.modelUsed}
                       </span>
                     )}
                   </div>
@@ -666,14 +540,14 @@ export const CopilotPage: React.FC = () => {
         </div>
       )}
 
-      {/* Input Form or Auditor Read-Only Lock */}
-      {isAuditor ? (
+      {/* Input Form or Auditor/Disabled Read-Only Lock */}
+      {!isInputEnabled ? (
         <div className="p-4 bg-slate-100 border border-slate-300 rounded-xl text-xs text-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-2">
           <div className="flex items-center gap-2.5">
             <Lock className="w-5 h-5 text-amber-600 shrink-0" />
             <div>
               <span className="font-bold text-slate-900 block">Vigilance Audit Scrutiny Mode (Read-Only)</span>
-              <span className="text-[11px] text-slate-600">Interactive query submission is locked for Auditor role under GFR 2017 to ensure complete non-interference with procurement committee evaluations.</span>
+              <span className="text-[11px] text-slate-600">Live query input disabled for Auditor vigilance oversight (GFR 2017). Inspecting auditable committee transcripts.</span>
             </div>
           </div>
           <span className="px-2.5 py-1 bg-slate-200 border border-slate-300 rounded font-mono text-[10px] font-bold text-slate-800 shrink-0">

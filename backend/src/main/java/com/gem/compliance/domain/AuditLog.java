@@ -39,6 +39,18 @@ public class AuditLog {
     @Column(columnDefinition = "TEXT")
     private String details;
 
+    @Column(name = "tx_hash")
+    private String txHash;
+
+    @Column(name = "block_number")
+    private Long blockNumber;
+
+    @Column(name = "blockchain_anchored")
+    private Boolean blockchainAnchored;
+
+    @Column(name = "anchor_timestamp")
+    private ZonedDateTime anchorTimestamp;
+
     @PrePersist
     protected void onCreate() {
         if (timestamp == null) timestamp = ZonedDateTime.now();

@@ -27,6 +27,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../context/AuthProvider';
+import { SequentialReasoningChain } from '../components/compliance/SequentialReasoningChain';
 
 export const ComplianceMatrixPage: React.FC = () => {
   const { user } = useAuth();
@@ -85,9 +86,9 @@ export const ComplianceMatrixPage: React.FC = () => {
       try {
         const tenderBids = await apiService.getBidsForTender(selectedTenderId);
         const scopedBids = isBidder 
-          ? tenderBids.filter(b => b.id.includes('APEX') || b.id === 'BID-APEX-001')
+          ? tenderBids.filter(b => !b.bidderEmail || !user?.email || b.bidderEmail.toLowerCase() === user.email.toLowerCase())
           : tenderBids;
-        const effectiveBids = scopedBids.length > 0 ? scopedBids : (isBidder && tenderBids.length > 0 ? [tenderBids[0]] : scopedBids);
+        const effectiveBids = scopedBids;
         setBids(effectiveBids);
         const urlBidId = searchParams.get('bidId');
         if (urlBidId && effectiveBids.some(b => b.id === urlBidId)) {
@@ -126,12 +127,6 @@ export const ComplianceMatrixPage: React.FC = () => {
     setAiRecommendation(null);
     try {
       let data = await apiService.getComplianceResults(bidId);
-      if ((!data || data.length === 0) && (bidId === 'BID-APEX-001' || bidId === 'BID-A-01')) {
-        data = await apiService.getComplianceResults('BID-APEX-001').catch(() => []);
-        if (!data || data.length === 0) {
-          data = await apiService.getComplianceResults('BID-A-01').catch(() => []);
-        }
-      }
       setResults(data || []);
       if (data && data.length > 0) {
         setSelectedResult(data[0]);
@@ -143,10 +138,10 @@ export const ComplianceMatrixPage: React.FC = () => {
       const effectiveBidId = (data && data.length > 0) ? (data[0].bidId || bidId) : bidId;
       const [scoreData, recData] = await Promise.allSettled([
         apiService.getComplianceScore(effectiveBidId),
-        apiService.getAiRecommendation(effectiveBidId),
+        isBidder ? Promise.resolve(null) : apiService.getAiRecommendation(effectiveBidId),
       ]);
       if (scoreData.status === 'fulfilled') setComplianceScore(scoreData.value);
-      if (recData.status === 'fulfilled') setAiRecommendation(recData.value);
+      if (recData.status === 'fulfilled' && recData.value) setAiRecommendation(recData.value);
     } catch (err: any) {
       setError(err.message || 'Failed to load compliance matrix');
     } finally {
@@ -214,7 +209,7 @@ export const ComplianceMatrixPage: React.FC = () => {
       case 'COMPLIANT':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> ✓ Compliant
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Valid Compliant
           </span>
         );
       case 'NON_COMPLIANT':
@@ -268,7 +263,7 @@ export const ComplianceMatrixPage: React.FC = () => {
           {isBidder ? (
             <div className="flex items-center gap-2 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-lg text-xs font-semibold text-purple-900">
               <Building2 className="w-4 h-4 text-purple-600 shrink-0" />
-              <span>My Bid: <strong>{currentBid ? currentBid.bidderName : 'Apex Pumps & Motors Pvt Ltd'}</strong></span>
+              <span>My Bid: <strong>{currentBid ? currentBid.bidderName : (user?.fullName || 'Submitted Bid')}</strong></span>
               <span className="text-[10px] bg-purple-200 text-purple-800 px-1.5 py-0.5 rounded font-mono font-bold">OWN BID SCOPED</span>
             </div>
           ) : (
@@ -330,7 +325,7 @@ export const ComplianceMatrixPage: React.FC = () => {
                   filter === st ? 'bg-white text-blue-600 shadow-sm font-semibold' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                {st === 'CONTRADICTIONS' ? `⚠️ Contradictions (${contradictionItems.length})` : st}
+                {st === 'CONTRADICTIONS' ? `Contradictions (${contradictionItems.length})` : st}
               </button>
             ))}
           </div>
@@ -414,7 +409,7 @@ export const ComplianceMatrixPage: React.FC = () => {
                 </div>
               )}
               <p className="text-[10px] text-slate-500 mt-3 italic border-t border-slate-200 pt-2">
-                ⚖️ {aiRecommendation.disclaimer}
+                 {aiRecommendation.disclaimer}
               </p>
             </div>
           )}
@@ -551,57 +546,56 @@ export const ComplianceMatrixPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Sequential Reasoning Chain Reveal Animation (Phase 6 Feature) */}
+              <SequentialReasoningChain result={selectedResult} bidderName={currentBid?.bidderName} />
+
               {/* AI Recommendation Container */}
               <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  <Cpu className="w-4 h-4 text-blue-600" /> AI Recommendation & Reasoning
+                  <Cpu className="w-4 h-4 text-blue-600" /> Full Automated Justification
                 </div>
                 <p className="text-xs text-slate-700 leading-relaxed">{selectedResult.reasoning}</p>
                 <div className="pt-3 border-t border-slate-200 space-y-2">
                   <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Auditable Evidence Citations</span>
-                  <div className="bg-white border border-slate-200 rounded p-2.5 space-y-1.5 font-mono text-xs text-slate-700">
-                    {selectedResult.requirementCode === 'REQ-001' ? (
-                      <>
-                        <div className="flex items-center justify-between text-blue-700 font-semibold">
-                          <a href="/demo_docs/Apex_Audited_Balance_Sheet_FY25.pdf" target="_blank" rel="noreferrer" className="hover:underline flex items-center gap-1" title="Open Audited Balance Sheet PDF">
-                            <span>📄 Audited_Balance_Sheet_FY25.pdf</span>
-                          </a>
-                          <span className="bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.2 rounded">Page 1, Row 4</span>
+                  <div className="bg-white border border-slate-200 rounded p-2.5 space-y-2 font-mono text-xs text-slate-700">
+                    {selectedResult.evidenceCitations && selectedResult.evidenceCitations.length > 0 ? (
+                      selectedResult.evidenceCitations.map((cit, idx) => (
+                        <div key={idx} className="pb-1.5 border-b border-slate-100 last:border-0 last:pb-0">
+                          <div className="flex items-center justify-between text-blue-700 font-semibold">
+                            <span className="flex items-center gap-1 font-medium text-slate-800">
+                              <FileText className="w-3.5 h-3.5 text-blue-600" />
+                              {cit.documentName}
+                            </span>
+                            <span className="bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded font-bold">
+                              Page {cit.pageNum}
+                            </span>
+                          </div>
+                          {cit.snippet && (
+                            <p className="text-[11px] text-slate-600 font-sans italic bg-slate-50 p-1.5 rounded mt-1">
+                              "{cit.snippet}"
+                            </p>
+                          )}
                         </div>
-                        <p className="text-[11px] text-slate-600 font-sans italic bg-slate-50 p-1.5 rounded">
-                          "Revenue from Operations: Checked against audited filings"
-                        </p>
-                        <div className="flex items-center justify-between text-amber-700 font-semibold pt-1 border-t border-slate-100">
-                          <a href="/demo_docs/Apex_CA_Turnover_Certificate.pdf" target="_blank" rel="noreferrer" className="hover:underline flex items-center gap-1" title="Open CA Certificate PDF">
-                            <span>📄 CA_Turnover_Certificate.pdf</span>
-                          </a>
-                          <span className="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.2 rounded">Page 1</span>
-                        </div>
-                      </>
-                    ) : selectedResult.requirementCode === 'REQ-002' ? (
-                      <>
-                        <div className="flex items-center justify-between text-emerald-700 font-semibold">
-                          <a href="/demo_docs/Apex_GST_Registration_Certificate.pdf" target="_blank" rel="noreferrer" className="hover:underline flex items-center gap-1" title="Open GST Certificate PDF">
-                            <span>📄 GST_Registration_Certificate.pdf</span>
-                          </a>
-                          <span className="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.2 rounded">Page 1</span>
-                        </div>
-                        <p className="text-[11px] text-slate-600 font-sans italic bg-slate-50 p-1.5 rounded">
-                          GSTIN: {currentBid?.gstin || '07AAAAA0000A1Z5'} | Legal Name: {currentBid?.bidderName || 'Registered Entity'}
-                        </p>
-                      </>
+                      ))
                     ) : (
-                      <>
-                        <div className="flex items-center justify-between text-slate-700 font-semibold">
-                          <a href="/demo_docs/Apex_Pumps_Technical_Datasheet.pdf" target="_blank" rel="noreferrer" className="hover:underline flex items-center gap-1" title="Open Technical Datasheet PDF">
-                            <span>📄 Technical_Datasheet.pdf</span>
-                          </a>
-                          <span className="bg-slate-100 text-slate-800 text-[10px] px-1.5 py-0.2 rounded">Page 1</span>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-slate-700">
+                          <span className="font-semibold text-slate-800">
+                            Requirement {selectedResult.requirementCode || selectedResult.requirementId}
+                          </span>
+                          <span className="bg-slate-100 text-slate-700 text-[10px] px-2 py-0.5 rounded font-mono font-bold">
+                            {selectedResult.verificationMethod || 'deterministic'}
+                          </span>
                         </div>
-                        <p className="text-[11px] text-slate-600 font-sans italic bg-slate-50 p-1.5 rounded">
-                          "{selectedResult.reasoning}"
+                        <p className="text-[11px] text-slate-600 font-sans italic bg-slate-50 p-2 rounded">
+                          "{selectedResult.reasoning || 'Verified against submitted bidder documentation.'}"
                         </p>
-                      </>
+                        {selectedResult.evidenceIds && (
+                          <div className="text-[10px] text-slate-400 font-mono">
+                            Evidence Ref: {selectedResult.evidenceIds}
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -649,7 +643,7 @@ export const ComplianceMatrixPage: React.FC = () => {
                         onChange={(e) => setOverrideStatus(e.target.value as ComplianceStatus)}
                         className="w-full text-xs bg-white border border-slate-300 rounded-md p-2 font-medium text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
                       >
-                        <option value="COMPLIANT">✓ COMPLIANT</option>
+                        <option value="COMPLIANT">Valid COMPLIANT</option>
                         <option value="NON_COMPLIANT">! NON_COMPLIANT</option>
                         <option value="UNVERIFIED">? UNVERIFIED</option>
                         <option value="PARTIALLY_COMPLIANT">◐ PARTIALLY_COMPLIANT</option>
