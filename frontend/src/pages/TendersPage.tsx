@@ -6,6 +6,7 @@ import { ApiErrorState } from '../components/ui/ApiErrorState';
 import { CreateTenderModal } from '../components/tenders/CreateTenderModal';
 import { Can } from '../components/auth/Can';
 import { useAuth } from '../context/AuthProvider';
+import { useToast } from '../context/ToastContext';
 import {
   FileText, Plus, CheckCircle, ShieldCheck, Award, Search,
   Filter, Calendar, DollarSign, Building2, UploadCloud, Download,
@@ -14,6 +15,7 @@ import {
 
 export const TendersPage: React.FC = () => {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const isBidder = user?.role === 'BIDDER_VENDOR' || user?.role === 'BIDDER';
 
   const [tenders, setTenders] = useState<Tender[]>([]);
@@ -337,9 +339,9 @@ export const TendersPage: React.FC = () => {
                         onClick={async () => {
                           try {
                             const res = await apiService.runCompliancePipeline(tender.id);
-                            alert(`Compliance evaluation executed for ${tender.tenderNumber}: ${res.message || 'Complete'}`);
+                            showToast(res.message || `Compliance evaluation pipeline executed for ${tender.tenderNumber}`, 'success', 'Evaluation Complete');
                           } catch (e: any) {
-                            alert(`Evaluation error: ${e.message}`);
+                            showToast(e.message || 'Evaluation pipeline encountered an issue', 'error', 'Evaluation Failed');
                           }
                         }}
                         className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition shadow-xs flex items-center gap-1.5 cursor-pointer"

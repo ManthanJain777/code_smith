@@ -303,7 +303,8 @@ export const ReportsPage: React.FC = () => {
               </h3>
               <span className="text-[10px] font-mono text-slate-500">Evaluated Dossiers: {bids.length || 3}</span>
             </div>
-            <table className="w-full text-[11px] border-collapse border border-slate-300 text-left">
+            <div className="overflow-x-auto w-full">
+              <table className="w-full text-[11px] border-collapse border border-slate-300 text-left min-w-[650px]">
               <thead>
                 <tr className="bg-slate-100 text-slate-800 border-b border-slate-300 font-bold">
                   <th className="p-2 border-r border-slate-300 w-12 text-center">Rank</th>
@@ -367,7 +368,8 @@ export const ReportsPage: React.FC = () => {
                   </tr>
                 )}
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
 
           {/* Committee Recommendation Narrative */}
@@ -472,7 +474,8 @@ export const ReportsPage: React.FC = () => {
         {/* Itemized Results Table */}
         <div className="space-y-3">
           <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">Itemized Compliance Verification Matrix</h3>
-          <table className="w-full text-xs text-left border-collapse border border-slate-300">
+          <div className="overflow-x-auto w-full">
+            <table className="w-full text-xs text-left border-collapse border border-slate-300 min-w-[600px]">
             <thead>
               <tr className="bg-slate-100 text-slate-800 border-b border-slate-300">
                 <th className="p-2.5 border-r border-slate-300 w-24">Req Code</th>
@@ -506,7 +509,8 @@ export const ReportsPage: React.FC = () => {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
 
         {/* Blockchain Anchored Proof Badge on Report */}

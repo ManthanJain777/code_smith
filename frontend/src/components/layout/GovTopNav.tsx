@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthProvider';
 import { usePermissions } from '../../context/PermissionsContext';
 import { AshokaEmblem } from '../ui/AshokaEmblem';
 import { ProfileSettingsModal } from '../ui/ProfileSettingsModal';
+import { CreateTenderModal } from '../tenders/CreateTenderModal';
+import { useToast } from '../../context/ToastContext';
 import {
   ShieldCheck,
   Globe,
@@ -44,12 +46,14 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
   const navigate = useNavigate();
   const { user, logout, switchRole } = useAuth();
   const { hasAccess } = usePermissions();
+  const { showToast } = useToast();
 
   const [lang, setLang] = useState<'EN' | 'HI'>('EN');
   const [currentTime, setCurrentTime] = useState<string>('');
   const [fontSize, setFontSize] = useState<'sm' | 'md' | 'lg'>('md');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isCreateTenderModalOpen, setIsCreateTenderModalOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFilter, setSearchFilter] = useState<'all' | 'tenders' | 'bids'>('all');
@@ -241,13 +245,13 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
     {
       id: 'audit',
       label: isVendor ? 'Blockchain Proofs' : 'Blockchain Audit',
-      path: '/audit',
+      path: isVendor ? '/audit' : undefined,
       icon: Link2,
       allowed: true,
       children: isVendor ? undefined : [
         {
           label: 'Audit Trail & Overrides',
-          path: '/audit',
+          path: '/audit?tab=trail',
           description: 'Immutable record of security events and reviewer overrides',
           icon: Link2,
           allowed: hasAccess('blockchain_audit')
@@ -495,16 +499,6 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
             </button>
           )}
 
-          {/* Return to GeM Portal Home link */}
-          <Link
-            to="/"
-            className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors shadow-sm"
-            title="Return to GeM Portal Landing Page"
-          >
-            <Home className="w-3.5 h-3.5 text-slate-500" />
-            <span className="hidden md:inline">GeM Portal</span>
-          </Link>
-
           {/* Mobile Hamburger Trigger (<= 768px) */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -606,51 +600,16 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
 
           {/* Role-Specific Quick Action Trigger */}
           <div className="flex items-center pl-4">
-            {isVendor && (
-              <Link
-                to="/bids/upload"
-                className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-lg text-xs font-black flex items-center gap-1.5 shadow-sm transition cursor-pointer"
-              >
-                <UploadCloud className="w-3.5 h-3.5 text-amber-300" />
-                <span>+ Submit Bid Dossier</span>
-              </Link>
-            )}
             {isOfficer && (
               <button
                 type="button"
-                onClick={() => navigate('/dashboard')}
+                onClick={() => setIsCreateTenderModalOpen(true)}
                 className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
+                title="Create a new Notice Inviting Tender (NIT)"
               >
                 <FileText className="w-3.5 h-3.5 text-emerald-200" />
                 <span>+ Create Tender (NIT)</span>
               </button>
-            )}
-            {isReviewer && (
-              <Link
-                to="/reviews"
-                className="px-3.5 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
-              >
-                <AlertTriangle className="w-3.5 h-3.5 text-amber-200" />
-                <span>Review Queue (1 Flagged)</span>
-              </Link>
-            )}
-            {isAuditor && (
-              <Link
-                to="/audit"
-                className="px-3.5 py-1.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
-              >
-                <Link2 className="w-3.5 h-3.5 text-teal-200" />
-                <span>Blockchain Ledger</span>
-              </Link>
-            )}
-            {isAdmin && (
-              <Link
-                to="/dashboard"
-                className="px-3.5 py-1.5 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
-              >
-                <Server className="w-3.5 h-3.5 text-purple-200" />
-                <span>Microservice Fleet</span>
-              </Link>
             )}
           </div>
         </div>
@@ -743,6 +702,22 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
                   </div>
                 );
               })}
+
+              {isOfficer && (
+                <div className="pt-2 px-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setIsCreateTenderModalOpen(true);
+                    }}
+                    className="w-full px-3 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition cursor-pointer"
+                  >
+                    <FileText className="w-4 h-4 text-emerald-200" />
+                    <span>+ Create Tender (NIT)</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* User Details & Mobile Log Out Button */}
@@ -788,6 +763,17 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
       <ProfileSettingsModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
+      />
+
+      {/* Globally Triggerable Create Tender Modal */}
+      <CreateTenderModal
+        isOpen={isCreateTenderModalOpen}
+        onClose={() => setIsCreateTenderModalOpen(false)}
+        onSuccess={() => {
+          setIsCreateTenderModalOpen(false);
+          showToast('Notice Inviting Tender (NIT) published and anchored to EVM blockchain.', 'success', 'Tender Created');
+          navigate('/tenders');
+        }}
       />
     </header>
   );

@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
 import {
-  ShieldCheck, Lock, Mail, Eye, EyeOff, AlertCircle, ArrowRight,
+  ShieldCheck, Lock, Mail, Eye, EyeOff, AlertCircle, ArrowRight, ArrowLeft,
   UserCheck, CheckCircle2, ChevronLeft, ChevronRight, Cpu, Layers, Database
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { AshokaEmblem } from '../components/ui/AshokaEmblem';
 
 interface CarouselSlide {
@@ -43,11 +44,18 @@ export const LoginPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
 
-  const { login } = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = (location.state as any)?.from?.pathname || '/dashboard';
+
+  // If already authenticated, redirect to dashboard immediately
+  useEffect(() => {
+    if (user) {
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, from]);
 
   // Check if session expired query param is present
   useEffect(() => {
@@ -116,9 +124,18 @@ export const LoginPage: React.FC = () => {
           <span>Ministry of Commerce & Industry</span>
         </div>
         <div className="flex items-center space-x-3 text-[10px] font-mono text-slate-500">
-          <span>GFR 2017 & 2024 Audit Engine</span>
-          <span className="text-slate-300">•</span>
-          <span>SIH26100 Secure Gateway</span>
+          <Link
+            to="/"
+            className="flex items-center gap-1 text-slate-700 hover:text-amber-700 font-sans font-bold bg-slate-100 hover:bg-amber-50 border border-slate-300 px-2.5 py-0.5 rounded transition shadow-xs"
+            title="Return to GeM Public Portal"
+          >
+            <ArrowLeft className="w-3 h-3 text-slate-600" />
+            <span>Go Back to Portal</span>
+          </Link>
+          <span className="text-slate-300 hidden sm:inline">•</span>
+          <span className="hidden sm:inline">GFR 2017 & 2024 Audit Engine</span>
+          <span className="text-slate-300 hidden sm:inline">•</span>
+          <span className="hidden sm:inline">SIH26100 Secure Gateway</span>
         </div>
       </div>
 
@@ -241,9 +258,19 @@ export const LoginPage: React.FC = () => {
           {/* Right Column: Authentication Form & Quick Seed Logins */}
           <div className="lg:col-span-6">
             <div className="bg-white py-7 px-6 sm:px-8 shadow-sm border border-slate-200 rounded-2xl">
-              <div className="mb-5">
-                <h2 className="text-lg font-bold text-slate-900">Sign In to Platform</h2>
-                <p className="text-xs text-slate-500 mt-0.5">Enter your authorized administrative or vendor credentials.</p>
+              <div className="mb-5 flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">Sign In to Platform</h2>
+                  <p className="text-xs text-slate-500 mt-0.5">Enter your authorized administrative or vendor credentials.</p>
+                </div>
+                <Link
+                  to="/"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-lg text-xs font-bold transition shadow-xs border border-slate-200 shrink-0"
+                  title="Return to GeM Public Portal"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Go Back</span>
+                </Link>
               </div>
 
               {errorMessage && (

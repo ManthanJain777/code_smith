@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
+import { useToast } from '../context/ToastContext';
 import { AUTH_TOKEN_KEY } from '../constants/auth';
 import { BlockchainProofBadge } from '../components/ui/BlockchainProofBadge';
 
@@ -17,6 +18,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
 
 export const ReviewsPage: React.FC = () => {
   const { user, token } = useAuth();
+  const { showToast } = useToast();
   const role = user?.role || 'PROCUREMENT_OFFICER';
   const isVendor = role === 'BIDDER_VENDOR' || role === 'BIDDER';
   const isAuditor = role === 'AUDITOR' || role === 'VIEWER';
@@ -180,7 +182,7 @@ export const ReviewsPage: React.FC = () => {
     e.preventDefault();
     if (!activeModalItem) return;
     if (overrideJustification.trim().length < 15) {
-      alert('Mandatory justification must be at least 15 characters to satisfy GFR 2017 audit trail requirements.');
+      showToast('Mandatory justification must be at least 15 characters to satisfy GFR 2017 audit trail requirements.', 'warning', 'Justification Required');
       return;
     }
 
@@ -268,7 +270,7 @@ export const ReviewsPage: React.FC = () => {
       setResults(prev => prev.map(r => r.id === item.id ? { ...r, reviewStatus: 'APPROVED' } : r));
     } catch (err: any) {
       console.error('Failed to record quick approval:', err);
-      alert(`Approval failed: ${err.message}. Please verify backend service connectivity.`);
+      showToast(`Approval failed: ${err.message}. Please verify backend service connectivity.`, 'error', 'Approval Error');
     }
   };
 
@@ -276,7 +278,7 @@ export const ReviewsPage: React.FC = () => {
   const handleSubmitContradictionResolution = async () => {
     if (!contradictionItem) return;
     if (contradictionRationale.trim().length < 15) {
-      alert('Please provide a legal/statutory rationale (minimum 15 characters) for document priority resolution.');
+      showToast('Please provide a legal/statutory rationale (minimum 15 characters) for document priority resolution.', 'warning', 'Rationale Required');
       return;
     }
 
@@ -308,7 +310,7 @@ export const ReviewsPage: React.FC = () => {
       setContradictionRationale('');
     } catch (contradictionErr: any) {
       console.error('Contradiction resolution failed:', contradictionErr);
-      alert(`Contradiction resolution failed: ${contradictionErr.message || 'Backend or blockchain service unavailable. Please retry.'}`);
+      showToast(`Contradiction resolution failed: ${contradictionErr.message || 'Backend or blockchain service unavailable. Please retry.'}`, 'error', 'Resolution Failed');
     } finally {
       setIsResolvingContradiction(false);
     }
@@ -508,7 +510,7 @@ export const ReviewsPage: React.FC = () => {
                   onSubmit={async (e) => {
                     e.preventDefault();
                     if (vendorReplyText.trim().length < 10) {
-                      alert('Please provide a comprehensive response statement (min. 10 characters).');
+                      showToast('Please provide a comprehensive response statement (min. 10 characters).', 'warning', 'Response Incomplete');
                       return;
                     }
                     setIsSubmittingReply(true);

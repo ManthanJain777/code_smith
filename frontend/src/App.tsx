@@ -1,7 +1,8 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthProvider';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthProvider';
 import { PermissionsProvider } from './context/PermissionsContext';
+import { ToastProvider } from './context/ToastContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AppShell } from './components/layout/AppShell';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
@@ -25,22 +26,64 @@ import { DigiLockerSimulationPage } from './pages/DigiLockerSimulationPage';
 import { TenderResultsPage } from './pages/TenderResultsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
+/**
+ * Public Home Route:
+ * If user is authenticated, redirect to /dashboard immediately.
+ * If user is guest, display the public GeM landing page.
+ */
+const HomeRoute: React.FC = () => {
+  const { user, isLoading } = useAuth();
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-600 font-mono text-xs">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
+          <span>Verifying GeM security session...</span>
+        </div>
+      </div>
+    );
+  }
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <LandingPage />;
+};
+
+/**
+ * Login Route:
+ * If user is already authenticated, redirect directly to /dashboard.
+ */
+const LoginRoute: React.FC = () => {
+  const { user, isLoading } = useAuth();
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-600 font-mono text-xs">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
+          <span>Verifying GeM security session...</span>
+        </div>
+      </div>
+    );
+  }
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <LoginPage />;
+};
+
 export const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <AuthProvider>
         <PermissionsProvider>
-          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <Routes>
-              {/* ============================================================ */}
-              {/* PUBLIC ROUTES — No authentication required                    */}
-              {/* ============================================================ */}
-
-              {/* Authentic GeM Portal Landing Page (gem.gov.in look-alike) */}
-              <Route path="/" element={<LandingPage />} />
-
-              {/* Auth Login */}
-              <Route path="/login" element={<LoginPage />} />
+          <ToastProvider>
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <Routes>
+                {/* ============================================================ */}
+                {/* PUBLIC ROUTES                                                */}
+                {/* ============================================================ */}
+                <Route path="/" element={<HomeRoute />} />
+                <Route path="/login" element={<LoginRoute />} />
 
               {/* ============================================================ */}
               {/* PROTECTED APPLICATION SHELL — All routes inside AppShell     */}
@@ -101,6 +144,7 @@ export const App: React.FC = () => {
               />
             </Routes>
           </BrowserRouter>
+          </ToastProvider>
         </PermissionsProvider>
       </AuthProvider>
     </ErrorBoundary>

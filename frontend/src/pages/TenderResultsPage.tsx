@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { apiService } from '../services/api';
 import { useAuth } from '../context/AuthProvider';
+import { useToast } from '../context/ToastContext';
 import { 
   Award, 
   ShieldCheck, 
@@ -51,6 +52,7 @@ interface TenderResultsData {
 export const TenderResultsPage: React.FC = () => {
   const { tenderId } = useParams<{ tenderId: string }>();
   const { user } = useAuth();
+  const { showToast } = useToast();
 
   const [data, setData] = useState<TenderResultsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -85,8 +87,9 @@ export const TenderResultsPage: React.FC = () => {
     try {
       await apiService.publishTenderResults(tenderId);
       await loadResults(tenderId);
+      showToast('Tender evaluation results and L1 contract award successfully anchored on EVM blockchain.', 'success', 'Contract Award Published');
     } catch (err: any) {
-      alert(`Publish error: ${err.message || 'Failed to anchor results on blockchain'}`);
+      showToast(err.message || 'Failed to anchor results on blockchain', 'error', 'Publish Error');
     } finally {
       setPublishing(false);
     }

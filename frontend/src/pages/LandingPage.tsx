@@ -196,6 +196,14 @@ const FEATURES = [
 export const LandingPage: React.FC = () => {
   const { user, login } = useAuth();
   const navigate = useNavigate();
+
+  // If already authenticated, redirect directly to role dashboard
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
+
   const [currentTime, setCurrentTime] = useState('');
   const [darkMode, setDarkMode] = useState(false);
   const [fontSize, setFontSize] = useState<'sm' | 'md' | 'lg'>('md');

@@ -18,7 +18,7 @@ export const NotFoundPage: React.FC = () => {
         </div>
         <div className="flex items-center justify-center gap-3 pt-2">
           <Link
-            to="/"
+            to="/dashboard"
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition shadow-sm"
           >
             <Home className="w-4 h-4" /> Go to Dashboard
