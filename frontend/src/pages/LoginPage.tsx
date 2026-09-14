@@ -46,7 +46,7 @@ export const LoginPage: React.FC = () => {
   const [activeSlide, setActiveSlide] = useState(0);
 
   const { user, login } = useAuth();
-  const { t } = useLanguage();
+  const { lang, toggleLang, t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -74,6 +74,9 @@ export const LoginPage: React.FC = () => {
     }, 6000);
     return () => clearInterval(timer);
   }, []);
+
+  const currentSlide = CAROUSEL_SLIDES[activeSlide] || CAROUSEL_SLIDES[0];
+  const SlideIcon = currentSlide.icon;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

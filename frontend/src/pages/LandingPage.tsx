@@ -216,6 +216,7 @@ export const LandingPage: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState<string | null>(null);
   const [loginError, setLoginError] = useState('');
+  const [langModal, setLangModal] = useState(false);
   const [tickerOffset, setTickerOffset] = useState(0);
   const tickerRef = useRef<HTMLDivElement>(null);
 
