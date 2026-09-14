@@ -75,6 +75,24 @@ const PrimaryKpiCard: React.FC<PrimaryKpiCardProps> = ({
   );
 };
 
+interface StatCardProps {
+  label: string;
+  value: string | number;
+  sub?: string;
+  icon: React.ReactNode;
+  color?: string;
+}
+
+const StatCard: React.FC<StatCardProps> = ({ label, value, sub, icon }) => (
+  <PrimaryKpiCard
+    title={label}
+    value={value}
+    subtitle={sub}
+    accent="blue"
+    icon={icon}
+  />
+);
+
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const role = user?.role || 'PROCUREMENT_OFFICER';
@@ -1021,35 +1039,39 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Reviewer Stats */}
-        <div className="bento-grid">
-          <StatCard
-            label="Pending Committee Scrutiny"
+        {/* Reviewer Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <PrimaryKpiCard
+            title="Pending Committee Scrutiny"
             value="3 In Queue"
-            sub="2 Technical • 1 Financial"
+            subtitle="2 Technical • 1 Financial"
+            accent="amber"
             icon={<Clock className="w-5 h-5 text-amber-600" />}
-            color="text-amber-900"
+            badgeText="PRIORITY"
           />
-          <StatCard
-            label="Contradictions Flagged"
+          <PrimaryKpiCard
+            title="Contradictions Flagged"
             value="1 Variance"
-            sub="CA Cert vs Audited Balance Sheet"
-            icon={<AlertTriangle className="w-5 h-5 text-orange-600" />}
-            color="text-orange-900"
+            subtitle="CA Cert vs Audited Balance Sheet"
+            accent="amber"
+            icon={<AlertTriangle className="w-5 h-5 text-amber-600" />}
+            badgeText="SCRUTINY"
           />
-          <StatCard
-            label="Human Overrides Justified"
+          <PrimaryKpiCard
+            title="Human Overrides Justified"
             value={overrideCount}
-            sub="Statutory Notes Anchored on Chain"
-            icon={<Scale className="w-5 h-5 text-purple-600" />}
-            color="text-purple-900"
+            subtitle="Statutory Notes Anchored on Chain"
+            accent="slate"
+            icon={<Scale className="w-5 h-5 text-slate-700" />}
+            badgeText="ON-CHAIN"
           />
-          <StatCard
-            label="Reviewer AI Alignment"
+          <PrimaryKpiCard
+            title="Reviewer AI Alignment"
             value="96.2%"
-            sub="High Confidence Agreement"
+            subtitle="High Confidence Agreement"
+            accent="emerald"
             icon={<CheckCircle2 className="w-5 h-5 text-emerald-600" />}
-            color="text-emerald-700"
+            badgeText="CALIBRATED"
           />
         </div>
 
@@ -1277,35 +1299,39 @@ export const DashboardPage: React.FC = () => {
           onSuccess={loadData}
         />
 
-        {/* Admin Stats */}
-        <div className="bento-grid">
-          <StatCard
-            label="Fleet Operational Status"
-            value="5/5 Services UP"
-            sub="React • Spring • FastAPI • Ollama • Hardhat"
+        {/* Admin Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <PrimaryKpiCard
+            title="Fleet Operational Status"
+            value="5/5 UP"
+            subtitle="React • Spring • FastAPI • Ollama • EVM"
+            accent="emerald"
             icon={<Server className="w-5 h-5 text-emerald-600" />}
-            color="text-emerald-700"
+            badgeText="OPERATIONAL"
           />
-          <StatCard
-            label="Hardhat Block Height"
+          <PrimaryKpiCard
+            title="Hardhat Block Height"
             value="#10042"
-            sub="Proof-of-Authority EVM Chain 31337"
+            subtitle="Proof-of-Authority EVM Chain 31337"
+            accent="blue"
             icon={<Link2 className="w-5 h-5 text-blue-600" />}
-            color="text-blue-900"
+            badgeText="LIVE"
           />
-          <StatCard
-            label="Prompt Injections Blocked"
+          <PrimaryKpiCard
+            title="Prompt Injections Blocked"
             value="0 Active"
-            sub="Security Sentinel Active Guard"
-            icon={<ShieldAlert className="w-5 h-5 text-purple-600" />}
-            color="text-purple-700"
+            subtitle="Security Sentinel Active Guard"
+            accent="slate"
+            icon={<ShieldAlert className="w-5 h-5 text-slate-700" />}
+            badgeText="SECURE"
           />
-          <StatCard
-            label="System Calibration Alignment"
+          <PrimaryKpiCard
+            title="System Calibration Alignment"
             value="98.4%"
-            sub="Ensemble Committee Consensus"
-            icon={<Award className="w-5 h-5 text-indigo-600" />}
-            color="text-indigo-700"
+            subtitle="Ensemble Committee Consensus"
+            accent="emerald"
+            icon={<Award className="w-5 h-5 text-emerald-600" />}
+            badgeText="VERIFIED"
           />
         </div>
 
