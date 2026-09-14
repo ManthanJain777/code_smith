@@ -328,7 +328,7 @@ export const BidUploadPage: React.FC = () => {
       )}
 
       {/* Header with Fast Submit Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div data-tour="bid-wizard" className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link to="/tenders" className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition" title="Back to Tenders">
             <ArrowLeft className="w-5 h-5" />
@@ -355,6 +355,7 @@ export const BidUploadPage: React.FC = () => {
         <div className="flex items-center gap-3 self-start sm:self-auto">
           {activeStep < 4 && (
             <button
+              data-tour="fast-submit-bid-btn"
               type="button"
               onClick={handleFastSubmit}
               disabled={isProcessing}

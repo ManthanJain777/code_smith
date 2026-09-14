@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
 import { useLanguage } from '../context/LanguageContext';
+import { useGuidedTour } from '../context/GuidedTourContext';
 import { GemStarLogo } from '../components/ui/GemStarLogo';
 import { GemFoundationBanner, CELEBRATION_BANNERS } from '../components/banner/GemFoundationBanner';
 import {
@@ -9,7 +10,7 @@ import {
   ZoomIn, ZoomOut, ExternalLink, ShieldCheck, Zap, Database, Link2,
   Award, Building2, FileText, CheckCircle2, AlertCircle, Users, BarChart3,
   UploadCloud, Clock, ArrowRight, Star, Play, Shield, Cpu, Lock,
-  TrendingUp, Radio, Menu, X, Bell
+  TrendingUp, Radio, Menu, X, Bell, Sparkles
 } from 'lucide-react';
 
 /* ========================================================================= */
@@ -196,6 +197,7 @@ const FEATURES = [
 
 export const LandingPage: React.FC = () => {
   const { user, login } = useAuth();
+  const { startTour } = useGuidedTour();
   const navigate = useNavigate();
 
   // If already authenticated, redirect directly to role dashboard
@@ -584,6 +586,34 @@ export const LandingPage: React.FC = () => {
         {/* ============================================================= */}
         <section className={`py-12 px-4 sm:px-8 ${darkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
           <div className="max-w-screen-2xl mx-auto">
+            {/* FTUE Guided Tour Hero CTA Banner */}
+            <div className="mb-10 bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-900 border-2 border-amber-400/80 rounded-2xl p-6 text-white shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="space-y-1.5 max-w-2xl">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500 text-slate-950 flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5" /> FIRST-TIME USER EXPERIENCE (FTUE)
+                  </span>
+                  <span className="text-xs text-amber-300 font-mono">Automated 6-Step End-to-End Walkthrough</span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  Experience Full End-to-End Procurement Lifecycle Demo
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Watch the automated walkthrough perform all steps live: from Officer tender publishing, Vendor 4-step bid submission with DSC seal, AI 5-stage reasoning matrix, GFR Clause 144 human override, to L1 commercial award on EVM blockchain.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={startTour}
+                className="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black rounded-xl text-sm transition shadow-lg flex items-center gap-2.5 cursor-pointer shrink-0 border border-amber-300 hover:scale-105"
+              >
+                <Sparkles className="w-5 h-5 text-slate-950 fill-slate-950" />
+                <span>Start Guided Interactive Demo</span>
+                <ArrowRight className="w-4 h-4 text-slate-950" />
+              </button>
+            </div>
+
             <div className="text-center mb-8">
               <span className="inline-block px-3 py-1 text-[11px] font-bold tracking-widest uppercase bg-amber-100 text-amber-800 rounded-full mb-3">
                 ROLE-BASED EVALUATION SUITE

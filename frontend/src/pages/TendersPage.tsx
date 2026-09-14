@@ -124,6 +124,7 @@ export const TendersPage: React.FC = () => {
 
           <Can role={['PROCUREMENT_OFFICER', 'SYSTEM_ADMIN']}>
             <button
+              data-tour="create-tender-btn"
               onClick={() => setIsModalOpen(true)}
               className="inline-flex items-center gap-2 bg-emerald-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-emerald-500 transition shadow-md cursor-pointer"
             >
@@ -147,6 +148,7 @@ export const TendersPage: React.FC = () => {
           <div className="relative flex-1 w-full">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
+              data-tour="tenders-search-input"
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -231,7 +233,7 @@ export const TendersPage: React.FC = () => {
       </div>
 
       {/* Tenders List */}
-      <div className="space-y-6">
+      <div data-tour="tenders-board" className="space-y-6">
         {filteredTenders.length === 0 ? (
           <div className="bg-white rounded-xl border border-slate-200 p-12 text-center space-y-3">
             <AlertCircle className="w-8 h-8 text-slate-400 mx-auto" />
@@ -369,6 +371,7 @@ export const TendersPage: React.FC = () => {
                     </Link>
 
                     <Link
+                      data-tour="view-award-standings-btn"
                       to={`/tenders/${tender.id}/results`}
                       className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1 shadow-xs"
                       title="View public award determination and on-chain proof"

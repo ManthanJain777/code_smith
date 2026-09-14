@@ -63,11 +63,12 @@ async function handleResponseJson<T = any>(res: Response): Promise<T> {
 
 export const apiService = {
   getTenders: async (): Promise<Tender[]> => {
+    let baseTenders: Tender[] = [];
     try {
       const res = await fetchWithAuth(`${API_BASE_URL}/tenders`);
-      return await handleResponseJson<Tender[]>(res);
+      baseTenders = await handleResponseJson<Tender[]>(res);
     } catch {
-      return [
+      baseTenders = [
         {
           id: 'TND-PUMP-001',
           organizationId: 'ORG-GEM-01',
@@ -125,6 +126,14 @@ export const apiService = {
         }
       ];
     }
+    try {
+      const stored = JSON.parse(localStorage.getItem('gem_tenders_override') || '[]');
+      const ids = new Set(baseTenders.map(t => t.id));
+      const newItems = stored.filter((t: any) => !ids.has(t.id));
+      return [...newItems, ...baseTenders];
+    } catch {
+      return baseTenders;
+    }
   },
 
   getTenderById: async (id: string): Promise<Tender> => {
@@ -142,129 +151,145 @@ export const apiService = {
       const res = await fetchWithAuth(`${API_BASE_URL}/compliance/bid/${bidId}`);
       return await handleResponseJson<ComplianceResult[]>(res);
     } catch {
+      if (bidId === 'BID-GFL-001') {
+        return [
+          {
+            id: 'RES-G-001',
+            requirementId: 'REQ-SOL-001',
+            requirementCode: 'REQ-SOL-001',
+            requirementText: 'Bidder must have minimum ₹100 crore annual turnover for previous 3 financial years.',
+            category: 'Financial',
+            bidId: 'BID-GFL-001',
+            status: 'NON_COMPLIANT',
+            verificationMethod: 'deterministic',
+            reasoning: 'Turnover FY2024-25: ₹75.00 Cr < ₹100 Cr threshold. NON_COMPLIANT.',
+            confidence: 0.99,
+            evidenceIds: 'EVD-G-001',
+            reviewStatus: 'PENDING',
+            createdAt: new Date().toISOString(),
+            evidenceCitations: [{ documentName: 'GlobalFlow_CA_Certificate.pdf', pageNum: 1, snippet: 'Turnover FY2024-25: INR 75.00 Crores' }]
+          },
+          {
+            id: 'RES-G-002',
+            requirementId: 'REQ-SOL-002',
+            requirementCode: 'REQ-SOL-002',
+            requirementText: 'Solar Inverter efficiency shall not be less than 98%.',
+            category: 'Technical',
+            bidId: 'BID-GFL-001',
+            status: 'NON_COMPLIANT',
+            verificationMethod: 'deterministic',
+            reasoning: 'Tested efficiency: 95.8% < 98% threshold. NON_COMPLIANT.',
+            confidence: 0.98,
+            evidenceIds: 'EVD-G-002',
+            reviewStatus: 'PENDING',
+            createdAt: new Date().toISOString(),
+            evidenceCitations: [{ documentName: 'GlobalFlow_Inverter_Spec.pdf', pageNum: 3, snippet: 'Tested Peak Efficiency: 95.8%' }]
+          },
+          {
+            id: 'RES-G-003',
+            requirementId: 'REQ-SOL-003',
+            requirementCode: 'REQ-SOL-003',
+            requirementText: 'Valid ISO 14001 Environmental Management System Certificate mandatory.',
+            category: 'Certification',
+            bidId: 'BID-GFL-001',
+            status: 'NON_COMPLIANT',
+            verificationMethod: 'deterministic',
+            reasoning: 'No ISO 14001 Certificate found in submitted bid dossier. NON_COMPLIANT.',
+            confidence: 0.99,
+            evidenceIds: '',
+            reviewStatus: 'PENDING',
+            createdAt: new Date().toISOString()
+          },
+          {
+            id: 'RES-G-004',
+            requirementId: 'REQ-SOL-004',
+            requirementCode: 'REQ-SOL-004',
+            requirementText: 'Valid GST Registration Certificate & PAN Card must be submitted.',
+            category: 'Eligibility',
+            bidId: 'BID-GFL-001',
+            status: 'COMPLIANT',
+            verificationMethod: 'deterministic',
+            reasoning: 'GST Registration Certificate (29BBBBB1111B2Z6) and PAN (BBACA5678G) verified active on GSTN portal.',
+            confidence: 0.99,
+            evidenceIds: 'EVD-G-004',
+            reviewStatus: 'APPROVED',
+            createdAt: new Date().toISOString()
+          }
+        ];
+      }
+
+      // Default Apex Pumps (100% Compliant Winner for Solar Tender)
       return [
         {
           id: 'RES-A-001',
-          requirementId: 'REQ-P001',
-          requirementCode: 'REQ-P001',
-          requirementText: 'Bidder must have minimum Rs.100 crore annual turnover for each of the previous 3 financial years.',
+          requirementId: 'REQ-SOL-001',
+          requirementCode: 'REQ-SOL-001',
+          requirementText: 'Bidder must have minimum ₹100 crore annual turnover for previous 3 financial years.',
           category: 'Financial',
           bidId: bidId || 'BID-APEX-001',
-          status: 'PARTIALLY_COMPLIANT',
+          status: 'COMPLIANT',
           verificationMethod: 'deterministic',
-          reasoning: 'FY2023=Rs.112Cr (PASS), FY2024=Rs.127Cr (PASS), FY2025=Rs.94Cr (FAIL). FY2025 turnover Rs.94 Cr is below the required Rs.100 Cr threshold. 2 of 3 years compliant.',
+          reasoning: 'Turnover FY2024-25: ₹120.00 Cr >= ₹100 Cr threshold. COMPLIANT.',
           confidence: 0.99,
           evidenceIds: 'EVD-A-001',
-          reviewStatus: 'PENDING',
-          createdAt: '2026-09-10T14:25:00Z',
+          reviewStatus: 'APPROVED',
+          createdAt: new Date().toISOString(),
           evidenceCitations: [
-            { documentName: 'Apex_CA_Turnover_Certificate.pdf', pageNum: 1, snippet: 'Turnover FY2024-25: INR 94.20 Crores' }
+            { documentName: 'Apex_CA_Turnover_Certificate.pdf', pageNum: 1, snippet: 'Turnover FY2024-25: INR 120.00 Crores' }
           ]
         },
         {
           id: 'RES-A-002',
-          requirementId: 'REQ-P002',
-          requirementCode: 'REQ-P002',
-          requirementText: 'Valid GST Registration Certificate and PAN Card must be submitted.',
-          category: 'Eligibility',
+          requirementId: 'REQ-SOL-002',
+          requirementCode: 'REQ-SOL-002',
+          requirementText: 'Solar Inverter efficiency shall not be less than 98%.',
+          category: 'Technical',
           bidId: bidId || 'BID-APEX-001',
           status: 'COMPLIANT',
           verificationMethod: 'deterministic',
-          reasoning: 'GST Registration Certificate (07AAAAA0000A1Z5) verified active via GSTN. PAN Card (AAACA1234F) verified. Both documents present and valid.',
+          reasoning: 'Solar Inverter efficiency tested 99.1% >= 98.0% threshold. COMPLIANT.',
           confidence: 0.99,
           evidenceIds: 'EVD-A-002',
           reviewStatus: 'APPROVED',
-          createdAt: '2026-09-10T14:25:00Z',
+          createdAt: new Date().toISOString(),
           evidenceCitations: [
-            { documentName: 'Apex_GST_Registration_Certificate.pdf', pageNum: 1, snippet: 'GSTIN: 07AAAAA0000A1Z5 - Status: Active Regular' }
+            { documentName: 'Apex_Solar_Inverter_Test_Report.pdf', pageNum: 2, snippet: 'Tested Efficiency: 99.1%' }
           ]
         },
         {
           id: 'RES-A-003',
-          requirementId: 'REQ-P003',
-          requirementCode: 'REQ-P003',
-          requirementText: 'Pump operational efficiency shall not be less than 85%.',
-          category: 'Technical',
+          requirementId: 'REQ-SOL-003',
+          requirementCode: 'REQ-SOL-003',
+          requirementText: 'Valid ISO 14001 Environmental Management System Certificate mandatory.',
+          category: 'Certification',
           bidId: bidId || 'BID-APEX-001',
           status: 'COMPLIANT',
           verificationMethod: 'deterministic',
-          reasoning: 'Technical Datasheet states pump efficiency 88.4%. 88.4% >= 85.0% threshold. COMPLIANT.',
+          reasoning: 'Valid ISO 14001 Environmental Management System Certificate verified. COMPLIANT.',
           confidence: 0.98,
           evidenceIds: 'EVD-A-003',
           reviewStatus: 'APPROVED',
-          createdAt: '2026-09-10T14:25:00Z',
+          createdAt: new Date().toISOString(),
           evidenceCitations: [
-            { documentName: 'Apex_Pumps_Technical_Datasheet.pdf', pageNum: 4, snippet: 'Peak Efficiency at BEP: 88.4%' }
+            { documentName: 'Apex_ISO_14001_Certificate.pdf', pageNum: 1, snippet: 'ISO 14001:2015 Valid through 2028' }
           ]
         },
         {
           id: 'RES-A-004',
-          requirementId: 'REQ-P004',
-          requirementCode: 'REQ-P004',
-          requirementText: 'Pump production capacity minimum 800 units per day.',
-          category: 'Technical',
-          bidId: bidId || 'BID-APEX-001',
-          status: 'PARTIALLY_COMPLIANT',
-          verificationMethod: 'deterministic',
-          reasoning: 'CONTRADICTION DETECTED: Technical_Datasheet.pdf (page 12) states 800 units/day. Company_Brochure.pdf (page 3) states 500 units/day. Human reviewer must determine authoritative document.',
-          confidence: 0.60,
-          evidenceIds: 'EVD-A-004',
-          reviewStatus: 'PENDING',
-          createdAt: '2026-09-10T14:25:00Z',
-          evidenceCitations: [
-            { documentName: 'Technical_Datasheet.pdf', pageNum: 12, snippet: 'Throughput Capacity: 800 units/day' },
-            { documentName: 'Company_Brochure.pdf', pageNum: 3, snippet: 'Daily Assembly Line Yield: 500 units/day' }
-          ]
-        },
-        {
-          id: 'RES-A-005',
-          requirementId: 'REQ-P005',
-          requirementCode: 'REQ-P005',
-          requirementText: 'Minimum 5 years of experience supplying to government entities.',
-          category: 'Experience',
-          bidId: bidId || 'BID-APEX-001',
-          status: 'UNVERIFIED',
-          verificationMethod: 'deterministic',
-          reasoning: 'No government purchase order documents found in submitted bid covering 5+ years of government supply experience. System returns UNVERIFIED — not a guess.',
-          confidence: 0.92,
-          evidenceIds: '',
-          reviewStatus: 'PENDING',
-          createdAt: '2026-09-10T14:25:00Z'
-        },
-        {
-          id: 'RES-A-006',
-          requirementId: 'REQ-P006',
-          requirementCode: 'REQ-P006',
-          requirementText: 'ISO 9001:2015 Quality Management Certificate required. Certificate must be valid on the date of bid submission (2026-09-15).',
-          category: 'Certification',
-          bidId: bidId || 'BID-APEX-001',
-          status: 'NON_COMPLIANT',
-          verificationMethod: 'deterministic',
-          reasoning: 'ISO 9001:2015 Certificate expiry date: 2026-07-31. Bid submission date: 2026-09-15. Certificate was expired 46 days before submission. NON_COMPLIANT.',
-          confidence: 0.99,
-          evidenceIds: 'EVD-A-006',
-          reviewStatus: 'PENDING',
-          createdAt: '2026-09-10T14:25:00Z',
-          evidenceCitations: [
-            { documentName: 'Apex_ISO_9001_Certificate.pdf', pageNum: 1, snippet: 'Validity Period: 01-Aug-2023 to 31-Jul-2026' }
-          ]
-        },
-        {
-          id: 'RES-A-007',
-          requirementId: 'REQ-P007',
-          requirementCode: 'REQ-P007',
-          requirementText: 'Operating pressure rating must be at least 10 Bar.',
-          category: 'Technical',
+          requirementId: 'REQ-SOL-004',
+          requirementCode: 'REQ-SOL-004',
+          requirementText: 'Valid GST Registration Certificate & PAN Card must be submitted.',
+          category: 'Eligibility',
           bidId: bidId || 'BID-APEX-001',
           status: 'COMPLIANT',
           verificationMethod: 'deterministic',
-          reasoning: 'Datasheet states operating pressure 155 PSI. Unit normalization: 155 PSI = 10.69 Bar. 10.69 Bar >= 10 Bar threshold. COMPLIANT after unit normalization.',
-          confidence: 0.97,
-          evidenceIds: 'EVD-A-007',
+          reasoning: 'GST Registration Certificate (07AAAAA0000A1Z5) & PAN (AAACA1234F) verified active on GSTN portal.',
+          confidence: 0.99,
+          evidenceIds: 'EVD-A-004',
           reviewStatus: 'APPROVED',
-          createdAt: '2026-09-10T14:25:00Z',
+          createdAt: new Date().toISOString(),
           evidenceCitations: [
-            { documentName: 'Apex_Pumps_Technical_Datasheet.pdf', pageNum: 6, snippet: 'Maximum Working Pressure: 155 PSI (10.69 bar)' }
+            { documentName: 'Apex_GST_Registration_Certificate.pdf', pageNum: 1, snippet: 'GSTIN: 07AAAAA0000A1Z5 - Status: Active Regular' }
           ]
         }
       ];
@@ -321,10 +346,11 @@ export const apiService = {
         submittedAt: b.submittedAt || b.createdAt || new Date().toISOString()
       }));
     } catch {
+      const isSolar = tenderId === 'TND-SOLAR-99088' || tenderId?.includes('SOLAR');
       return [
         {
           id: 'BID-APEX-001',
-          tenderId: tenderId || 'TND-PUMP-001',
+          tenderId: tenderId || 'TND-SOLAR-99088',
           bidderName: 'Apex Pumps & Motors Pvt Ltd',
           bidderGstin: '07AAAAA0000A1Z5',
           gstin: '07AAAAA0000A1Z5',
@@ -332,15 +358,16 @@ export const apiService = {
           pan: 'AAACA1234F',
           bidderEmail: 'apex@apexpumps.com',
           status: 'UNDER_EVALUATION',
-          riskScore: 65.0,
-          forgeryRisk: 0.12,
+          riskScore: isSolar ? 0.0 : 65.0,
+          quotedPrice: 61500000,
+          forgeryRisk: 0.01,
           debarmentStatus: 'CLEAR',
           submittedAt: '2026-09-10T14:22:15Z',
           blockchainTx: '0x9a8f4c2e1b7d5a3f0e8c6b4a2d0f8e6c4b2a0d8e6c4b2a0d8e6c4b2a0d8e6c4b'
         },
         {
           id: 'BID-GFL-001',
-          tenderId: tenderId || 'TND-PUMP-001',
+          tenderId: tenderId || 'TND-SOLAR-99088',
           bidderName: 'GlobalFlow Engineers Ltd',
           bidderGstin: '29BBBBB1111B2Z6',
           gstin: '29BBBBB1111B2Z6',
@@ -348,8 +375,9 @@ export const apiService = {
           pan: 'BBACA5678G',
           bidderEmail: 'bid@globalflow.in',
           status: 'UNDER_EVALUATION',
-          riskScore: 15.0,
-          forgeryRisk: 0.04,
+          riskScore: isSolar ? 85.0 : 15.0,
+          quotedPrice: 64800000,
+          forgeryRisk: 0.42,
           debarmentStatus: 'CLEAR',
           submittedAt: '2026-09-11T16:45:00Z',
           blockchainTx: '0x1c3d5e7f9a1b3c5d7e9f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3e5f7a9b1c3d'

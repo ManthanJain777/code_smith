@@ -147,6 +147,7 @@ export const TenderResultsPage: React.FC = () => {
         <div className="flex items-center gap-2">
           {canPublish && (
             <button
+              data-tour="publish-award-btn"
               onClick={handlePublish}
               disabled={publishing}
               className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition shadow-xs disabled:opacity-50 cursor-pointer"
@@ -163,6 +164,7 @@ export const TenderResultsPage: React.FC = () => {
             Verify on Blockchain
           </button>
           <button
+            data-tour="generate-contract-order-btn"
             onClick={() => setIsContractModalOpen(true)}
             className="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-slate-900 text-xs font-bold px-3.5 py-2 rounded-lg transition shadow-xs cursor-pointer"
           >
