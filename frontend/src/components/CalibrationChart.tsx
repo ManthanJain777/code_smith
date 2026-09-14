@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { apiService } from '../services/api';
+import { apiService, getApiBaseUrl } from '../services/api';
 import { AUTH_TOKEN_KEY } from '../constants/auth';
 
 export const CalibrationChart: React.FC = () => {
@@ -9,7 +9,7 @@ export const CalibrationChart: React.FC = () => {
   useEffect(() => {
     async function loadData() {
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+        const baseUrl = getApiBaseUrl();
         const token = localStorage.getItem(AUTH_TOKEN_KEY);
         const response = await fetch(`${baseUrl}/admin/calibration`, {
           headers: {

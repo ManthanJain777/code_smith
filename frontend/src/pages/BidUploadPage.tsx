@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthProvider';
 import { AUTH_TOKEN_KEY } from '../constants/auth';
 import { BlockchainProofBadge } from '../components/ui/BlockchainProofBadge';
 import { GemStarLogo } from '../components/ui/GemStarLogo';
+import { getApiBaseUrl } from '../services/api';
 
 interface FileUploadState {
   file: File;
@@ -67,7 +68,7 @@ export const BidUploadPage: React.FC = () => {
   } | null>(null);
 
   useEffect(() => {
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+    const apiBaseUrl = getApiBaseUrl();
     const authToken = token || localStorage.getItem(AUTH_TOKEN_KEY);
 
     // Fetch live tenders
@@ -189,8 +190,8 @@ export const BidUploadPage: React.FC = () => {
     setUploadError(null);
     setOverallProgress(10);
 
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
-    const aiServiceUrl = import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:8000';
+    const apiBaseUrl = getApiBaseUrl();
+    const aiServiceUrl = apiBaseUrl;
     const authToken = token || localStorage.getItem(AUTH_TOKEN_KEY);
 
     let activeBidId = bidId;

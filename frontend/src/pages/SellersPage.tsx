@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
 import { AUTH_TOKEN_KEY } from '../constants/auth';
+import { getApiBaseUrl } from '../services/api';
 import { Can } from '../components/auth/Can';
 import {
   UserCheck,
@@ -30,7 +31,7 @@ interface SellerItem {
   updatedAt?: string;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL = getApiBaseUrl();
 
 export const SellersPage: React.FC = () => {
   const { token } = useAuth();

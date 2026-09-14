@@ -37,13 +37,7 @@ public class CopilotController {
     private final BidRepository bidRepository;
     private final com.gem.compliance.repository.ComplianceResultRepository complianceResultRepository;
     private final ObjectMapper objectMapper;
-
-    @Value("${app.ai-service.url:http://localhost:8000}")
-    private String aiServiceUrl;
-
-    private final HttpClient httpClient = HttpClient.newBuilder()
-        .connectTimeout(Duration.ofSeconds(5))
-        .build();
+    private final com.gem.compliance.service.GeminiApiService geminiApiService;
 
     @GetMapping("/config")
     @PreAuthorize("isAuthenticated()")
@@ -150,48 +144,24 @@ public class CopilotController {
             }
         }
 
-        // 3. Dispatch to FastAPI AI Engine with strictly scoped evidence
-        try {
-            Map<String, Object> reqBody = new HashMap<>();
-            reqBody.put("question", question);
-            reqBody.put("tender_id", tenderId);
-            reqBody.put("bid_id", effectiveBidId);
-            reqBody.put("role", role);
-            reqBody.put("user_name", user != null ? user.getFullName() : "Procurement Officer");
-            reqBody.put("max_results", 4);
+        // 3. Dispatch to Google Gemini AI Engine with strictly scoped evidence
+        var bidResults = complianceResultRepository.findByBidId(effectiveBidId);
+        var mappedResults = bidResults.stream().map(r -> Map.<String, Object>of(
+            "requirement_id", r.getRequirementId() != null ? r.getRequirementId() : "",
+            "status", r.getStatus() != null ? r.getStatus() : "VERIFIED",
+            "reasoning", r.getReasoning() != null ? r.getReasoning() : ""
+        )).toList();
 
-            var bidResults = complianceResultRepository.findByBidId(effectiveBidId);
-            var mappedResults = bidResults.stream().map(r -> Map.of(
-                "requirement_id", r.getRequirementId() != null ? r.getRequirementId() : "",
-                "status", r.getStatus() != null ? r.getStatus() : "VERIFIED",
-                "reasoning", r.getReasoning() != null ? r.getReasoning() : ""
-            )).toList();
-            reqBody.put("compliance_results", mappedResults);
+        Map<String, Object> response = geminiApiService.queryCopilot(
+            question,
+            tenderId,
+            effectiveBidId,
+            role,
+            user != null ? user.getFullName() : "Procurement Officer",
+            mappedResults
+        );
 
-            String jsonPayload = objectMapper.writeValueAsString(reqBody);
-
-            HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(aiServiceUrl + "/api/v1/ai/copilot/query"))
-                .header("Content-Type", "application/json")
-                .timeout(Duration.ofSeconds(12))
-                .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
-                .build();
-
-            HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() == 200) {
-                return ResponseEntity.ok(objectMapper.readValue(resp.body(), Map.class));
-            }
-        } catch (Exception e) {
-            log.warn("FastAPI copilot query failed ({}) — using deterministic fallback", e.getMessage());
-        }
-
-        // 4. Deterministic Grounded Refusal / Safe Fallback
-        return ResponseEntity.ok(Map.of(
-            "answer", String.format("AI reasoning service unavailable — showing deterministic verification records for Bid '%s'. Please consult the Compliance Matrix for verified criteria.", effectiveBidId),
-            "confidence", 0.85,
-            "source_results", List.of(),
-            "disclaimer", "Grounded verification records only."
-        ));
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/transcript")

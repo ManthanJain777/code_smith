@@ -13,8 +13,9 @@ import { useAuth } from '../context/AuthProvider';
 import { useToast } from '../context/ToastContext';
 import { AUTH_TOKEN_KEY } from '../constants/auth';
 import { BlockchainProofBadge } from '../components/ui/BlockchainProofBadge';
+import { getApiBaseUrl } from '../services/api';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL = getApiBaseUrl();
 
 export const ReviewsPage: React.FC = () => {
   const { user, token } = useAuth();

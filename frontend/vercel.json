@@ -3,6 +3,10 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/api/v1/:path*",
+      "destination": "https://code-smith-iy3z.onrender.com/api/v1/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

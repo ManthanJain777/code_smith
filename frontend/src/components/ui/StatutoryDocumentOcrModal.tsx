@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AUTH_TOKEN_KEY } from '../../constants/auth';
+import { complianceApi, getApiBaseUrl } from '../../services/api';
 import {
   X,
   Upload,
@@ -146,7 +147,7 @@ const PORTAL_DOCUMENTS: Record<string, { label: string; docName: string; default
   }
 };
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL = getApiBaseUrl();
 
 export const StatutoryDocumentOcrModal: React.FC<StatutoryDocumentOcrModalProps> = ({
   isOpen,
@@ -174,35 +175,51 @@ export const StatutoryDocumentOcrModal: React.FC<StatutoryDocumentOcrModalProps>
     setFileName(file.name);
     const reader = new FileReader();
     reader.onload = () => {
-      setFilePreview(reader.result as string);
-      startOcrScanning();
+      const dataUrl = reader.result as string;
+      setFilePreview(dataUrl);
+      startOcrScanning(dataUrl);
     };
     reader.readAsDataURL(file);
   };
 
   const handleUseSampleDocument = () => {
+    const sampleImg = 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80';
     setFileName(`${currentConfig.docName.replace(/\s+/g, '_')}_Verified.png`);
-    setFilePreview('https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80');
-    startOcrScanning();
+    setFilePreview(sampleImg);
+    startOcrScanning(sampleImg);
   };
 
-  const startOcrScanning = () => {
+  const startOcrScanning = async (fileData?: string) => {
     setOcrScanning(true);
-    setScanProgress(10);
+    setScanProgress(20);
     setExtractedData(null);
     setFeedback(null);
 
-    const interval = setInterval(() => {
-      setScanProgress(prev => {
-        if (prev >= 90) {
-          clearInterval(interval);
-          setOcrScanning(false);
-          setExtractedData(currentConfig.defaultFields);
-          return 100;
-        }
-        return prev + 20;
+    try {
+      setScanProgress(50);
+      const res = await complianceApi.extractDocumentOcrWithGemini({
+        portalKey: selectedPortal,
+        documentType: currentConfig.docName,
+        fileContent: fileData || filePreview || ''
       });
-    }, 250);
+
+      setScanProgress(85);
+      const cleanFields: Record<string, string> = { ...currentConfig.defaultFields };
+      if (res) {
+        Object.keys(res).forEach(k => {
+          if (typeof res[k] === 'string' && res[k]) {
+            cleanFields[k] = res[k];
+          }
+        });
+      }
+      setExtractedData(cleanFields);
+    } catch (err) {
+      console.warn('Gemini OCR API call note:', err);
+      setExtractedData(currentConfig.defaultFields);
+    } finally {
+      setScanProgress(100);
+      setOcrScanning(false);
+    }
   };
 
   const handleFieldChange = (key: string, val: string) => {

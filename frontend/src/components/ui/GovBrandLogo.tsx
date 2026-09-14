@@ -2,11 +2,12 @@ import React from 'react';
 import { GemStarLogo } from './GemStarLogo';
 
 interface GovBrandLogoProps {
-  /** Size of the GeM Shield Logo in pixels */
+  /** Size of the RGB Star Logo in pixels */
+  logoSize?: number;
   emblemSize?: number;
-  /** Show "GeM Compliance" wordmark below emblem */
+  /** Show "GeM Compliance" wordmark below logo */
   showWordmark?: boolean;
-  /** Color variant for the emblem */
+  /** Color variant for the logo */
   variant?: 'navy' | 'gold' | 'white';
   /** Optional extra CSS classes */
   className?: string;
@@ -16,15 +17,17 @@ interface GovBrandLogoProps {
 
 /**
  * GovBrandLogo — Official combined government logo component.
- * Combines the GeM Shield Logo with GeM wordmark and ministry subtitle.
+ * Combines the GeM RGB Hexagram Star Logo (pure SVG) with GeM wordmark and ministry subtitle.
  */
 export const GovBrandLogo: React.FC<GovBrandLogoProps> = ({
+  logoSize,
   emblemSize = 64,
   showWordmark = true,
   variant = 'navy',
   className = '',
   showSubtitle = false,
 }) => {
+  const effectiveSize = logoSize || emblemSize;
   const textColor = variant === 'white' ? 'text-white' : variant === 'gold' ? 'text-amber-800' : 'text-slate-900';
   const subTextColor = variant === 'white' ? 'text-slate-300' : 'text-slate-500';
   const tagBg = variant === 'white'
@@ -33,7 +36,7 @@ export const GovBrandLogo: React.FC<GovBrandLogoProps> = ({
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>
-      <GemStarLogo size={emblemSize} variant={variant === 'gold' ? 'color' : variant} />
+      <GemStarLogo size={effectiveSize} variant={variant === 'gold' ? 'color' : variant} />
       {showWordmark && (
         <div className="flex flex-col justify-center gap-0.5">
           <div className="flex items-center gap-2">

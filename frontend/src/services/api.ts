@@ -1,7 +1,24 @@
 import { Tender, ComplianceResult, AuditLog, HumanReviewRequest, Bid } from '../types/compliance';
 import { AUTH_TOKEN_KEY } from '../constants/auth';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+export const getApiBaseUrl = (): string => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    // On local development, connect to local backend port 8080
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return envUrl || 'http://localhost:8080/api/v1';
+    }
+    // On cloud (e.g. Vercel, Render), if envUrl is missing or set to localhost, use Render backend
+    if (!envUrl || envUrl.includes('localhost') || envUrl.includes('127.0.0.1')) {
+      return 'https://code-smith-iy3z.onrender.com/api/v1';
+    }
+    return envUrl;
+  }
+  return envUrl || 'https://code-smith-iy3z.onrender.com/api/v1';
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 // Robust authenticated fetch with clean session expiry handling
 async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
@@ -497,11 +514,45 @@ export const apiService = {
   },
 
   getCopilotTranscript: async (): Promise<any[]> => {
-    const aiUrl = import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:8000';
-    const res = await fetch(`${aiUrl}/api/v1/ai/copilot/transcript`);
-    if (!res.ok) throw new Error(`AI Error ${res.status}: ${res.statusText}`);
-    const data = await res.json();
-    return data.transcripts || [];
+    try {
+      const res = await fetchWithAuth(`${API_BASE_URL}/copilot/transcript`);
+      if (res.ok) {
+        return await handleResponseJson<any[]>(res);
+      }
+    } catch (e) {
+      console.warn('Failed to fetch copilot transcript from primary backend, falling back to static cache');
+    }
+    return [];
+  },
+
+  queryGeminiCopilot: async (payload: {
+    question: string;
+    tender_id?: string;
+    bid_id?: string;
+    role?: string;
+    user_name?: string;
+    compliance_results?: any[];
+  }): Promise<any> => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/copilot/query`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return await handleResponseJson(res);
+  },
+
+  extractDocumentOcrWithGemini: async (payload: {
+    portalKey: string;
+    documentType: string;
+    fileContent?: string;
+    text?: string;
+  }): Promise<any> => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/ai/ocr/extract`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return await handleResponseJson(res);
   },
 
   getBackendHealth: async (): Promise<any> => {
@@ -613,3 +664,6 @@ export const apiService = {
     return await handleResponseJson(res);
   },
 };
+
+export const complianceApi = apiService;
+

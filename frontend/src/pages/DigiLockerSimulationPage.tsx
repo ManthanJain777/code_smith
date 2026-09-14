@@ -18,8 +18,9 @@ import {
 } from 'lucide-react';
 
 import { AUTH_TOKEN_KEY } from '../constants/auth';
+import { getApiBaseUrl } from '../services/api';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL = getApiBaseUrl();
 
 const DIGILOCKER_DOCS = [
   { id: 'GSTN', name: 'GST Registration Certificate (Form GST REG-06)', issuer: 'Goods and Services Tax Network' },

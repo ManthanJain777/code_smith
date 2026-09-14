@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Upload, FileText, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthProvider';
 import { AUTH_TOKEN_KEY } from '../../constants/auth';
+import { getApiBaseUrl } from '../../services/api';
 
 interface CreateTenderModalProps {
   isOpen: boolean;
@@ -9,7 +10,7 @@ interface CreateTenderModalProps {
   onSuccess: () => void;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL = getApiBaseUrl();
 
 export const CreateTenderModal: React.FC<CreateTenderModalProps> = ({
   isOpen,
@@ -68,7 +69,7 @@ export const CreateTenderModal: React.FC<CreateTenderModalProps> = ({
         const aiFormData = new FormData();
         aiFormData.append('file', file);
         aiFormData.append('tender_id', tenderNumber);
-        const aiUrl = import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:8000';
+        const aiUrl = getApiBaseUrl();
         try {
           const aiRes = await fetch(`${aiUrl}/api/v1/ai/tender/upload-pdf`, {
             method: 'POST',

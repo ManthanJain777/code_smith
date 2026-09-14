@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
+import { useLanguage } from '../context/LanguageContext';
 import { GemStarLogo } from '../components/ui/GemStarLogo';
 import { GemFoundationBanner, CELEBRATION_BANNERS } from '../components/banner/GemFoundationBanner';
 import {
@@ -207,7 +208,7 @@ export const LandingPage: React.FC = () => {
   const [currentTime, setCurrentTime] = useState('');
   const [darkMode, setDarkMode] = useState(false);
   const [fontSize, setFontSize] = useState<'sm' | 'md' | 'lg'>('md');
-  const [lang, setLang] = useState<'EN' | 'HI'>('EN');
+  const { lang, setLang, toggleLang, t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFilter, setSearchFilter] = useState<'all' | 'products' | 'services' | 'bids'>('all');
   const [activeSlide, setActiveSlide] = useState(0);
@@ -215,7 +216,6 @@ export const LandingPage: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState<string | null>(null);
   const [loginError, setLoginError] = useState('');
-  const [langModal, setLangModal] = useState(false);
   const [tickerOffset, setTickerOffset] = useState(0);
   const tickerRef = useRef<HTMLDivElement>(null);
 
@@ -326,11 +326,11 @@ export const LandingPage: React.FC = () => {
               <span className="hidden sm:inline">{darkMode ? 'Light' : 'Dark'}</span>
             </button>
 
-            <button onClick={() => setLangModal(true)}
-              className="flex items-center gap-1 px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 transition text-[11px]"
+            <button onClick={toggleLang}
+              className="flex items-center gap-1 px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 transition text-[11px] cursor-pointer"
               title="Toggle Language">
               <Globe className="w-3 h-3 text-amber-400" />
-              <span>{lang === 'EN' ? 'English' : 'हिन्दी'}</span>
+              <span>{lang === 'EN' ? 'English (EN)' : 'हिन्दी (HI)'}</span>
             </button>
 
             <a href="tel:18004193436"

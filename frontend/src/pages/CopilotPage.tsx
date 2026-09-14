@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Send, ShieldCheck, FileText, AlertCircle, User, Bot, Sparkles, Briefcase, Building2, Zap, Lock, ShieldAlert } from 'lucide-react';
-import { apiService } from '../services/api';
+import { apiService, getApiBaseUrl } from '../services/api';
 import { useAuth } from '../context/AuthProvider';
 import { ComplianceResult, Tender, Bid } from '../types/compliance';
 
@@ -204,8 +204,9 @@ export const CopilotPage: React.FC = () => {
         if (res && res.answer) {
           answerText = res.answer;
           answerConf = res.confidence || 0.96;
-          modelUsed = res.model_used || (isBidder ? 'Bidder Compliance Engine' : 'GeM Procurement Intelligence Copilot');
-          answerSources = (res.citations || []).map((c: any) => ({
+          modelUsed = res.model || res.model_used || (isBidder ? 'Bidder Compliance Engine' : 'GeM Procurement Intelligence Copilot (Gemini)');
+          const citationsList = res.citations || res.sources || [];
+          answerSources = citationsList.map((c: any) => ({
             reqCode: c.requirement_id || 'EVD-AI',
             status: 'VERIFIED',
             document: c.document_name || 'Technical_Datasheet.pdf',
@@ -214,15 +215,18 @@ export const CopilotPage: React.FC = () => {
           }));
         }
       } catch (backendErr) {
-        console.warn('Backend copilot query fallback to direct AI microservice:', backendErr);
+        console.warn('Primary backend copilot query error, trying AI endpoint:', backendErr);
       }
 
-      // Second attempt if backend was empty: direct AI microservice
+      // Second attempt if backend was empty: direct AI endpoint via dynamic API URL
       if (!answerText) {
-        const aiUrl = import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:8000';
-        const aiRes = await fetch(`${aiUrl}/api/v1/ai/copilot/query`, {
+        const baseUrl = getApiBaseUrl();
+        const aiRes = await fetch(`${baseUrl}/ai/copilot/query`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('gem_auth_token') || ''}`
+          },
           body: JSON.stringify({
             question,
             bid_id: queryBidId,
@@ -237,8 +241,9 @@ export const CopilotPage: React.FC = () => {
           if (aiData.answer && aiData.answer.length > 10) {
             answerText = aiData.answer;
             answerConf = aiData.confidence || 0.96;
-            modelUsed = aiData.model_used || (isBidder ? 'Bidder Compliance Engine' : 'GeM Procurement Intelligence Copilot');
-            answerSources = (aiData.citations || []).map((c: any) => ({
+            modelUsed = aiData.model || aiData.model_used || (isBidder ? 'Bidder Compliance Engine' : 'GeM Procurement Intelligence Copilot (Gemini)');
+            const citationsList = aiData.citations || aiData.sources || [];
+            answerSources = citationsList.map((c: any) => ({
               reqCode: c.requirement_id || 'EVD-AI',
               status: 'VERIFIED',
               document: c.document_name || 'Technical_Datasheet.pdf',

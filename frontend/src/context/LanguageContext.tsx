@@ -82,9 +82,15 @@ const TRANSLATIONS: Record<string, Record<Language, string>> = {
   'login.heading': { EN: 'Government e-Marketplace Verification Gateway', HI: 'गवर्नमेंट ई-मार्केटप्लेस सत्यापन प्रवेश द्वार' },
   'login.subheading': { EN: 'National Public Procurement AI Compliance Engine • SIH26100', HI: 'राष्ट्रीय सार्वजनिक खरीद एआई अनुपालन इंजन • SIH26100' },
   'login.portalDesc': { EN: 'Sign In to Official GeM Portal', HI: 'आधिकारिक GeM पोर्टल में प्रवेश करें' },
+  'login.signIn': { EN: 'Sign In to Platform', HI: 'मंच में प्रवेश करें' },
+  'login.subtitle': { EN: 'Enter your authorized administrative or vendor credentials.', HI: 'अपने अधिकृत प्रशासनिक अथवा विक्रेता क्रेडेंशियल्स दर्ज करें।' },
+  'login.goBack': { EN: 'Go Back', HI: 'वापस जाएं' },
+  'login.goBackToPortal': { EN: 'Go Back to Portal', HI: 'पोर्टल पर वापस जाएं' },
   'login.email': { EN: 'Official Email Address', HI: 'आधिकारिक ईमेल पता' },
-  'login.password': { EN: 'Password', HI: 'पासवर्ड' },
-  'login.signInButton': { EN: 'Sign In to Portal', HI: 'पोर्टल में प्रवेश करें' },
+  'login.password': { EN: 'Security Passkey / Password', HI: 'सुरक्षा पासकी / पासवर्ड' },
+  'login.signInButton': { EN: 'Sign In to Platform', HI: 'मंच में प्रवेश करें' },
+  'login.authenticating': { EN: 'Authenticating Cryptographic Session...', HI: 'सत्र प्रमाणित किया जा रहा है...' },
+  'login.quickRoles': { EN: 'Quick Role Profiles (Demo)', HI: 'त्वरित भूमिका प्रोफाइल (डेमो)' },
   'login.demoAccounts': { EN: 'Quick Role Profiles (Demo)', HI: 'त्वरित भूमिका प्रोफाइल (डेमो खाता)' },
   'login.demoHint': { EN: 'Click any role below to autofill and evaluate that specific perspective:', HI: 'उस दृष्टिकोण का परीक्षण करने हेतु नीचे किसी भी भूमिका पर क्लिक करें:' },
 
@@ -93,6 +99,10 @@ const TRANSLATIONS: Record<string, Record<Language, string>> = {
   'landing.heroSubtitle': { EN: 'Instant statutory bid evaluation under Rule 144/173 of General Financial Rules (GFR 2017) with cryptographic blockchain audit trail.', HI: 'क्रिप्टोग्राफिक ब्लॉकचेन ऑडिट ट्रेल के साथ GFR 2017 के नियम 144/173 के तहत तत्काल वैधानिक बोली मूल्यांकन।' },
   'landing.enterPortal': { EN: 'Enter Official Portal', HI: 'आधिकारिक पोर्टल में प्रवेश करें' },
   'landing.exploreTenders': { EN: 'Explore Live Tenders', HI: 'सक्रिय निविदाएं देखें' },
+  'landing.heroCta': { EN: 'Sign In / Access Portal', HI: 'प्रवेश करें / पोर्टल खोलें' },
+  'landing.quickRoleSelect': { EN: 'Select a Demo Persona to Explore:', HI: 'परीक्षण हेतु एक डेमो भूमिका चुनें:' },
+  'landing.browseAllTenders': { EN: 'Browse All Active Tenders', HI: 'सभी सक्रिय निविदाएं देखें' },
+  'landing.searchPlaceholder': { EN: 'Search products, services, tenders, or item codes...', HI: 'उत्पाद, सेवाएं, निविदाएं अथवा कोड खोजें...' },
 
   // Top Nav Controls
   'topnav.helpline': { EN: 'Toll-Free 1800-419-3436', HI: 'टोल-फ्री 1800-419-3436' },

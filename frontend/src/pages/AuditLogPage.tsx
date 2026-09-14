@@ -156,7 +156,7 @@ export const AuditLogPage: React.FC = () => {
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Live Block Height</span>
             </div>
             <div className="text-xl font-extrabold text-slate-900 font-mono">#{chainStats.latestBlock}</div>
-            <div className="text-[10px] text-slate-500 font-mono mt-1">EVM Localhost :8545</div>
+            <div className="text-[10px] text-slate-500 font-mono mt-1">EVM Blockchain Ledger</div>
           </div>
 
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
@@ -373,7 +373,7 @@ export const AuditLogPage: React.FC = () => {
             <div className="p-4 border-b border-slate-100 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-emerald-400" />
-                <h2 className="font-bold text-sm">Hardhat EVM Localhost Audit Trail (:8545)</h2>
+                <h2 className="font-bold text-sm">EVM Blockchain Audit Trail (Proof of Authority)</h2>
               </div>
               <span className="text-xs font-mono text-slate-300">
                 Matching Events: {filteredEvents.length}

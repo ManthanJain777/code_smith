@@ -43,7 +43,7 @@ public class SecurityConfig {
             .exceptionHandling(exception -> exception.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
             .authorizeHttpRequests(auth -> auth
                 // Public Documentation, Health & Error Dispatch Endpoints
-                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/health", "/api/v1/health", "/error").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/health", "/api/v1/health", "/api/v1/ai/health", "/error").permitAll()
                 // Explicit Public Auth Endpoint for Dev/Demo Token Generation
                 .requestMatchers("/api/v1/auth/**").permitAll()
 
@@ -106,8 +106,8 @@ public class SecurityConfig {
                 // System Admin Exclusive Panel Endpoints
                 .requestMatchers("/api/v1/admin/**").hasAnyAuthority("SYSTEM_ADMIN", "ROLE_SYSTEM_ADMIN")
 
-                // Dynamic Permissions, Copilot Configuration & Query Endpoints
-                .requestMatchers("/api/v1/permissions/**", "/api/v1/copilot/**").authenticated()
+                // Dynamic Permissions, Copilot Configuration, AI Gemini & Query Endpoints
+                .requestMatchers("/api/v1/permissions/**", "/api/v1/copilot/**", "/api/v1/ai/**").authenticated()
 
                 // Protected Business APIs Require Authentication
                 .requestMatchers("/api/v1/tenders", "/api/v1/tenders/**").authenticated()

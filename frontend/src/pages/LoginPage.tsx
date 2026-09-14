@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthProvider';
 import { useLanguage } from '../context/LanguageContext';
 import {
   ShieldCheck, Lock, Mail, Eye, EyeOff, AlertCircle, ArrowRight, ArrowLeft,
-  UserCheck, CheckCircle2, ChevronLeft, ChevronRight, Cpu, Layers, Database
+  UserCheck, CheckCircle2, ChevronLeft, ChevronRight, Cpu, Layers, Database, Globe
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { GemStarLogo } from '../components/ui/GemStarLogo';
@@ -106,38 +106,41 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const currentSlide = CAROUSEL_SLIDES[activeSlide];
-  const SlideIcon = currentSlide.icon;
-
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between relative overflow-hidden font-sans">
-      {/* Top 4px National Tricolor Strip */}
-      <div className="h-1 w-full flex sticky top-0 z-50" aria-hidden="true">
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-between relative overflow-hidden font-sans">
+      {/* Top Ministry Accent Header Strip */}
+      <div className="h-1.5 w-full flex" aria-hidden="true">
         <div className="h-full w-1/3 bg-[#FF9933]" />
-        <div className="h-full w-1/3 bg-[#FFFFFF]" />
+        <div className="h-full w-1/3 bg-white" />
         <div className="h-full w-1/3 bg-[#138808]" />
       </div>
 
-      {/* Official Government Accessibility & Portal Top Bar */}
-      <div className="bg-white border-b border-slate-200 py-1.5 px-4 sm:px-8 text-[11px] text-slate-600 flex flex-wrap justify-between items-center gap-2">
+      <div className="bg-white border-b border-slate-200 px-4 sm:px-8 py-2 flex items-center justify-between text-xs text-slate-600">
         <div className="flex items-center space-x-2">
-          <span className="font-semibold text-slate-800">भारत सरकार | Government of India</span>
+          <span className="font-bold text-slate-800 tracking-tight">भारत सरकार | Government of India</span>
           <span className="text-slate-300">•</span>
           <span>Ministry of Commerce & Industry</span>
         </div>
-        <div className="flex items-center space-x-3 text-[10px] font-mono text-slate-500">
+        <div className="flex items-center space-x-2.5 text-[10px] font-mono text-slate-500">
+          <button
+            type="button"
+            onClick={toggleLang}
+            className="flex items-center gap-1 text-slate-700 hover:text-amber-800 font-sans font-semibold bg-slate-100 hover:bg-amber-50 border border-slate-300 px-2.5 py-0.5 rounded transition shadow-xs cursor-pointer"
+            title="Toggle Language"
+          >
+            <Globe className="w-3 h-3 text-amber-600" />
+            <span>{lang === 'EN' ? 'हिन्दी (HI)' : 'English (EN)'}</span>
+          </button>
           <Link
             to="/"
             className="flex items-center gap-1 text-slate-700 hover:text-amber-700 font-sans font-bold bg-slate-100 hover:bg-amber-50 border border-slate-300 px-2.5 py-0.5 rounded transition shadow-xs"
             title="Return to GeM Public Portal"
           >
             <ArrowLeft className="w-3 h-3 text-slate-600" />
-            <span>Go Back to Portal</span>
+            <span>{t('login.goBackToPortal', 'Go Back to Portal')}</span>
           </Link>
           <span className="text-slate-300 hidden sm:inline">•</span>
           <span className="hidden sm:inline">GFR 2017 & 2024 Audit Engine</span>
-          <span className="text-slate-300 hidden sm:inline">•</span>
-          <span className="hidden sm:inline">SIH26100 Secure Gateway</span>
         </div>
       </div>
 
@@ -262,8 +265,8 @@ export const LoginPage: React.FC = () => {
             <div className="bg-white py-7 px-6 sm:px-8 shadow-sm border border-slate-200 rounded-2xl">
               <div className="mb-5 flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">Sign In to Platform</h2>
-                  <p className="text-xs text-slate-500 mt-0.5">Enter your authorized administrative or vendor credentials.</p>
+                  <h2 className="text-lg font-bold text-slate-900">{t('login.signIn')}</h2>
+                  <p className="text-xs text-slate-500 mt-0.5">{t('login.subtitle')}</p>
                 </div>
                 <Link
                   to="/"
@@ -271,7 +274,7 @@ export const LoginPage: React.FC = () => {
                   title="Return to GeM Public Portal"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Go Back</span>
+                  <span>{t('login.goBack')}</span>
                 </Link>
               </div>
 
@@ -285,7 +288,7 @@ export const LoginPage: React.FC = () => {
               <form className="space-y-3.5" onSubmit={handleLogin}>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                    Official Email Address
+                    {t('login.email')}
                   </label>
                   <div className="relative rounded-lg">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -304,7 +307,7 @@ export const LoginPage: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                    Security Passkey / Password
+                    {t('login.password')}
                   </label>
                   <div className="relative rounded-lg">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -335,10 +338,10 @@ export const LoginPage: React.FC = () => {
                   className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-lg shadow-xs text-xs sm:text-sm font-bold text-white bg-emerald-700 hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 disabled:opacity-50 transition-all cursor-pointer mt-2"
                 >
                   {isSubmitting ? (
-                    <span>Authenticating Cryptographic Session...</span>
+                    <span>{t('login.authenticating')}</span>
                   ) : (
                     <span className="flex items-center space-x-2">
-                      <span>Sign In to Platform</span>
+                      <span>{t('login.signIn')}</span>
                       <ArrowRight className="h-4 w-4" />
                     </span>
                   )}
@@ -350,7 +353,7 @@ export const LoginPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-2.5">
                   <span className="text-xs font-bold text-slate-700 tracking-wider uppercase flex items-center space-x-1.5">
                     <UserCheck className="h-4 w-4 text-emerald-700" />
-                    <span>Quick Role Profiles (Demo)</span>
+                    <span>{t('login.quickRoles')}</span>
                   </span>
                   <span className="text-[10px] text-slate-400 font-mono">Password123!</span>
                 </div>

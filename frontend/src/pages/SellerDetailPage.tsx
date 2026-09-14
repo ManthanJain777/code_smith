@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
 import { AUTH_TOKEN_KEY } from '../constants/auth';
-import { apiService } from '../services/api';
+import { apiService, getApiBaseUrl } from '../services/api';
 import { Can } from '../components/auth/Can';
 import { PortalVerificationModal } from '../components/ui/PortalVerificationModal';
 import { StatutoryDocumentOcrModal } from '../components/ui/StatutoryDocumentOcrModal';
@@ -54,7 +54,7 @@ interface SellerDetail {
   verificationResults?: VerificationResult[];
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL = getApiBaseUrl();
 
 const STATUTORY_PORTALS = [
   { key: 'GSTN', label: 'GSTN Tax Registry', authority: 'Goods and Services Tax Network' },
