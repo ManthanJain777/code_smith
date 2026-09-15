@@ -44,7 +44,7 @@ public class AdminController {
         .build();
 
     @GetMapping("/health")
-    @PreAuthorize("hasAnyAuthority('SYSTEM_ADMIN', 'ROLE_SYSTEM_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYSTEM_ADMIN', 'PROCUREMENT_OFFICER', 'COMPLIANCE_REVIEWER', 'AUDITOR', 'ROLE_SYSTEM_ADMIN', 'ROLE_PROCUREMENT_OFFICER', 'ROLE_COMPLIANCE_REVIEWER', 'ROLE_AUDITOR')")
     @Operation(summary = "Microservices Health Panel", description = "Live polls all services and returns genuine latencies and statuses")
     public ResponseEntity<Map<String, Object>> health() {
         Map<String, Object> results = new LinkedHashMap<>();

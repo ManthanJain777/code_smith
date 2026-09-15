@@ -69,10 +69,10 @@ public class SecurityConfig {
                     "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN"
                 )
 
-                // Reviewer Personal Calibration - Reviewer and Admin only
+                // Reviewer Personal Calibration - Reviewer, Officer, Auditor, Admin
                 .requestMatchers("/api/v1/reviews/calibration/me").hasAnyAuthority(
-                    "COMPLIANCE_REVIEWER", "SYSTEM_ADMIN",
-                    "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN"
+                    "COMPLIANCE_REVIEWER", "SYSTEM_ADMIN", "PROCUREMENT_OFFICER", "AUDITOR",
+                    "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN", "ROLE_PROCUREMENT_OFFICER", "ROLE_AUDITOR"
                 )
 
                 // Vendor Clarification Inquiries & Representations under GFR Rule 173(iv) (Registered BEFORE broader /reviews/**)
@@ -100,14 +100,25 @@ public class SecurityConfig {
                     "ROLE_AUDITOR", "ROLE_VIEWER", "ROLE_SYSTEM_ADMIN", "ROLE_PROCUREMENT_OFFICER"
                 )
 
+                // Public Blockchain Explorer & Proofs - accessible to all authenticated users including Bidders
+                .requestMatchers(
+                    "/api/v1/audit/chain-stats",
+                    "/api/v1/audit/chain-explorer",
+                    "/api/v1/audit/proof/**"
+                ).authenticated()
+
                 // Audit Trail & Blockchain verification - internal oversight (Bidder is BLOCKED)
                 .requestMatchers("/api/v1/audit", "/api/v1/audit/**").hasAnyAuthority(
                     "PROCUREMENT_OFFICER", "COMPLIANCE_REVIEWER", "SYSTEM_ADMIN", "AUDITOR", "VIEWER",
                     "ROLE_PROCUREMENT_OFFICER", "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN", "ROLE_AUDITOR", "ROLE_VIEWER"
                 )
 
-                // Calibration endpoint accessible to committee roles and admin
-                .requestMatchers("/api/v1/admin/calibration").hasAnyAuthority(
+                // Admin health, system metrics and calibration accessible to committee roles and admin
+                .requestMatchers(
+                    "/api/v1/admin/health",
+                    "/api/v1/admin/system/metrics",
+                    "/api/v1/admin/calibration"
+                ).hasAnyAuthority(
                     "SYSTEM_ADMIN", "ROLE_SYSTEM_ADMIN",
                     "PROCUREMENT_OFFICER", "ROLE_PROCUREMENT_OFFICER",
                     "COMPLIANCE_REVIEWER", "ROLE_COMPLIANCE_REVIEWER",

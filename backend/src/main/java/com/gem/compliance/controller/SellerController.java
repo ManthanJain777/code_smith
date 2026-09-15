@@ -46,8 +46,8 @@ public class SellerController {
                 if (byEmail.isPresent()) return byEmail;
             }
             return java.util.Optional.<Seller>empty();
-        }).orElseThrow(() -> new org.springframework.security.access.AccessDeniedException(
-            "403 Forbidden: Authenticated vendor is not associated with an authorized seller organization."
+        }).orElseThrow(() -> new com.gem.compliance.exception.ResourceNotFoundException(
+            "No seller profile found for the authenticated user. Government officials are not registered as sellers."
         ));
     }
 
@@ -283,10 +283,32 @@ public class SellerController {
             ).collect(Collectors.toList());
         }
 
+        // Derive pan from cinOrPan (format: "CIN / PAN" or just PAN)
+        String pan = s.getCinOrPan();
+        if (pan != null && pan.contains("/")) {
+            pan = pan.substring(pan.lastIndexOf("/") + 1).trim();
+        }
+
+        // Derive overallStatus from verificationStatus + debarment flag
+        String overallStatus;
+        if (Boolean.TRUE.equals(s.getIsDebarred())) {
+            overallStatus = "DEBARRED";
+        } else if ("HIGH_RISK".equalsIgnoreCase(s.getVerificationStatus())
+                || "SUSPECTED_SHELL".equalsIgnoreCase(s.getVerificationStatus())) {
+            overallStatus = "HIGH_RISK";
+        } else if ("VERIFIED".equalsIgnoreCase(s.getVerificationStatus())
+                || "HUMAN_OVERRIDDEN".equalsIgnoreCase(s.getVerificationStatus())) {
+            overallStatus = "ACTIVE";
+        } else {
+            overallStatus = "PENDING";
+        }
+
         return SellerDTO.builder()
             .id(s.getId())
             .organizationName(s.getOrganizationName())
+            .companyName(s.getOrganizationName())
             .cinOrPan(s.getCinOrPan())
+            .pan(pan)
             .gstin(s.getGstin())
             .udyamRegistration(s.getUdyamRegistration())
             .dpiitNumber(s.getDpiitNumber())
@@ -297,6 +319,7 @@ public class SellerController {
             .isDebarred(s.getIsDebarred())
             .trustScore(s.getTrustScore())
             .verificationStatus(s.getVerificationStatus())
+            .overallStatus(overallStatus)
             .createdAt(s.getCreatedAt())
             .updatedAt(s.getUpdatedAt())
             .verificationResults(results)

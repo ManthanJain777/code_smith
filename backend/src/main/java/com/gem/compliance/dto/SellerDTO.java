@@ -16,7 +16,9 @@ import java.util.List;
 public class SellerDTO {
     private String id;
     private String organizationName;
+    private String companyName;     // Alias for organizationName for frontend compatibility
     private String cinOrPan;
+    private String pan;             // Extracted from cinOrPan for frontend compatibility
     private String gstin;
     private String udyamRegistration;
     private String dpiitNumber;
@@ -27,6 +29,7 @@ public class SellerDTO {
     private Boolean isDebarred;
     private BigDecimal trustScore;
     private String verificationStatus;
+    private String overallStatus;   // Computed: ACTIVE/HIGH_RISK/DEBARRED based on verificationStatus + isDebarred
     private ZonedDateTime createdAt;
     private ZonedDateTime updatedAt;
     private List<VerificationResultDTO> verificationResults;

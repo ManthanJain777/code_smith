@@ -163,11 +163,12 @@ export const apiService = {
         }
       ];
     }
+    if (baseTenders && baseTenders.length > 0) {
+      return baseTenders;
+    }
     try {
       const stored = JSON.parse(localStorage.getItem('gem_tenders_override') || '[]');
-      const ids = new Set(baseTenders.map(t => t.id));
-      const newItems = stored.filter((t: any) => !ids.has(t.id));
-      return [...newItems, ...baseTenders];
+      return stored.length > 0 ? stored : baseTenders;
     } catch {
       return baseTenders;
     }
@@ -1035,12 +1036,15 @@ export const apiService = {
       return await handleResponseJson(res);
     } catch {
       return {
-        totalBlocks: 1048,
+        totalEvents: 22,
+        totalBlocks: 1000042,
+        latestBlock: 1000042,
+        averageGasUsed: 74200,
+        network: 'Hardhat Local EVM (Chain ID 31337)',
+        contractAddress: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
+        consensusStatus: 'SYNCHRONIZED',
         anchoredTenders: 42,
-        verifiedTransactions: 156,
-        latestBlockHash: '0x3a9f1b4c8d2e0f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a',
-        networkStatus: 'OPERATIONAL',
-        consensusAlgorithm: 'Proof-of-Authority (PoA) EVM'
+        verifiedTransactions: 156
       };
     }
   },

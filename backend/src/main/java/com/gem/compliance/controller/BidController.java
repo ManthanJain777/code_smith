@@ -161,6 +161,31 @@ public class BidController {
     }
 
     /**
+     * Get all bids across tenders.
+     * Committee roles can view all bids; Bidders are strictly scoped to their own bids.
+     */
+    @GetMapping("")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<Bid>> getAllBids() {
+        var currentUser = userService.getCurrentUser();
+        if (currentUser.isPresent()) {
+            String role = currentUser.get().getRole() != null ? currentUser.get().getRole().toUpperCase().replace("ROLE_", "") : "";
+            if (role.contains("BIDDER")) {
+                String email = currentUser.get().getEmail();
+                if (email == null || email.isBlank()) {
+                    return ResponseEntity.ok(List.of());
+                }
+                return ResponseEntity.ok(
+                    bidRepository.findAll().stream()
+                        .filter(b -> b.getBidderEmail() != null && b.getBidderEmail().equalsIgnoreCase(email))
+                        .toList()
+                );
+            }
+        }
+        return ResponseEntity.ok(bidRepository.findAll());
+    }
+
+    /**
      * Get current bidder's own submitted bids.
      * Strictly isolated by exact authenticated email.
      */

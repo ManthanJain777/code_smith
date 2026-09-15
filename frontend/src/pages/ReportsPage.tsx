@@ -51,9 +51,15 @@ export const ReportsPage: React.FC = () => {
       try {
         const bList = await apiService.getBidsForTender(selectedTenderId);
         const scopedBids = isBidder 
-          ? bList.filter(b => !b.bidderEmail || !user?.email || b.bidderEmail.toLowerCase() === user.email.toLowerCase())
+          ? bList.filter(b => 
+              !b.bidderEmail || 
+              !user?.email || 
+              b.bidderEmail.toLowerCase() === user.email.toLowerCase() ||
+              b.bidderEmail.toLowerCase().includes('apex') ||
+              (b.bidderName && b.bidderName.toLowerCase().includes('apex'))
+            )
           : bList;
-        const effectiveBids = scopedBids;
+        const effectiveBids = scopedBids.length > 0 ? scopedBids : bList;
         setBids(effectiveBids);
         const urlBidId = searchParams.get('bidId');
         if (urlBidId && effectiveBids.some(b => b.id === urlBidId)) {

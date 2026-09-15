@@ -67,7 +67,7 @@ public class ComplianceController {
     }
 
     @GetMapping("/compliance/recommendation/{bidId}")
-    @PreAuthorize("hasAnyAuthority('PROCUREMENT_OFFICER', 'COMPLIANCE_REVIEWER', 'SYSTEM_ADMIN', 'AUDITOR', 'VIEWER', 'ROLE_PROCUREMENT_OFFICER', 'ROLE_COMPLIANCE_REVIEWER', 'ROLE_SYSTEM_ADMIN', 'ROLE_AUDITOR', 'ROLE_VIEWER')")
+    @PreAuthorize("hasAnyAuthority('PROCUREMENT_OFFICER', 'COMPLIANCE_REVIEWER', 'SYSTEM_ADMIN', 'AUDITOR', 'BIDDER_VENDOR', 'BIDDER', 'VIEWER', 'ROLE_PROCUREMENT_OFFICER', 'ROLE_COMPLIANCE_REVIEWER', 'ROLE_SYSTEM_ADMIN', 'ROLE_AUDITOR', 'ROLE_BIDDER_VENDOR', 'ROLE_BIDDER', 'ROLE_VIEWER')")
     @Operation(summary = "Get AI-generated recommendation for a bid",
                description = "Returns a structured AI recommendation (RECOMMEND_QUALIFY/RECOMMEND_REJECT/REFER_FOR_REVIEW) with identified gaps and strengths.")
     public ResponseEntity<AiRecommendationDTO> getAiRecommendation(@PathVariable String bidId) {
@@ -155,7 +155,7 @@ public class ComplianceController {
     }
 
     @GetMapping("/reviews/calibration/me")
-    @PreAuthorize("hasAnyAuthority('COMPLIANCE_REVIEWER', 'SYSTEM_ADMIN', 'ROLE_COMPLIANCE_REVIEWER', 'ROLE_SYSTEM_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('COMPLIANCE_REVIEWER', 'SYSTEM_ADMIN', 'PROCUREMENT_OFFICER', 'AUDITOR', 'ROLE_COMPLIANCE_REVIEWER', 'ROLE_SYSTEM_ADMIN', 'ROLE_PROCUREMENT_OFFICER', 'ROLE_AUDITOR')")
     @Operation(summary = "Personal Reviewer Calibration", description = "Returns personal override rate and confidence calibration data for current reviewer.")
     public ResponseEntity<List<Map<String, Object>>> getMyCalibration() {
         String currentUserId = userService.getCurrentUser().map(u -> u.getId()).orElse("USR-DEMO-REV");

@@ -25,6 +25,12 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, "Not Found", ex.getMessage(), request.getRequestURI());
     }
 
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNoResourceFound(org.springframework.web.servlet.resource.NoResourceFoundException ex, HttpServletRequest request) {
+        log.warn("No static or API resource found for URI: {}", request.getRequestURI());
+        return buildResponse(HttpStatus.NOT_FOUND, "Not Found", "Resource not found: " + request.getRequestURI(), request.getRequestURI());
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
         log.warn("Access denied for URI {}: {}", request.getRequestURI(), ex.getMessage());
