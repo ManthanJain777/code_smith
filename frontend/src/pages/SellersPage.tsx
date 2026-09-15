@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
 import { AUTH_TOKEN_KEY } from '../constants/auth';
-import { getApiBaseUrl } from '../services/api';
+import { apiService, getApiBaseUrl } from '../services/api';
 import { Can } from '../components/auth/Can';
 import {
   UserCheck,

@@ -3,7 +3,7 @@
 
 CREATE TABLE IF NOT EXISTS contradiction_resolutions (
     id VARCHAR(64) PRIMARY KEY,
-    bid_id VARCHAR(64) NOT NULL REFERENCES bids(id) ON DELETE CASCADE,
+    bid_id VARCHAR(64) NOT NULL,
     requirement_id VARCHAR(64) NOT NULL,
     precedent_document VARCHAR(255) NOT NULL,
     rationale TEXT NOT NULL,

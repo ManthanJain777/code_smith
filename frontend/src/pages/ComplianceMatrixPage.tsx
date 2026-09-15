@@ -133,7 +133,7 @@ export const ComplianceMatrixPage: React.FC = () => {
     setComplianceScore(null);
     setAiRecommendation(null);
     try {
-      let data = await apiService.getComplianceResults(bidId);
+      const data = await apiService.getComplianceResults(bidId);
       setResults(data || []);
       if (data && data.length > 0) {
         setSelectedResult(data[0]);

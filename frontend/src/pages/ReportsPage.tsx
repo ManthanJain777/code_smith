@@ -94,7 +94,7 @@ export const ReportsPage: React.FC = () => {
       setBid(targetBid || null);
 
       const effectiveBidId = selectedBidId || (bids.length > 0 ? bids[0].id : '');
-      let r = effectiveBidId ? await apiService.getComplianceResults(effectiveBidId).catch(() => []) : [];
+      const r = effectiveBidId ? await apiService.getComplianceResults(effectiveBidId).catch(() => []) : [];
       setResults(r || []);
     } catch (err: any) {
       setError(err.message || 'Failed to generate report preview');

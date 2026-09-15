@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS notification_triggers (
 -- 3. Notifications Table (Explicitly addressed per user_id)
 CREATE TABLE IF NOT EXISTS notifications (
     id VARCHAR(64) PRIMARY KEY,
-    user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id VARCHAR(64) NOT NULL,
     role VARCHAR(64) NOT NULL,
     event_type VARCHAR(64) NOT NULL,
     title VARCHAR(255) NOT NULL,
@@ -113,7 +113,8 @@ INSERT INTO permissions (id, role, feature_key, access_level) VALUES
 ('PRM-BID-10', 'BIDDER_VENDOR', 'analytics_overview', 'BLOCKED'),
 ('PRM-BID-11', 'BIDDER_VENDOR', 'blockchain_audit', 'BLOCKED'),
 ('PRM-BID-12', 'BIDDER_VENDOR', 'bid_upload', 'FULL'),
-('PRM-BID-13', 'BIDDER_VENDOR', 'contradiction_resolve', 'BLOCKED');
+('PRM-BID-13', 'BIDDER_VENDOR', 'contradiction_resolve', 'BLOCKED')
+ON CONFLICT (id) DO NOTHING;
 
 -- 5. Seed Notification Triggers
 INSERT INTO notification_triggers (id, role, event_type, description) VALUES
@@ -125,17 +126,20 @@ INSERT INTO notification_triggers (id, role, event_type, description) VALUES
 ('TRG-06', 'AUDITOR', 'override_recorded', 'Human reviewer recorded status override anchored on blockchain'),
 ('TRG-07', 'BIDDER_VENDOR', 'status_change', 'Bid submission status transitioned to UNDER_EVALUATION'),
 ('TRG-08', 'BIDDER_VENDOR', 'cert_expiring', 'Statutory credential expires within 60 days'),
-('TRG-09', 'BIDDER_VENDOR', 'resubmission_received', 'Corrected annexure or document uploaded and logged');
+('TRG-09', 'BIDDER_VENDOR', 'resubmission_received', 'Corrected annexure or document uploaded and logged')
+ON CONFLICT (id) DO NOTHING;
 
 -- 6. Seed Multi-Tenancy Bidders: Bharat Heavy Valves & Crompton Flow Dynamics
 -- BCrypt password for Password123!: $2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07xd00DMxs.AQubh4a
 INSERT INTO organizations (id, name, code) VALUES
 ('SLR-BHARAT-002', 'Bharat Heavy Valves Ltd', 'ORG-BHARAT-002'),
-('SLR-CROMPTON-003', 'Crompton Flow Dynamics', 'ORG-CROMPTON-003');
+('SLR-CROMPTON-003', 'Crompton Flow Dynamics', 'ORG-CROMPTON-003')
+ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO users (id, organization_id, email, password_hash, full_name, role, is_active) VALUES
 ('USR-BID-BHARAT', 'SLR-BHARAT-002', 'bharat.valves@gembid.local', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07xd00DMxs.AQubh4a', 'Bharat Heavy Valves Representative', 'BIDDER_VENDOR', true),
-('USR-BID-CROMPTON', 'SLR-CROMPTON-003', 'crompton.flow@gembid.local', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07xd00DMxs.AQubh4a', 'Crompton Flow Dynamics Representative', 'BIDDER_VENDOR', true);
+('USR-BID-CROMPTON', 'SLR-CROMPTON-003', 'crompton.flow@gembid.local', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07xd00DMxs.AQubh4a', 'Crompton Flow Dynamics Representative', 'BIDDER_VENDOR', true)
+ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO sellers (
     id, organization_name, cin_or_pan, gstin, udyam_registration, 
@@ -171,13 +175,15 @@ INSERT INTO sellers (
     false,
     88.50,
     'VERIFIED'
-);
+)
+ON CONFLICT (id) DO NOTHING;
 
 -- Seed Bids for Bharat & Crompton against TND-PUMP-001
 INSERT INTO bids (id, tender_id, bidder_name, bidder_gstin, bidder_pan, bidder_email, status, risk_score, debarment_status)
 VALUES
 ('BID-BHARAT-002', 'TND-PUMP-001', 'Bharat Heavy Valves Ltd', '27AAACB5678G1Z5', 'AAACB5678G', 'bharat.valves@gembid.local', 'UNDER_EVALUATION', 18.0, 'CLEAR'),
-('BID-CROMPTON-003', 'TND-PUMP-001', 'Crompton Flow Dynamics', '07AAACC9012K1Z2', 'AAACC9012K', 'crompton.flow@gembid.local', 'UNDER_EVALUATION', 22.0, 'CLEAR');
+('BID-CROMPTON-003', 'TND-PUMP-001', 'Crompton Flow Dynamics', '07AAACC9012K1Z2', 'AAACC9012K', 'crompton.flow@gembid.local', 'UNDER_EVALUATION', 22.0, 'CLEAR')
+ON CONFLICT (id) DO NOTHING;
 
 -- Seed Compliance Results for Bharat (All Compliant)
 INSERT INTO compliance_results (id, requirement_id, bid_id, status, verification_method, reasoning, confidence, evidence_ids, review_status)
@@ -188,7 +194,8 @@ VALUES
 ('RES-BHARAT-004', 'REQ-P004', 'BID-BHARAT-002', 'COMPLIANT', 'deterministic', 'Daily output capacity 950 units/day >= 800 units/day. COMPLIANT.', 0.98, 'EVD-BH-04', 'APPROVED'),
 ('RES-BHARAT-005', 'REQ-P005', 'BID-BHARAT-002', 'COMPLIANT', 'deterministic', 'Supplied over 8 years to Indian Oil and ONGC. >= 5 years required.', 0.96, 'EVD-BH-05', 'APPROVED'),
 ('RES-BHARAT-006', 'REQ-P006', 'BID-BHARAT-002', 'COMPLIANT', 'deterministic', 'ISO 9001:2015 valid until 2027-10-30. Valid on submission date.', 0.99, 'EVD-BH-06', 'APPROVED'),
-('RES-BHARAT-007', 'REQ-P007', 'BID-BHARAT-002', 'COMPLIANT', 'deterministic', 'Operating pressure rating 14 Bar >= 10 Bar threshold.', 0.98, 'EVD-BH-07', 'APPROVED');
+('RES-BHARAT-007', 'REQ-P007', 'BID-BHARAT-002', 'COMPLIANT', 'deterministic', 'Operating pressure rating 14 Bar >= 10 Bar threshold.', 0.98, 'EVD-BH-07', 'APPROVED')
+ON CONFLICT (id) DO NOTHING;
 
 -- Seed Compliance Results for Crompton (All Compliant)
 INSERT INTO compliance_results (id, requirement_id, bid_id, status, verification_method, reasoning, confidence, evidence_ids, review_status)
@@ -199,7 +206,8 @@ VALUES
 ('RES-CROMP-004', 'REQ-P004', 'BID-CROMPTON-003', 'COMPLIANT', 'deterministic', 'Production capacity 820 units/day >= 800 units/day threshold.', 0.98, 'EVD-CR-04', 'APPROVED'),
 ('RES-CROMP-005', 'REQ-P005', 'BID-CROMPTON-003', 'COMPLIANT', 'deterministic', '6 years continuous supply to Delhi Jal Board infrastructure.', 0.95, 'EVD-CR-05', 'APPROVED'),
 ('RES-CROMP-006', 'REQ-P006', 'BID-CROMPTON-003', 'COMPLIANT', 'deterministic', 'ISO 9001:2015 valid until 2026-12-15. Valid on submission date.', 0.99, 'EVD-CR-06', 'APPROVED'),
-('RES-CROMP-007', 'REQ-P007', 'BID-CROMPTON-003', 'COMPLIANT', 'deterministic', 'Operating pressure rating 11 Bar >= 10 Bar threshold.', 0.97, 'EVD-CR-07', 'APPROVED');
+('RES-CROMP-007', 'REQ-P007', 'BID-CROMPTON-003', 'COMPLIANT', 'deterministic', 'Operating pressure rating 11 Bar >= 10 Bar threshold.', 0.97, 'EVD-CR-07', 'APPROVED')
+ON CONFLICT (id) DO NOTHING;
 
 -- Seed Initial Verified Notifications Addressed to Specific Users
 INSERT INTO notifications (id, user_id, role, event_type, title, message, type, action_url, is_read) VALUES
@@ -210,4 +218,5 @@ INSERT INTO notifications (id, user_id, role, event_type, title, message, type, 
 ('NTF-REV-01', 'USR-DEMO-REV', 'COMPLIANCE_REVIEWER', 'contradiction_detected', 'Discrepancy in Tender Queue', 'Financial turnover discrepancy pending statutory document selection.', 'WARNING', '/reviews', false),
 ('NTF-AUD-01', 'USR-DEMO-AUD', 'AUDITOR', 'override_recorded', 'Auditable Override Anchored', 'Officer recorded status override on REQ-P003 with cryptographic proof.', 'INFO', '/audit', false),
 ('NTF-BID-01', 'USR-DEMO-BID', 'BIDDER_VENDOR', 'status_change', 'Bid Dossier Under Review', 'Your bid dossier BID-APEX-001 has been received for technical review.', 'INFO', '/compliance', false),
-('NTF-BID-02', 'USR-DEMO-BID', 'BIDDER_VENDOR', 'cert_expiring', 'ISO Certificate Notice', 'Statutory certificate expires within 60 days. Please ensure timely renewal.', 'WARNING', '/compliance', false);
+('NTF-BID-02', 'USR-DEMO-BID', 'BIDDER_VENDOR', 'cert_expiring', 'ISO Certificate Notice', 'Statutory certificate expires within 60 days. Please ensure timely renewal.', 'WARNING', '/compliance', false)
+ON CONFLICT (id) DO NOTHING;

@@ -19,7 +19,7 @@ export const getApiBaseUrl = (): string => {
 
 export const getAiServiceUrl = (): string => {
   const envAi = import.meta.env.VITE_AI_SERVICE_URL;
-  if (envAi && !envAi.includes('placeholder')) {
+  if (envAi && !envAi.includes('placeholder') && !envAi.includes(':8000')) {
     return envAi;
   }
   return getApiBaseUrl();
@@ -871,6 +871,11 @@ export const apiService = {
         if (storedUser) {
           const parsed = JSON.parse(storedUser);
           if (parsed && parsed.role) role = parsed.role;
+        } else {
+          const token = localStorage.getItem(AUTH_TOKEN_KEY);
+          if (token && token.startsWith('demo-jwt-token-')) {
+            role = token.replace('demo-jwt-token-', '');
+          }
         }
       } catch {}
 

@@ -58,4 +58,5 @@ INSERT INTO copilot_configs (id, role, persona_title, system_prompt_template, al
     'OWN_BID_ONLY',
     true,
     '["Which mandatory requirements are met by my submitted documents?", "Why is my turnover evaluation marked partially compliant?", "What additional statutory documents are needed to clear verification?"]'
-);
+)
+ON CONFLICT (id) DO NOTHING;

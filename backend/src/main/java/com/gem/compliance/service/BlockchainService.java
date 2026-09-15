@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -265,8 +266,13 @@ public class BlockchainService {
      * Computes keccak-256 event digest and associates it with real Hardhat block number.
      */
     @Async
-    public String anchorAuditEvent(String auditId, String eventType, String actorId) {
-        return anchorAuditEventSync(auditId, eventType, actorId).txHash();
+    public CompletableFuture<String> anchorAuditEvent(String auditId, String eventType, String actorId) {
+        try {
+            return CompletableFuture.completedFuture(anchorAuditEventSync(auditId, eventType, actorId).txHash());
+        } catch (Exception e) {
+            log.warn("Async blockchain anchoring failed for auditId {}: {}", auditId, e.getMessage());
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     /**

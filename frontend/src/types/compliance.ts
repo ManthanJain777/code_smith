@@ -5,7 +5,7 @@ export type ComplianceStatus =
   | 'UNVERIFIED'
   | 'NOT_APPLICABLE';
 
-export type VerificationMethod = 'deterministic' | 'ai_language' | 'hybrid';
+export type VerificationMethod = 'deterministic' | 'ai_language' | 'hybrid' | 'human_override';
 
 export interface Requirement {
   id: string;
@@ -52,6 +52,7 @@ export interface Bid {
   submittedAt: string;
   riskScore?: number;
   totalAmount?: number;
+  quotedPrice?: number;
   complianceScore?: number;
   blockchainTx?: string;
   blockchainTxHash?: string;

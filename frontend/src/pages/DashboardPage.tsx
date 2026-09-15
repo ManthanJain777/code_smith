@@ -27,7 +27,7 @@ interface PrimaryKpiCardProps {
   title: string;
   value: string | number;
   subtitle?: string;
-  accent?: 'emerald' | 'amber' | 'rose' | 'blue' | 'purple';
+  accent?: 'emerald' | 'amber' | 'rose' | 'blue' | 'purple' | 'slate';
   icon: React.ReactNode;
   badgeText?: string;
   change?: string;
@@ -50,6 +50,7 @@ const PrimaryKpiCard: React.FC<PrimaryKpiCardProps> = ({
     rose: 'border-l-4 border-l-rose-600',
     blue: 'border-l-4 border-l-blue-600',
     purple: 'border-l-4 border-l-purple-600',
+    slate: 'border-l-4 border-l-slate-600',
   }[accent];
 
   return (
@@ -293,7 +294,7 @@ export const DashboardPage: React.FC = () => {
       const tenderBids = await apiService.getBidsForTender(tId).catch(() => []);
       setBids(tenderBids);
 
-      let allRes: ComplianceResult[] = [];
+      const allRes: ComplianceResult[] = [];
       let totalScore = 0;
       let scoreCount = 0;
       let highRiskCount = 0;

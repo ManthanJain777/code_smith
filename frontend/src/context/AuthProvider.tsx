@@ -35,6 +35,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [token, setToken] = useState<string | null>(localStorage.getItem(AUTH_TOKEN_KEY));
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // Sync user state to localStorage for offline services
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('gem_user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('gem_user');
+    }
+  }, [user]);
+
   // Restore session on mount if token exists
   useEffect(() => {
     const restoreSession = async () => {

@@ -6,7 +6,7 @@ import {
   AlertTriangle, CheckCircle, ShieldAlert, ArrowRight, Lock,
   TrendingUp, CheckCircle2, XCircle, HelpCircle, FileText,
   ShieldCheck, RefreshCw, Sparkles, Scale, UserCheck, Eye,
-  ExternalLink, ChevronDown, Award, Clock
+  ExternalLink, ChevronDown, Award, Clock, Stamp, Loader2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
@@ -140,7 +140,7 @@ export const ReviewsPage: React.FC = () => {
       bids.forEach(b => { bMap[b.id] = b.bidderName; });
       setBidsMap(bMap);
 
-      let allRes: ComplianceResult[] = [];
+      const allRes: ComplianceResult[] = [];
       for (const b of bids) {
         const r = await apiService.getComplianceResults(b.id).catch(() => []);
         allRes.push(...r);
