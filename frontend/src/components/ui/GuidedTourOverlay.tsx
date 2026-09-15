@@ -67,6 +67,12 @@ export const GuidedTourOverlay: React.FC = () => {
     if (!isActive) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      const activeEl = document.activeElement as HTMLElement | null;
+      const tag = activeEl?.tagName?.toUpperCase();
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || activeEl?.isContentEditable) {
+        return;
+      }
+
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
         prevStep();

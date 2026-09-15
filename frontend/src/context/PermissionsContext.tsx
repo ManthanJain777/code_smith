@@ -17,6 +17,92 @@ export const PermissionsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [permissions, setPermissions] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
+  const getRoleFallback = (role?: string): Record<string, string> => {
+    const r = role || 'VIEWER';
+    if (r === 'SYSTEM_ADMIN') {
+      return {
+        admin_dashboard: 'FULL',
+        tender_spec: 'FULL',
+        compliance_matrix: 'FULL',
+        portal_verification: 'FULL',
+        multi_bidder_compare: 'FULL',
+        copilot_query: 'FULL',
+        seller_queue: 'FULL',
+        human_review: 'FULL',
+        compliance_reports: 'FULL',
+        analytics_overview: 'FULL',
+        blockchain_audit: 'FULL',
+        bid_upload: 'FULL',
+        contradiction_resolve: 'FULL'
+      };
+    } else if (r === 'PROCUREMENT_OFFICER') {
+      return {
+        admin_dashboard: 'BLOCKED',
+        tender_spec: 'FULL',
+        compliance_matrix: 'FULL',
+        portal_verification: 'FULL',
+        multi_bidder_compare: 'FULL',
+        copilot_query: 'FULL',
+        seller_queue: 'FULL',
+        human_review: 'FULL',
+        compliance_reports: 'FULL',
+        analytics_overview: 'FULL',
+        blockchain_audit: 'FULL',
+        bid_upload: 'BLOCKED',
+        contradiction_resolve: 'BLOCKED'
+      };
+    } else if (r === 'COMPLIANCE_REVIEWER') {
+      return {
+        admin_dashboard: 'BLOCKED',
+        tender_spec: 'FULL',
+        compliance_matrix: 'FULL',
+        portal_verification: 'FULL',
+        multi_bidder_compare: 'FULL',
+        copilot_query: 'FULL',
+        seller_queue: 'FULL',
+        human_review: 'FULL',
+        compliance_reports: 'FULL',
+        analytics_overview: 'FULL',
+        blockchain_audit: 'FULL',
+        bid_upload: 'BLOCKED',
+        contradiction_resolve: 'FULL'
+      };
+    } else if (r === 'AUDITOR' || r === 'VIEWER') {
+      return {
+        admin_dashboard: 'BLOCKED',
+        tender_spec: 'FULL',
+        compliance_matrix: 'FULL',
+        portal_verification: 'FULL',
+        multi_bidder_compare: 'FULL',
+        copilot_query: 'FULL',
+        seller_queue: 'FULL',
+        human_review: 'FULL',
+        compliance_reports: 'FULL',
+        analytics_overview: 'FULL',
+        blockchain_audit: 'FULL',
+        bid_upload: 'BLOCKED',
+        contradiction_resolve: 'BLOCKED'
+      };
+    } else {
+      // BIDDER_VENDOR
+      return {
+        admin_dashboard: 'BLOCKED',
+        tender_spec: 'FULL',
+        compliance_matrix: 'FULL',
+        portal_verification: 'FULL',
+        multi_bidder_compare: 'FULL',
+        copilot_query: 'FULL',
+        seller_queue: 'FULL',
+        human_review: 'FULL',
+        compliance_reports: 'FULL',
+        analytics_overview: 'FULL',
+        blockchain_audit: 'FULL',
+        bid_upload: 'FULL',
+        contradiction_resolve: 'BLOCKED'
+      };
+    }
+  };
+
   const fetchPermissions = async () => {
     if (!user) {
       setPermissions({});
@@ -24,100 +110,16 @@ export const PermissionsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       return;
     }
 
+    const defaultRolePerms = getRoleFallback(user.role);
+
     try {
       setLoading(true);
       const perms = await apiService.getMyPermissions();
-      if (perms && typeof perms === 'object' && Object.keys(perms).length > 0 && perms['tender_spec']) {
-        setPermissions(perms);
-        return;
-      }
-      throw new Error('Permissions response missing standard feature keys');
+      // Merge perms with defaultRolePerms taking precedence for the current user role
+      setPermissions({ ...(perms || {}), ...defaultRolePerms });
     } catch (err) {
       console.warn('Failed to load dynamic permissions, using role fallback:', err);
-      // Fallback defaults matching DB seed
-      const role = (user.role || 'VIEWER').toUpperCase().replace(/^ROLE_/, '');
-      if (role === 'SYSTEM_ADMIN') {
-        setPermissions({
-          admin_dashboard: 'FULL',
-          tender_spec: 'FULL',
-          compliance_matrix: 'FULL',
-          portal_verification: 'FULL',
-          multi_bidder_compare: 'FULL',
-          copilot_query: 'FULL',
-          seller_queue: 'FULL',
-          human_review: 'FULL',
-          compliance_reports: 'FULL',
-          analytics_overview: 'FULL',
-          blockchain_audit: 'FULL',
-          bid_upload: 'FULL',
-          contradiction_resolve: 'FULL'
-        });
-      } else if (role === 'PROCUREMENT_OFFICER') {
-        setPermissions({
-          admin_dashboard: 'BLOCKED',
-          tender_spec: 'FULL',
-          compliance_matrix: 'FULL',
-          portal_verification: 'FULL',
-          multi_bidder_compare: 'FULL',
-          copilot_query: 'FULL',
-          seller_queue: 'FULL',
-          human_review: 'FULL',
-          compliance_reports: 'FULL',
-          analytics_overview: 'FULL',
-          blockchain_audit: 'FULL',
-          bid_upload: 'BLOCKED',
-          contradiction_resolve: 'BLOCKED'
-        });
-      } else if (role === 'COMPLIANCE_REVIEWER') {
-        setPermissions({
-          admin_dashboard: 'BLOCKED',
-          tender_spec: 'FULL',
-          compliance_matrix: 'FULL',
-          portal_verification: 'FULL',
-          multi_bidder_compare: 'FULL',
-          copilot_query: 'FULL',
-          seller_queue: 'FULL',
-          human_review: 'FULL',
-          compliance_reports: 'FULL',
-          analytics_overview: 'FULL',
-          blockchain_audit: 'FULL',
-          bid_upload: 'BLOCKED',
-          contradiction_resolve: 'FULL'
-        });
-      } else if (role === 'AUDITOR' || role === 'VIEWER') {
-        setPermissions({
-          admin_dashboard: 'BLOCKED',
-          tender_spec: 'FULL',
-          compliance_matrix: 'FULL',
-          portal_verification: 'FULL',
-          multi_bidder_compare: 'FULL',
-          copilot_query: 'FULL',
-          seller_queue: 'FULL',
-          human_review: 'FULL',
-          compliance_reports: 'FULL',
-          analytics_overview: 'FULL',
-          blockchain_audit: 'FULL',
-          bid_upload: 'BLOCKED',
-          contradiction_resolve: 'BLOCKED'
-        });
-      } else {
-        // BIDDER_VENDOR
-        setPermissions({
-          admin_dashboard: 'BLOCKED',
-          tender_spec: 'FULL',
-          compliance_matrix: 'FULL',
-          portal_verification: 'FULL',
-          multi_bidder_compare: 'FULL',
-          copilot_query: 'FULL',
-          seller_queue: 'FULL',
-          human_review: 'FULL',
-          compliance_reports: 'FULL',
-          analytics_overview: 'FULL',
-          blockchain_audit: 'FULL',
-          bid_upload: 'FULL',
-          contradiction_resolve: 'BLOCKED'
-        });
-      }
+      setPermissions(defaultRolePerms);
     } finally {
       setLoading(false);
     }

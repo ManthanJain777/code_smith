@@ -50,7 +50,8 @@ interface TenderResultsData {
 }
 
 export const TenderResultsPage: React.FC = () => {
-  const { tenderId } = useParams<{ tenderId: string }>();
+  const { tenderId: rawTenderId } = useParams<{ tenderId: string }>();
+  const tenderId = rawTenderId ? decodeURIComponent(rawTenderId) : undefined;
   const { user } = useAuth();
   const { showToast } = useToast();
 

@@ -567,6 +567,7 @@ export const BidUploadPage: React.FC = () => {
               <span>⚡ 1-Click Fast Submit (Complete & Sign)</span>
             </button>
             <button
+              data-tour="next-step-1-btn"
               type="button"
               onClick={() => setActiveStep(2)}
               className="px-5 py-2.5 bg-[#1B365D] hover:bg-[#0f2540] text-white font-bold text-xs rounded-xl transition flex items-center gap-2 shadow-sm cursor-pointer ml-auto"
@@ -681,6 +682,7 @@ export const BidUploadPage: React.FC = () => {
                 <span>⚡ 1-Click Fast Submit</span>
               </button>
               <button
+                data-tour="next-step-2-btn"
                 type="button"
                 onClick={() => setActiveStep(3)}
                 className="px-5 py-2.5 bg-[#1B365D] hover:bg-[#0f2540] text-white font-bold text-xs rounded-xl transition flex items-center gap-2 shadow-sm cursor-pointer"
@@ -820,6 +822,7 @@ export const BidUploadPage: React.FC = () => {
               )}
 
               <button
+                data-tour="submit-dossier-btn"
                 type="button"
                 onClick={() => startIngestionPipeline()}
                 disabled={isProcessing}

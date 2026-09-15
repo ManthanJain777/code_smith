@@ -506,6 +506,7 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
                   <Link
                     key={group.id}
                     to={group.path}
+                    data-tour={`nav-${group.id}`}
                     className={`flex items-center space-x-1.5 px-3 py-2 rounded-md text-xs font-semibold transition ${
                       isActive
                         ? 'bg-amber-600 text-white shadow-sm'
@@ -521,6 +522,7 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
               return (
                 <div key={group.id} className="relative">
                   <button
+                    data-tour={`nav-${group.id}`}
                     onClick={() => setOpenDropdown(isOpen ? null : group.id)}
                     className={`flex items-center space-x-1.5 px-3 py-2 rounded-md text-xs font-semibold transition ${
                       isActive || isOpen

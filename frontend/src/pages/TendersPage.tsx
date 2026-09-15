@@ -247,8 +247,8 @@ export const TendersPage: React.FC = () => {
             </button>
           </div>
         ) : (
-          filteredTenders.map((tender) => (
-            <div key={tender.id} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden hover:border-slate-300 transition">
+          filteredTenders.map((tender, index) => (
+            <div key={`${tender.id}-${index}`} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden hover:border-slate-300 transition">
               {/* Tender Header Banner */}
               <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="space-y-1.5 flex-1 min-w-0 pr-2">
@@ -312,6 +312,7 @@ export const TendersPage: React.FC = () => {
                       {tender.status === 'OPEN' || tender.status === 'IN_EVALUATION' ? (
                         <Link
                           to={`/bids/upload?tenderId=${tender.id}`}
+                          data-tour="participate-bid-btn"
                           className="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-md"
                           title="Participate in this tender and upload technical/financial bid"
                         >
@@ -320,7 +321,7 @@ export const TendersPage: React.FC = () => {
                         </Link>
                       ) : tender.status === 'AWARDED' ? (
                         <Link
-                          to={`/tenders/${tender.id}/results`}
+                          to={`/tenders/${encodeURIComponent(tender.id)}/results`}
                           className="px-3.5 py-2 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-md"
                           title="View contract awardee, score rank list, and blockchain proof"
                         >
@@ -356,7 +357,7 @@ export const TendersPage: React.FC = () => {
 
                     <Can role={['SYSTEM_ADMIN', 'PROCUREMENT_OFFICER']}>
                       <Link
-                        to={`/tenders/${tender.id}/compare`}
+                        to={`/tenders/${encodeURIComponent(tender.id)}/compare`}
                         className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition flex items-center gap-1"
                       >
                         <span>Compare Bids</span>
@@ -364,7 +365,7 @@ export const TendersPage: React.FC = () => {
                     </Can>
 
                     <Link
-                      to={`/compliance?tenderId=${tender.id}`}
+                      to={`/compliance?tenderId=${encodeURIComponent(tender.id)}`}
                       className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1"
                     >
                       <span>Matrix</span>
@@ -372,7 +373,7 @@ export const TendersPage: React.FC = () => {
 
                     <Link
                       data-tour="view-award-standings-btn"
-                      to={`/tenders/${tender.id}/results`}
+                      to={`/tenders/${encodeURIComponent(tender.id)}/results`}
                       className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1 shadow-xs"
                       title="View public award determination and on-chain proof"
                     >

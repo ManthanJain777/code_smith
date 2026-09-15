@@ -61,11 +61,11 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 3,
     title: '3. Real Vendor Bidding on Fresh Solar Tender',
-    route: '/bids/upload?tenderId=TND-SOLAR-99088',
+    route: '/tenders',
     role: 'BIDDER_VENDOR',
     roleName: 'Apex Pumps & Motors Pvt Ltd',
     email: 'bidder.demo@gembid.local',
-    description: 'Switching to Vendor portal. Apex Pumps submits BoQ quote (₹6.15 Cr) and technical dossiers for GEM/2026/SOLAR/99088. Signed with Class-3 DSC and SHA-256 anchored to EVM.',
+    description: 'Switching to Vendor portal. Apex Pumps searches GEM/2026/SOLAR/99088, clicks Participate, completes 4-step BoQ & technical dossier, and seals bid with Class-3 DSC.',
     gfrRule: 'GFR 2017 Rule 173(i) — Sealed Electronic Bidding',
     targetSelector: '[data-tour="bid-wizard"]'
   },
@@ -268,8 +268,8 @@ export const GuidedTourProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       logout();
     }
 
-    // 2. Navigate to /login
-    navigate('/login');
+    // 2. Navigate to /login with target route state so LoginPage redirects directly to targetRoute upon authentication
+    navigate('/login', { state: { from: { pathname: targetRoute } } });
     await new Promise(r => setTimeout(r, 400));
 
     // 3. On /login, glide cursor to Email field & type character-by-character
@@ -294,23 +294,31 @@ export const GuidedTourProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     await login(targetEmail, 'Password123!');
     switchRole(targetRole);
 
-    // 7. Navigate to target route for step
+    // 7. Navigate to target route for step & wait for component mount
     navigate(targetRoute);
+    await new Promise(r => setTimeout(r, 500));
     setIsPerformingAuth(false);
   };
 
   // Step sub-action sequence driver
   const runStepActions = async (stepId: number) => {
     if (stepId === 1) {
-      // Step 1: Officer Dashboard Metrics
+      // Step 1: Officer Dashboard Metrics & Human-Like Navigation to Tenders
       const targetEl = await waitForElement('[data-tour="kpi-metrics"]');
       if (targetEl) {
         await ensureElementInView(targetEl);
         const rect = targetEl.getBoundingClientRect();
         setCursorPos({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, isClicking: false, label: 'Inspecting Speed Metrics' });
+        await new Promise(r => setTimeout(r, 1000));
+      }
+
+      // Smoothly glide cursor to top nav Tenders link & click it like a human
+      const tendersNavBtn = await waitForElement('[data-tour="nav-tenders"]');
+      if (tendersNavBtn) {
+        await glideAndClick('[data-tour="nav-tenders"]', 'Opening Tenders Requisitions Portal');
       }
     } else if (stepId === 2) {
-      // Step 2: Publish Fresh Solar Tender — FILL ALL ENTRIES IN MODAL
+      // Step 2: Publish Fresh Solar Tender — INSPECT TENDERS & FILL ALL ENTRIES IN MODAL
       try {
         const storedTenders = JSON.parse(localStorage.getItem('gem_tenders_override') || '[]');
         if (!storedTenders.some((t: any) => t.id === FRESH_SOLAR_TENDER.id)) {
@@ -319,6 +327,51 @@ export const GuidedTourProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       } catch (err) {
         console.warn('Tender publish local override error:', err);
       }
+
+      // 0. Smooth Top-to-Bottom & Bottom-to-Top Tender Board Inspection with quadratic easing
+      setCursorPos({
+        x: window.innerWidth / 2,
+        y: 300,
+        isClicking: false,
+        label: 'Inspecting Live Registered GeM Tenders...'
+      });
+      await new Promise(r => setTimeout(r, 400));
+
+      // Custom smooth quadratic eased scroll helper
+      const smoothScrollTo = async (targetY: number, durationMs: number) => {
+        const startY = window.scrollY;
+        const diff = targetY - startY;
+        const steps = 35;
+        const stepDelay = durationMs / steps;
+        for (let i = 1; i <= steps; i++) {
+          const progress = i / steps;
+          const ease = progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
+          window.scrollTo(0, startY + diff * ease);
+          await new Promise(r => setTimeout(r, stepDelay));
+        }
+      };
+
+      // Scroll down over 2.0 seconds
+      setCursorPos({
+        x: window.innerWidth / 2,
+        y: window.innerHeight - 200,
+        isClicking: false,
+        label: 'Reviewing Active Requisitions & GFR Status...'
+      });
+      await smoothScrollTo(document.body.scrollHeight, 2000);
+
+      // Pause at bottom for 1.0 second
+      await new Promise(r => setTimeout(r, 1000));
+
+      // Scroll back up over 2.0 seconds
+      setCursorPos({
+        x: window.innerWidth / 2,
+        y: 200,
+        isClicking: false,
+        label: 'Returning to Top to Publish New NIT...'
+      });
+      await smoothScrollTo(0, 2000);
+      await new Promise(r => setTimeout(r, 500));
 
       const createBtn = await waitForElement('[data-tour="create-tender-btn"]');
       if (createBtn) {
@@ -353,17 +406,60 @@ export const GuidedTourProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }
       }
     } else if (stepId === 3) {
-      // Step 3: Vendor Bid Submission
-      const fastSubmitBtn = await waitForElement('[data-tour="fast-submit-bid-btn"]');
-      if (fastSubmitBtn) {
-        await glideAndClick('[data-tour="fast-submit-bid-btn"]', 'Signing Bid with Class-3 DSC Seal');
+      // Step 3: Real Vendor Search, Participation & 4-Step Bidding Process
+      // Ensure we are on /tenders page before executing search
+      if (window.location.pathname !== '/tenders') {
+        navigate('/tenders');
+        await new Promise(r => setTimeout(r, 400));
+      }
+
+      // 1. Search for Tender Specifically on Browse Tenders page
+      const searchInput = await waitForElement('[data-tour="tenders-search-input"]', 3000);
+      if (searchInput) {
+        await glideAndType('[data-tour="tenders-search-input"]', FRESH_SOLAR_TENDER.tenderNumber, 'Searching Fresh Solar Tender GEM/2026/SOLAR/99088...');
+        await new Promise(r => setTimeout(r, 600));
+      }
+
+      // 2. Click 'Participate & Submit Bid' button on filtered tender card
+      const participateBtn = await waitForElement('[data-tour="participate-bid-btn"]', 3000);
+      if (participateBtn) {
+        await glideAndClick('[data-tour="participate-bid-btn"]', 'Clicking Participate & Submit Bid');
+        await new Promise(r => setTimeout(r, 600));
+      }
+
+      // 3. Step 1 Wizard: Statutory Profile -> Click Proceed to Commercial BoQ
+      const nextStep1Btn = await waitForElement('[data-tour="next-step-1-btn"]', 3000);
+      if (nextStep1Btn) {
+        await glideAndClick('[data-tour="next-step-1-btn"]', 'Reviewing MSME & GSTIN Profile -> Commercial BoQ');
+        await new Promise(r => setTimeout(r, 600));
+      }
+
+      // 4. Step 2 Wizard: Commercial BoQ -> Click Proceed to Technical Documents
+      const nextStep2Btn = await waitForElement('[data-tour="next-step-2-btn"]', 3000);
+      if (nextStep2Btn) {
+        await glideAndClick('[data-tour="next-step-2-btn"]', 'Verifying BoQ Quotation (₹6.15 Cr) -> Technical Dossier');
+        await new Promise(r => setTimeout(r, 600));
+      }
+
+      // 5. Step 3 Wizard: Technical Dossier -> Submit Formal Bid Dossier & Digital Seal (DSC)
+      const submitDossierBtn = await waitForElement('[data-tour="submit-dossier-btn"]', 3000);
+      if (submitDossierBtn) {
+        await glideAndClick('[data-tour="submit-dossier-btn"]', 'Attaching PDF Dossiers & Sealing with Class-3 DSC');
+        await new Promise(r => setTimeout(r, 1200));
       } else {
-        const wizard = await waitForElement('[data-tour="bid-wizard"]');
-        if (wizard) {
-          await ensureElementInView(wizard);
-          const rect = wizard.getBoundingClientRect();
-          setCursorPos({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, isClicking: false, label: 'Apex Pumps Bid Dossier Prepared' });
+        const fastSubmitBtn = await waitForElement('[data-tour="fast-submit-bid-btn"]', 1500);
+        if (fastSubmitBtn) {
+          await glideAndClick('[data-tour="fast-submit-bid-btn"]', 'Signing Bid with Class-3 DSC Seal');
+          await new Promise(r => setTimeout(r, 1200));
         }
+      }
+
+      // 6. Step 4 Wizard: Digital Seal Acknowledgment Receipt
+      const ackCert = await waitForElement('[data-tour="bid-wizard"]', 2000);
+      if (ackCert) {
+        await ensureElementInView(ackCert);
+        const rect = ackCert.getBoundingClientRect();
+        setCursorPos({ x: rect.left + rect.width / 2, y: rect.top + 100, isClicking: false, label: 'Bid Submission Sealed & Anchored on EVM Blockchain' });
       }
     } else if (stepId === 4) {
       // Step 4: AI Compliance Pipeline & Reasoning Chain
@@ -435,7 +531,7 @@ export const GuidedTourProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // Tailored auto-play timer (14s for Step 2, 10s for others)
   useEffect(() => {
     if (!isActive || !isAutoPlaying || isPerformingAuth) return;
-    const duration = currentStepIndex === 1 ? 14000 : 10000;
+    const duration = currentStepIndex === 0 ? 3500 : currentStepIndex === 1 ? 21000 : currentStepIndex === 2 ? 18000 : 10000;
     const timer = setTimeout(() => {
       if (currentStepIndex < TOUR_STEPS.length - 1) {
         setCurrentStepIndex(prev => prev + 1);
