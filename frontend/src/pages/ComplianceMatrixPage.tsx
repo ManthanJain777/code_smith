@@ -95,20 +95,15 @@ export const ComplianceMatrixPage: React.FC = () => {
         const tenderBids = await apiService.getBidsForTender(selectedTenderId);
         const scopedBids = isBidder 
           ? tenderBids.filter(b => 
-              !b.bidderEmail || 
-              !user?.email || 
-              b.bidderEmail.toLowerCase() === user.email.toLowerCase() ||
-              b.bidderEmail.toLowerCase().includes('apex') ||
-              (b.bidderName && b.bidderName.toLowerCase().includes('apex'))
+              b.bidderEmail && user?.email && b.bidderEmail.toLowerCase() === user.email.toLowerCase()
             )
           : tenderBids;
-        const effectiveBids = scopedBids.length > 0 ? scopedBids : tenderBids;
-        setBids(effectiveBids);
+        setBids(scopedBids);
         const urlBidId = searchParams.get('bidId');
-        if (urlBidId && effectiveBids.some(b => b.id === urlBidId)) {
+        if (urlBidId && scopedBids.some(b => b.id === urlBidId)) {
           setSelectedBidId(urlBidId);
-        } else if (effectiveBids.length > 0) {
-          setSelectedBidId(effectiveBids[0].id);
+        } else if (scopedBids.length > 0) {
+          setSelectedBidId(scopedBids[0].id);
         } else {
           setSelectedBidId('');
         }

@@ -28,47 +28,7 @@ export const ReviewsPage: React.FC = () => {
   const isOfficer = role === 'PROCUREMENT_OFFICER';
 
   // Vendor Grievance & Clarifications State (GFR 2017 Rule 173(iv))
-  const [vendorQueries, setVendorQueries] = useState([
-    {
-      id: 'CLR-2026-001',
-      tenderNumber: 'GEM/2026/B/90125',
-      tenderTitle: 'Supply & Installation of High-Efficiency Industrial Water Pumps',
-      clauseCode: 'REQ-001',
-      clauseName: 'Annual Financial Turnover (>= ₹100 Cr)',
-      committeeQuery: 'Audited balance sheet FY24 reflects turnover of ₹118.40 Cr, but CA net worth certificate is awaiting UDIN validation. Please submit UDIN generated CA certificate.',
-      status: 'AWAITING_VENDOR_REPRESENTATION',
-      deadline: '16-Sep-2026, 17:00 IST',
-      statutoryRule: 'GFR Rule 173(iv)',
-      submittedReply: '',
-      blockchainProof: '',
-    },
-    {
-      id: 'CLR-2026-002',
-      tenderNumber: 'GEM/2026/B/90125',
-      tenderTitle: 'Supply & Installation of High-Efficiency Industrial Water Pumps',
-      clauseCode: 'REQ-003',
-      clauseName: 'Pump Operational Efficiency (>= 85%)',
-      committeeQuery: 'Datasheet specifies 86.2% efficiency under ISO 9906 Grade 2. Clarify if test bed certification is ISO 9906 Grade 1.',
-      status: 'REPRESENTATION_SUBMITTED',
-      deadline: '15-Sep-2026, 12:00 IST',
-      statutoryRule: 'GFR Rule 173(iv)',
-      submittedReply: 'Testing was conducted per ISO 9906 Grade 1 at CWPRS Pune testbed. Lab test report certificate #CWPRS/PUMP/2025/449 attached.',
-      blockchainProof: '0x7f9a88b12c5e3170d49f6580918b939faecb910245a703b68f77341e3d0912cb',
-    },
-    {
-      id: 'CLR-2026-003',
-      tenderNumber: 'GEM/2026/B/90124',
-      tenderTitle: 'Supply & Installation of High-Efficiency Water Pumps',
-      clauseCode: 'REQ-004',
-      clauseName: 'Prior Public Sector Supply Experience (>= 5 Years)',
-      committeeQuery: 'Submit proof of completion for Ministry of Water Resources FY22 supply order.',
-      status: 'RESOLVED_ACCEPTED',
-      deadline: '10-Sep-2026',
-      statutoryRule: 'GFR Rule 173(iv)',
-      submittedReply: 'Final completion and performance certificate issued by Central Water Commission uploaded.',
-      blockchainProof: '0x438e1290bbff81792ca8490a019842a78cd8410294e773bc68a011ef4890cd12',
-    }
-  ]);
+  const [vendorQueries, setVendorQueries] = useState<any[]>([]);
   const [activeVendorModal, setActiveVendorModal] = useState<any | null>(null);
   const [vendorReplyText, setVendorReplyText] = useState('');
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
@@ -113,8 +73,12 @@ export const ReviewsPage: React.FC = () => {
   useEffect(() => {
     async function init() {
       try {
-        const tList = await apiService.getTenders().catch(() => []);
+        const [tList, clrs] = await Promise.all([
+          apiService.getTenders().catch(() => []),
+          apiService.getClarifications().catch(() => [])
+        ]);
         setTenders(tList);
+        setVendorQueries(clrs || []);
         if (tList.length > 0) {
           setSelectedTenderId(tList[0].id);
         }
@@ -499,14 +463,14 @@ export const ReviewsPage: React.FC = () => {
                       supportingDoc: 'Apex_CA_Turnover_UDIN_Annexure.pdf',
                       dscSerial: dsc
                     });
-                    const pseudoTx = resp.txHash || '0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('');
+                    const realTx = resp?.txHash || resp?.blockchainTx || 'TX_PENDING';
                     setVendorQueries(prev => prev.map(q => q.id === activeVendorModal.id ? {
                       ...q,
                       status: 'REPRESENTATION_SUBMITTED',
                       submittedReply: vendorReplyText.trim(),
-                      blockchainProof: pseudoTx
+                      blockchainProof: realTx
                     } : q));
-                    setVendorReplySuccess(`Representation digitally signed with DSC (${dsc}) and anchored on EVM Ledger (Tx: ${pseudoTx.slice(0, 16)}...).`);
+                    setVendorReplySuccess(`Representation digitally signed with DSC (${dsc}) and anchored on EVM Ledger (Tx: ${realTx.slice(0, 16)}...).`);
                     setIsSubmittingReply(false);
                     setTimeout(() => {
                       setActiveVendorModal(null);

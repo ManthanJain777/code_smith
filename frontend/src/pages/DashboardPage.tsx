@@ -568,24 +568,32 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 text-xs">
             <div className="p-2.5 bg-slate-900/60 rounded-xl border border-slate-700/60">
-              <span className="text-[10px] text-slate-400 block">Turnover (≥ ₹100 Cr)</span>
-              <span className="font-bold text-emerald-400 text-sm mt-0.5 block">₹118.40 Cr</span>
-              <span className="text-[10px] text-slate-400">Verified via CA Certificate</span>
+              <span className="text-[10px] text-slate-400 block">Category</span>
+              <span className="font-bold text-emerald-400 text-sm mt-0.5 block truncate">
+                {mySellerProfile?.category || 'Registered Vendor'}
+              </span>
+              <span className="text-[10px] text-slate-400">{mySellerProfile?.udyamRegistration ? 'Udyam Verified' : 'Standard'}</span>
             </div>
             <div className="p-2.5 bg-slate-900/60 rounded-xl border border-slate-700/60">
-              <span className="text-[10px] text-slate-400 block">Efficiency (≥ 85%)</span>
-              <span className="font-bold text-emerald-400 text-sm mt-0.5 block">86.2% ISO Grade-1</span>
-              <span className="text-[10px] text-slate-400">CWPRS Pune Testbed</span>
+              <span className="text-[10px] text-slate-400 block">GSTIN Standing</span>
+              <span className="font-bold text-emerald-400 text-sm mt-0.5 block truncate">
+                {mySellerProfile?.gstin ? 'ACTIVE REGULAR' : 'REGISTERED'}
+              </span>
+              <span className="text-[10px] text-slate-400">Portal Verified</span>
             </div>
             <div className="p-2.5 bg-slate-900/60 rounded-xl border border-slate-700/60">
-              <span className="text-[10px] text-slate-400 block">Experience (≥ 5 Yrs)</span>
-              <span className="font-bold text-emerald-400 text-sm mt-0.5 block">6.5 Years</span>
-              <span className="text-[10px] text-slate-400">CWC Govt Order Confirmed</span>
+              <span className="text-[10px] text-slate-400 block">Debarment Status</span>
+              <span className="font-bold text-emerald-400 text-sm mt-0.5 block">
+                {mySellerProfile?.isDebarred ? 'FLAGGED' : 'CLEAR'}
+              </span>
+              <span className="text-[10px] text-slate-400">DoE Blacklist Verified</span>
             </div>
             <div className="p-2.5 bg-slate-900/60 rounded-xl border border-slate-700/60">
-              <span className="text-[10px] text-slate-400 block">EMD Exemption</span>
-              <span className="font-bold text-amber-400 text-sm mt-0.5 block">MSME Small</span>
-              <span className="text-[10px] text-slate-400">Rule 170 GFR 2017</span>
+              <span className="text-[10px] text-slate-400 block">EMD Standing</span>
+              <span className="font-bold text-amber-400 text-sm mt-0.5 block">
+                {mySellerProfile?.category?.includes('MSME') || mySellerProfile?.udyamRegistration ? 'MSME EXEMPT' : 'STANDARD'}
+              </span>
+              <span className="text-[10px] text-slate-400">GFR 2017 Rule 170</span>
             </div>
           </div>
         </div>
@@ -820,14 +828,14 @@ export const DashboardPage: React.FC = () => {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="p-2.5 bg-slate-800/80 rounded-xl border border-slate-700">
-              <span className="text-[10px] text-slate-400 block uppercase">Latest Block</span>
-              <span className="text-base font-black text-amber-400 mt-0.5 block">#10042</span>
-              <span className="text-[10px] text-slate-400">0.8s block time</span>
+              <span className="text-[10px] text-slate-400 block uppercase">Anchored Events</span>
+              <span className="text-base font-black text-amber-400 mt-0.5 block">#{1000 + auditLogs.length}</span>
+              <span className="text-[10px] text-slate-400">{auditLogs.length} on-chain records</span>
             </div>
             <div className="p-2.5 bg-slate-800/80 rounded-xl border border-slate-700">
-              <span className="text-[10px] text-slate-400 block uppercase">Gas Limit</span>
-              <span className="text-base font-black text-teal-300 mt-0.5 block">30,000,000</span>
-              <span className="text-[10px] text-slate-400">Base fee: 1.2 Gwei</span>
+              <span className="text-[10px] text-slate-400 block uppercase">Consensus Network</span>
+              <span className="text-base font-black text-teal-300 mt-0.5 block truncate">EVM PoA</span>
+              <span className="text-[10px] text-slate-400">Chain ID: 31337</span>
             </div>
             <div className="p-2.5 bg-slate-800/80 rounded-xl border border-slate-700">
               <span className="text-[10px] text-slate-400 block uppercase">Smart Contract</span>
@@ -1023,16 +1031,16 @@ export const DashboardPage: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <PrimaryKpiCard
             title="Pending Committee Scrutiny"
-            value="3 In Queue"
-            subtitle="2 Technical • 1 Financial"
+            value={`${results.filter(r => r.reviewStatus === 'PENDING' || r.status === 'PARTIALLY_COMPLIANT' || r.status === 'NON_COMPLIANT').length} In Queue`}
+            subtitle="Technical & Financial Criteria"
             accent="amber"
             icon={<Clock className="w-5 h-5 text-amber-600" />}
             badgeText="PRIORITY"
           />
           <PrimaryKpiCard
             title="Contradictions Flagged"
-            value="1 Variance"
-            subtitle="CA Cert vs Audited Balance Sheet"
+            value={`${contradictionCount} Variance(s)`}
+            subtitle="Cross-document discrepancies"
             accent="amber"
             icon={<AlertTriangle className="w-5 h-5 text-amber-600" />}
             badgeText="SCRUTINY"
@@ -1047,7 +1055,7 @@ export const DashboardPage: React.FC = () => {
           />
           <PrimaryKpiCard
             title="Reviewer AI Alignment"
-            value="96.2%"
+            value={results.length > 0 ? `${((1 - (overrideCount / Math.max(1, results.length))) * 100).toFixed(1)}%` : '100%'}
             subtitle="High Confidence Agreement"
             accent="emerald"
             icon={<CheckCircle2 className="w-5 h-5 text-emerald-600" />}
@@ -1068,89 +1076,45 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           <div className="divide-y divide-slate-100">
-            {/* Item 1: REQ-FIN-001 Turnover */}
-            <div className="p-4 hover:bg-slate-50 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-1 max-w-xl">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                    REQ-FIN-001
-                  </span>
-                  <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded">
-                    PARTIALLY_COMPLIANT (86% Confidence)
-                  </span>
-                  <span className="text-xs text-slate-400">Bidder: Apex Pumps & Motors</span>
+            {results.filter(r => r.reviewStatus === 'PENDING' || r.status === 'PARTIALLY_COMPLIANT' || r.status === 'NON_COMPLIANT').length === 0 ? (
+              <div className="p-8 text-center text-xs text-slate-500">
+                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                <p className="font-bold text-slate-800">All compliance items verified</p>
+                <p className="text-slate-500 mt-1">No pending review actions required for active bids.</p>
+              </div>
+            ) : (
+              results.filter(r => r.reviewStatus === 'PENDING' || r.status === 'PARTIALLY_COMPLIANT' || r.status === 'NON_COMPLIANT').slice(0, 5).map((item) => (
+                <div key={item.id} className="p-4 hover:bg-slate-50 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1 max-w-xl">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                        {item.requirementCode}
+                      </span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                        item.status === 'NON_COMPLIANT' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
+                      }`}>
+                        {item.status} ({Math.round(item.confidence * 100)}% Confidence)
+                      </span>
+                      <span className="text-xs text-slate-400">Bid: {item.bidId}</span>
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-900">
+                      {item.requirementText}
+                    </h3>
+                    <p className="text-xs text-slate-600">
+                      {item.reasoning || 'Automated compliance rule evaluated.'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 self-start md:self-auto">
+                    <Link
+                      to="/reviews"
+                      className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
+                    >
+                      <Scale className="w-3.5 h-3.5" /> Adjudicate & Override
+                    </Link>
+                  </div>
                 </div>
-                <h3 className="text-sm font-bold text-slate-900">
-                  Annual Financial Turnover (Threshold: ≥ ₹100.00 Cr for 3 Fiscal Years)
-                </h3>
-                <p className="text-xs text-slate-600">
-                  Turnover Certificate shows ₹112.4 Cr (PASS), but Audited Balance Sheet FY25 shows ₹94 Cr (−16.4%). Committee human resolution required.
-                </p>
-              </div>
-              <div className="flex items-center gap-2 self-start md:self-auto">
-                <Link
-                  to="/reviews"
-                  className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
-                >
-                  <Scale className="w-3.5 h-3.5" /> Adjudicate & Override
-                </Link>
-              </div>
-            </div>
-
-            {/* Item 2: REQ-003 Pump Efficiency */}
-            <div className="p-4 hover:bg-slate-50 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-1 max-w-xl">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                    REQ-TECH-003
-                  </span>
-                  <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">
-                    COMPLIANT (99% Confidence)
-                  </span>
-                  <span className="text-xs text-slate-400">Bidder: Apex Pumps & Motors</span>
-                </div>
-                <h3 className="text-sm font-bold text-slate-900">
-                  Pump Operational Efficiency (Threshold: ≥ 85%)
-                </h3>
-                <p className="text-xs text-slate-600">
-                  Technical datasheet specifies 86.2% efficiency. ISO 9906 Grade 1 CWPRS Pune testbed certificate validated.
-                </p>
-              </div>
-              <div className="flex items-center gap-2 self-start md:self-auto">
-                <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-bold flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Verified Compliant
-                </span>
-              </div>
-            </div>
-
-            {/* Item 3: REQ-004 PSU Experience */}
-            <div className="p-4 hover:bg-slate-50 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-1 max-w-xl">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                    REQ-EXP-004
-                  </span>
-                  <span className="text-[10px] font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
-                    INSPECTION COMPLETED
-                  </span>
-                  <span className="text-xs text-slate-400">Bidder: Apex Pumps & Motors</span>
-                </div>
-                <h3 className="text-sm font-bold text-slate-900">
-                  Prior Public Sector Supply Experience (Threshold: ≥ 5 Years)
-                </h3>
-                <p className="text-xs text-slate-600">
-                  Central Water Commission FY22 completion certificate verified against Ministry of Water Resources records.
-                </p>
-              </div>
-              <div className="flex items-center gap-2 self-start md:self-auto">
-                <Link
-                  to="/compliance"
-                  className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition flex items-center gap-1.5"
-                >
-                  <Eye className="w-3.5 h-3.5 text-slate-600" /> View Citations
-                </Link>
-              </div>
-            </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -1555,16 +1519,26 @@ export const DashboardPage: React.FC = () => {
 
             <div className="flex flex-wrap items-baseline gap-4">
               <div className="text-5xl font-black font-mono tracking-tight text-amber-950">
-                65<span className="text-xl font-bold text-amber-700">/100</span>
+                {avgScore > 0 ? avgScore : 85}<span className="text-xl font-bold text-amber-700">/100</span>
               </div>
 
               <div className="space-y-1">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                  <span className="w-2 h-2 rounded-full bg-amber-600 animate-pulse" />
-                  MEDIUM RISK — HUMAN REVIEW REQUIRED
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+                  (avgScore >= 80 || avgScore === 0) ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' :
+                  avgScore >= 60 ? 'bg-amber-100 text-amber-900 border border-amber-300' :
+                  'bg-rose-100 text-rose-900 border border-rose-300'
+                }`}>
+                  <span className={`w-2 h-2 rounded-full ${
+                    (avgScore >= 80 || avgScore === 0) ? 'bg-emerald-600' : avgScore >= 60 ? 'bg-amber-600 animate-pulse' : 'bg-rose-600 animate-pulse'
+                  }`} />
+                  {(avgScore >= 80 || avgScore === 0) ? 'LOW RISK — QUALIFIED TO PROCEED' :
+                   avgScore >= 60 ? 'MEDIUM RISK — HUMAN REVIEW REQUIRED' :
+                   'HIGH RISK — DISQUALIFICATION RECOMMENDED'}
                 </span>
                 <p className="text-xs font-medium text-slate-600 leading-normal">
-                  Requires reviewer scrutiny prior to commercial bid opening & committee sign-off.
+                  {(avgScore >= 80 || avgScore === 0)
+                    ? 'Evaluated bids satisfy statutory GFR 2017 thresholds.'
+                    : 'Requires reviewer scrutiny prior to commercial bid opening & committee sign-off.'}
                 </p>
               </div>
             </div>

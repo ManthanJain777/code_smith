@@ -308,13 +308,12 @@ export const BidUploadPage: React.FC = () => {
     // Set Acknowledgment Receipt
     const now = new Date();
     const isConfirmed = Boolean(realTxHash && realTxHash.startsWith('0x'));
-    const mockTx = '0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('');
     setAckReceipt({
       ackNumber: `GEM/ACK/2026/${activeBidId}`,
       submittedAt: now.toLocaleDateString('en-IN') + ' ' + now.toLocaleTimeString('en-IN'),
       dscSerial: user?.dscSerial || 'DSC-IND-2026-APEX-8891',
-      blockchainTx: realTxHash || mockTx,
-      blockchainStatus: isConfirmed ? 'ON_CHAIN_CONFIRMED' : 'OFFLINE_DEMO_HASH',
+      blockchainTx: realTxHash || 'TX_ANCHOR_PENDING',
+      blockchainStatus: isConfirmed ? 'ON_CHAIN_CONFIRMED' : 'PENDING_ANCHOR',
       isSimulatedDsc: true,
     });
 
