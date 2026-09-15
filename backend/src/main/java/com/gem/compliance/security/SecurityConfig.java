@@ -106,6 +106,14 @@ public class SecurityConfig {
                     "ROLE_PROCUREMENT_OFFICER", "ROLE_COMPLIANCE_REVIEWER", "ROLE_SYSTEM_ADMIN", "ROLE_AUDITOR", "ROLE_VIEWER"
                 )
 
+                // Calibration endpoint accessible to committee roles and admin
+                .requestMatchers("/api/v1/admin/calibration").hasAnyAuthority(
+                    "SYSTEM_ADMIN", "ROLE_SYSTEM_ADMIN",
+                    "PROCUREMENT_OFFICER", "ROLE_PROCUREMENT_OFFICER",
+                    "COMPLIANCE_REVIEWER", "ROLE_COMPLIANCE_REVIEWER",
+                    "AUDITOR", "ROLE_AUDITOR"
+                )
+
                 // System Admin Exclusive Panel Endpoints
                 .requestMatchers("/api/v1/admin/**").hasAnyAuthority("SYSTEM_ADMIN", "ROLE_SYSTEM_ADMIN")
 

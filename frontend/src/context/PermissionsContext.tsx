@@ -27,11 +27,15 @@ export const PermissionsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     try {
       setLoading(true);
       const perms = await apiService.getMyPermissions();
-      setPermissions(perms || {});
+      if (perms && typeof perms === 'object' && Object.keys(perms).length > 0 && perms['tender_spec']) {
+        setPermissions(perms);
+        return;
+      }
+      throw new Error('Permissions response missing standard feature keys');
     } catch (err) {
       console.warn('Failed to load dynamic permissions, using role fallback:', err);
       // Fallback defaults matching DB seed
-      const role = user.role || 'VIEWER';
+      const role = (user.role || 'VIEWER').toUpperCase().replace(/^ROLE_/, '');
       if (role === 'SYSTEM_ADMIN') {
         setPermissions({
           admin_dashboard: 'FULL',
@@ -124,8 +128,20 @@ export const PermissionsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   }, [user]);
 
   const hasAccess = (featureKey: string): boolean => {
+    if (!featureKey) return true;
+    const role = (user?.role || 'VIEWER').toUpperCase().replace(/^ROLE_/, '');
+    if (role === 'SYSTEM_ADMIN') return true;
+
     const level = permissions[featureKey];
-    return !!level && level !== 'BLOCKED';
+    if (level !== undefined) {
+      return level !== 'BLOCKED';
+    }
+
+    // Graceful fallback if dynamic permissions did not explicitly enumerate this key
+    if (role === 'BIDDER_VENDOR') {
+      return ['tender_spec', 'compliance_matrix', 'bid_upload', 'compliance_reports', 'copilot_query', 'blockchain_audit'].includes(featureKey);
+    }
+    return featureKey !== 'bid_upload' && featureKey !== 'admin_dashboard';
   };
 
   const getAccessLevel = (featureKey: string): string => {

@@ -64,7 +64,58 @@ public class GeminiApiService {
         return generateDeterministicCopilotResponse(question, tenderId, bidId, role, userName, complianceResults);
     }
 
+    public List<String> getCandidateModels() {
+        List<String> models = new ArrayList<>();
+        if (geminiModel != null && !geminiModel.isBlank()) {
+            models.add(geminiModel.trim());
+        }
+        // Ordered priority: 3.8, 3.7, 3.6, and fallback 2.5/pro
+        List<String> defaults = List.of(
+            "gemini-3.8-flash",
+            "gemini-3.7-flash",
+            "gemini-3.6-flash",
+            "gemini-2.5-flash",
+            "gemini-2.5-pro"
+        );
+        for (String def : defaults) {
+            if (!models.contains(def)) {
+                models.add(def);
+            }
+        }
+        return models;
+    }
+
     private Map<String, Object> callGeminiCopilot(
+            String question,
+            String tenderId,
+            String bidId,
+            String role,
+            String userName,
+            List<Map<String, Object>> complianceResults
+    ) throws Exception {
+        Exception lastException = null;
+        for (String modelName : getCandidateModels()) {
+            try {
+                log.info("Attempting Gemini Copilot inference with model: {}", modelName);
+                Map<String, Object> res = executeGeminiCopilotWithModel(modelName, question, tenderId, bidId, role, userName, complianceResults);
+                if (res != null && res.containsKey("answer")) {
+                    log.info("Gemini Copilot succeeded with model: {}", modelName);
+                    return res;
+                }
+            } catch (Exception e) {
+                lastException = e;
+                log.warn("Gemini Copilot model '{}' failed ({}) — trying next candidate model in loop: {}",
+                        modelName, e.getClass().getSimpleName(), e.getMessage());
+            }
+        }
+        if (lastException != null) {
+            throw lastException;
+        }
+        throw new RuntimeException("No available Gemini model responded successfully.");
+    }
+
+    private Map<String, Object> executeGeminiCopilotWithModel(
+            String targetModel,
             String question,
             String tenderId,
             String bidId,
@@ -113,12 +164,12 @@ public class GeminiApiService {
 
         String jsonBody = objectMapper.writeValueAsString(reqPayload);
         String endpoint = String.format("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s",
-                geminiModel, geminiApiKey);
+                targetModel, geminiApiKey);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(endpoint))
                 .header("Content-Type", "application/json")
-                .timeout(Duration.ofSeconds(15))
+                .timeout(Duration.ofSeconds(12))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
 
@@ -140,7 +191,7 @@ public class GeminiApiService {
                     String status = String.valueOf(r.getOrDefault("status", ""));
                     String reasoning = String.valueOf(r.getOrDefault("reasoning", ""));
                     String evidence = String.valueOf(r.getOrDefault("evidenceIds", r.getOrDefault("evidence_ids", "")));
-                    
+
                     if (!evidence.isBlank() && !evidence.equalsIgnoreCase("null") && (generatedText.contains(reqId) || dynamicSources.size() < 2)) {
                         Map<String, Object> src = new LinkedHashMap<>();
                         src.put("document_name", evidence);
@@ -157,14 +208,16 @@ public class GeminiApiService {
 
             return Map.of(
                     "answer", generatedText,
-                    "confidence", dynamicSources.isEmpty() ? 0.85 : 0.98,
-                    "model", "gemini-2.5-flash",
+                    "confidence", dynamicSources.isEmpty() ? 0.88 : 0.98,
+                    "model", targetModel,
+                    "model_used", String.format("Google %s", targetModel),
                     "sources", dynamicSources,
+                    "citations", dynamicSources,
                     "disclaimer", "Grounded AI analysis based on GFR 2017 evidence. Final qualification decisions remain with the Procurement Officer."
             );
         }
 
-        throw new RuntimeException("Empty candidates in Gemini response");
+        throw new RuntimeException("Empty candidates in Gemini response for " + targetModel);
     }
 
     /**
@@ -188,6 +241,33 @@ public class GeminiApiService {
     }
 
     private Map<String, Object> callGeminiMultimodalOcr(String portalKey, String documentType, String fileData) throws Exception {
+        Exception lastException = null;
+        for (String modelName : getCandidateModels()) {
+            try {
+                log.info("Attempting Gemini Multimodal OCR with model: {}", modelName);
+                Map<String, Object> res = executeGeminiMultimodalOcrWithModel(modelName, portalKey, documentType, fileData);
+                if (res != null && !res.isEmpty()) {
+                    log.info("Gemini Multimodal OCR succeeded with model: {}", modelName);
+                    return res;
+                }
+            } catch (Exception e) {
+                lastException = e;
+                log.warn("Gemini OCR model '{}' failed ({}) — trying next candidate model in loop: {}",
+                        modelName, e.getClass().getSimpleName(), e.getMessage());
+            }
+        }
+        if (lastException != null) {
+            throw lastException;
+        }
+        throw new RuntimeException("No available Gemini model responded successfully for OCR.");
+    }
+
+    private Map<String, Object> executeGeminiMultimodalOcrWithModel(
+            String targetModel,
+            String portalKey,
+            String documentType,
+            String fileData
+    ) throws Exception {
         String base64Data = fileData;
         String mimeType = "image/jpeg";
 
@@ -234,12 +314,12 @@ public class GeminiApiService {
 
         String jsonBody = objectMapper.writeValueAsString(reqPayload);
         String endpoint = String.format("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s",
-                geminiModel, geminiApiKey);
+                targetModel, geminiApiKey);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(endpoint))
                 .header("Content-Type", "application/json")
-                .timeout(Duration.ofSeconds(20))
+                .timeout(Duration.ofSeconds(15))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
 
@@ -252,12 +332,13 @@ public class GeminiApiService {
                 String cleanedJson = cleanJsonString(rawText);
                 Map<String, Object> parsed = objectMapper.readValue(cleanedJson, new TypeReference<Map<String, Object>>() {});
                 parsed.put("source", "GOOGLE_GEMINI_VISION_API");
+                parsed.put("model", targetModel);
                 parsed.put("confidence", 0.98);
                 return parsed;
             }
         }
 
-        throw new RuntimeException("Gemini OCR response invalid: " + response.statusCode());
+        throw new RuntimeException("Gemini OCR response invalid: " + response.statusCode() + " on model " + targetModel);
     }
 
     private String cleanJsonString(String text) {

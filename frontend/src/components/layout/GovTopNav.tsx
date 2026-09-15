@@ -185,6 +185,13 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
           description: 'Side-by-side technical evaluation across all tender bidders',
           icon: Users,
           allowed: hasAccess('multi_bidder_compare')
+        },
+        {
+          label: 'Official Evaluation Reports',
+          path: '/reports',
+          description: 'Formal GeM Evaluation Memorandum, Sanction Orders & Exportable Dossiers',
+          icon: FileText,
+          allowed: hasAccess('compliance_reports')
         }
       ],
       path: isVendor ? '/compliance' : undefined
@@ -268,7 +275,7 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
   const isActiveGroup = (group: NavGroup) => {
     if (group.path && location.pathname === group.path) return true;
     if (group.children) {
-      return group.children.some(c => location.pathname === c.path);
+      return group.children.some(c => location.pathname === c.path.split('?')[0]);
     }
     return false;
   };
@@ -538,7 +545,7 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
                       <div className="py-1">
                         {group.children?.map(child => {
                           const ChildIcon = child.icon;
-                          const isChildActive = location.pathname === child.path;
+                          const isChildActive = location.pathname === child.path || (location.pathname + location.search) === child.path;
                           return (
                             <Link
                               key={child.path}
@@ -653,7 +660,7 @@ export const GovTopNav: React.FC<GovTopNavProps> = ({
                         <div className="pl-4 space-y-0.5 mt-0.5">
                           {group.children?.map(child => {
                             const ChildIcon = child.icon;
-                            const isChildActive = location.pathname === child.path;
+                            const isChildActive = location.pathname === child.path || (location.pathname + location.search) === child.path;
                             return (
                               <Link
                                 key={child.path}

@@ -843,8 +843,8 @@ export const apiService = {
       return await handleResponseJson<any[]>(res);
     } catch {
       return [
-        { id: 'NOTIF-1', title: 'Tender Evaluation Completed', message: 'TND-PUMP-001 evaluation finished with 1 compliant bidder.', unread: true, timestamp: new Date().toISOString() },
-        { id: 'NOTIF-2', title: 'Blockchain Anchor Confirmed', message: 'Tender results anchored to EVM block #1042.', unread: false, timestamp: new Date(Date.now() - 3600000).toISOString() }
+        { id: 'NOTIF-1', title: 'Tender Evaluation Completed', message: 'TND-PUMP-001 evaluation finished with 1 compliant bidder.', read: false, timestamp: new Date().toISOString(), actionUrl: '/compliance' },
+        { id: 'NOTIF-2', title: 'Blockchain Anchor Confirmed', message: 'Tender results anchored to EVM block #1042.', read: true, timestamp: new Date(Date.now() - 3600000).toISOString(), actionUrl: '/audit?tab=explorer' }
       ];
     }
   },
@@ -861,17 +861,8 @@ export const apiService = {
   },
 
   getMyPermissions: async (): Promise<Record<string, string>> => {
-    try {
-      const res = await fetchWithAuth(`${API_BASE_URL}/permissions/me`);
-      return await handleResponseJson<Record<string, string>>(res);
-    } catch {
-      return {
-        'TENDER_CREATE': 'ALLOWED',
-        'BID_EVALUATION': 'ALLOWED',
-        'HUMAN_OVERRIDE': 'ALLOWED',
-        'AUDIT_INSPECT': 'ALLOWED'
-      };
-    }
+    const res = await fetchWithAuth(`${API_BASE_URL}/permissions/me`);
+    return await handleResponseJson<Record<string, string>>(res);
   },
 
   getCopilotConfig: async (): Promise<any> => {
@@ -880,9 +871,10 @@ export const apiService = {
       return await handleResponseJson(res);
     } catch {
       return {
-        model: 'gemini-1.5-flash',
+        model: 'gemini-3.8-flash',
+        candidateModels: ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-2.5-flash'],
         temperature: 0.2,
-        groundingRules: ['GFR 2017 Rule 144', 'GFR 2017 Rule 173']
+        groundingRules: ['GFR 2017 Rule 144', 'GFR 2017 Rule 153', 'GFR 2017 Rule 173']
       };
     }
   },

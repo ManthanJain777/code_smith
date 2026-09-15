@@ -75,7 +75,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             userId: data.userId,
             email: data.email,
             fullName: data.fullName,
-            role: data.role,
+            role: (data.role || 'VIEWER').toUpperCase().replace(/^ROLE_/, ''),
             organizationId: data.organizationId,
             permissions: data.permissions || [],
           });
@@ -123,7 +123,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         userId: data.userId,
         email: data.email,
         fullName: data.fullName,
-        role: data.role,
+        role: (data.role || 'VIEWER').toUpperCase().replace(/^ROLE_/, ''),
         organizationId: data.organizationId,
         permissions: data.permissions || [],
       });
@@ -157,7 +157,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           userId: demoMatch.userId,
           email: email,
           fullName: demoMatch.fullName,
-          role: demoMatch.role,
+          role: demoMatch.role.toUpperCase().replace(/^ROLE_/, ''),
           organizationId: demoMatch.organizationId,
           permissions: ['ALL'],
         });
@@ -199,11 +199,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (!res.success) {
         // If login failed (e.g. backend down and demo mode enabled), set isolated session
         const p = target.profile;
+        const dummyToken = 'demo-jwt-token-' + p.role;
+        localStorage.setItem(AUTH_TOKEN_KEY, dummyToken);
+        setToken(dummyToken);
         setUser({
           userId: p.userId,
           email: p.email,
           fullName: p.fullName,
-          role: p.role,
+          role: p.role.toUpperCase().replace(/^ROLE_/, ''),
           organizationId: p.organizationId,
           permissions: ['ALL'],
           dscSerial: p.dscSerial,
@@ -211,11 +214,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     } catch {
       const p = target.profile;
+      const dummyToken = 'demo-jwt-token-' + p.role;
+      localStorage.setItem(AUTH_TOKEN_KEY, dummyToken);
+      setToken(dummyToken);
       setUser({
         userId: p.userId,
         email: p.email,
         fullName: p.fullName,
-        role: p.role,
+        role: p.role.toUpperCase().replace(/^ROLE_/, ''),
         organizationId: p.organizationId,
         permissions: ['ALL'],
         dscSerial: p.dscSerial,
@@ -225,14 +231,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const hasPermission = (permission: string): boolean => {
     if (!user) return false;
-    if (user.role === 'SYSTEM_ADMIN' || user.permissions.includes('*')) return true;
+    const userRoleNorm = (user.role || '').toUpperCase().replace(/^ROLE_/, '');
+    if (userRoleNorm === 'SYSTEM_ADMIN' || user.permissions.includes('*') || user.permissions.includes('ALL')) return true;
     return user.permissions.includes(permission);
   };
 
   const hasRole = (roles: string | string[]): boolean => {
-    if (!user) return false;
-    const roleList = Array.isArray(roles) ? roles : [roles];
-    return roleList.includes(user.role);
+    if (!user || !user.role) return false;
+    const userRoleNorm = user.role.toUpperCase().replace(/^ROLE_/, '');
+    const roleList = (Array.isArray(roles) ? roles : [roles]).map(r => r.toUpperCase().replace(/^ROLE_/, ''));
+    return roleList.includes(userRoleNorm);
   };
 
   return (

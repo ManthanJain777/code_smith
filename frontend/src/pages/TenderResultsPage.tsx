@@ -128,7 +128,8 @@ export const TenderResultsPage: React.FC = () => {
     );
   }
 
-  const canPublish = user?.role === 'PROCUREMENT_OFFICER' || user?.role === 'SYSTEM_ADMIN';
+  const userRoleNorm = (user?.role || '').toUpperCase().replace(/^ROLE_/, '');
+  const canPublish = userRoleNorm === 'PROCUREMENT_OFFICER' || userRoleNorm === 'SYSTEM_ADMIN';
   const top1 = data.rankedBidders.find(b => b.rank === 1);
   const top2 = data.rankedBidders.find(b => b.rank === 2);
   const top3 = data.rankedBidders.find(b => b.rank === 3);

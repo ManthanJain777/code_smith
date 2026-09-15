@@ -108,6 +108,58 @@ class ProcurementCopilotEngine:
         return (sanitized, was_injected)
 
     @classmethod
+    def _call_gemini(cls, prompt: str, system_role: str = "Procurement Committee Copilot") -> Optional[tuple[str, str]]:
+        """Calls Google Gemini API, looping through models 3.8, 3.7, 3.6, and 2.5 until an available model succeeds."""
+        api_key = os.getenv("GEMINI_API_KEY") or os.getenv("VITE_GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            return None
+
+        candidate_models = [
+            "gemini-3.8-flash",
+            "gemini-3.7-flash",
+            "gemini-3.6-flash",
+            "gemini-2.5-flash",
+            "gemini-2.5-pro"
+        ]
+
+        for model_name in candidate_models:
+            try:
+                endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+                payload = json.dumps({
+                    "contents": [
+                        {
+                            "parts": [
+                                {"text": prompt}
+                            ]
+                        }
+                    ],
+                    "generationConfig": {
+                        "temperature": 0.2,
+                        "maxOutputTokens": 1024
+                    }
+                }).encode("utf-8")
+
+                req = urllib.request.Request(
+                    endpoint,
+                    data=payload,
+                    headers={"Content-Type": "application/json"}
+                )
+                with urllib.request.urlopen(req, timeout=12.0) as response:
+                    if response.status == 200:
+                        resp_data = json.loads(response.read().decode("utf-8"))
+                        candidates = resp_data.get("candidates", [])
+                        if candidates:
+                            parts = candidates[0].get("content", {}).get("parts", [])
+                            if parts:
+                                ans_text = parts[0].get("text", "").strip()
+                                if ans_text:
+                                    return (ans_text, f"Google {model_name}")
+            except Exception:
+                # Fall through to next available model in candidate loop
+                continue
+        return None
+
+    @classmethod
     def _call_local_ollama(cls, prompt: str) -> Optional[tuple[str, str]]:
         """Calls the specialized local Ollama model if running, dynamically detecting installed local models."""
         candidate_models = ["gem-copilot", "qwen2.5:3b", "llama3.2", "mistral"]
@@ -314,35 +366,50 @@ class ProcurementCopilotEngine:
             system_role = "Procurement Committee Copilot"
             disclaimer_msg = "Answer synthesized by Procurement Committee Copilot with GeM Grounding Guard."
 
-        # 3. If evidence was found, attempt Local AI inference (nemotron-3-super / qwen2.5:3b)
+        # 3. First attempt: Google Gemini with multi-model fallback loop (3.8 -> 3.7 -> 3.6 -> 2.5)
         evidence_text = "\n".join(answer_parts[:6])
-        if evidence_text:
-            prompt = (
-                f"You are the {system_role}. "
-                f"Answer strictly based on the verified evidence below. "
-                f"If evidence is insufficient, say so clearly. Do NOT hallucinate.\n\n"
-                f"Target Bidder ID: {request.bid_id}\n"
-                f"Target Tender ID: {request.tender_id}\n\n"
-                f"VERIFIED EVIDENCE EXCERPTS:\n{evidence_text}\n\n"
-                f"QUESTION:\n{request.question}\n\n"
-                f"AUDITABLE ANSWER:"
-            )
+        prompt = (
+            f"You are the {system_role} for the Government of India GeM public procurement platform (GFR 2017).\n"
+            f"Ground your answer strictly on the verified evaluation records and evidence below. Do not hallucinate.\n\n"
+            f"Target Bidder ID: {request.bid_id}\n"
+            f"Target Tender ID: {request.tender_id}\n\n"
+            f"VERIFIED EVIDENCE EXCERPTS:\n{evidence_text if evidence_text else 'General Public Procurement Policy (GFR 2017 Rules 144, 153, 173)'}\n\n"
+            f"QUESTION:\n{request.question}\n\n"
+            f"AUDITABLE ANSWER:"
+        )
 
-            local_res = cls._call_local_ollama(prompt)
-            if local_res:
-                ans_text, model_label = local_res
-                if ans_text and len(ans_text) > 20:
-                    unique_sources = list(dict.fromkeys(sources))[:request.max_results]
-                    resp = CopilotQueryResponse(
-                        answer=ans_text,
-                        source_results=unique_sources,
-                        confidence=0.98 if "Specialized" in model_label else 0.95,
-                        disclaimer=disclaimer_msg,
-                        model_used=f"{system_role} ({model_label})",
-                        citations=citations[:request.max_results]
-                    )
-                    cls._record_transcript(request, resp.answer, citations)
-                    return resp
+        gemini_res = cls._call_gemini(prompt, system_role)
+        if gemini_res:
+            ans_text, model_label = gemini_res
+            if ans_text and len(ans_text) > 10:
+                unique_sources = list(dict.fromkeys(sources))[:request.max_results]
+                resp = CopilotQueryResponse(
+                    answer=ans_text,
+                    source_results=unique_sources,
+                    confidence=0.98,
+                    disclaimer=disclaimer_msg,
+                    model_used=f"{system_role} ({model_label})",
+                    citations=citations[:request.max_results]
+                )
+                cls._record_transcript(request, resp.answer, citations)
+                return resp
+
+        # Second attempt: Local Ollama model if running
+        local_res = cls._call_local_ollama(prompt)
+        if local_res:
+            ans_text, model_label = local_res
+            if ans_text and len(ans_text) > 20:
+                unique_sources = list(dict.fromkeys(sources))[:request.max_results]
+                resp = CopilotQueryResponse(
+                    answer=ans_text,
+                    source_results=unique_sources,
+                    confidence=0.95,
+                    disclaimer=disclaimer_msg,
+                    model_used=f"{system_role} ({model_label})",
+                    citations=citations[:request.max_results]
+                )
+                cls._record_transcript(request, resp.answer, citations)
+                return resp
 
         # 4. Transparent Deterministic Fallback if Local LLM is unavailable or offline
         if not answer_parts:

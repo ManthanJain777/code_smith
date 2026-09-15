@@ -419,7 +419,8 @@ export const GuidedTourProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const step = TOUR_STEPS[currentStepIndex];
     if (!step) return;
 
-    const needsRoleSwitch = !user || user.role !== step.role;
+    const currentRoleNorm = (user?.role || '').toUpperCase().replace(/^ROLE_/, '');
+    const needsRoleSwitch = !user || currentRoleNorm !== step.role;
 
     if (needsRoleSwitch) {
       performHumanAuthFlow(step.role, step.email, step.route).then(() => {

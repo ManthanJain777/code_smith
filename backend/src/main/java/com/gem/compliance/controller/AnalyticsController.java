@@ -27,7 +27,7 @@ public class AnalyticsController {
     private final com.gem.compliance.repository.ComplianceResultRepository complianceResultRepository;
 
     @GetMapping("/overview")
-    @PreAuthorize("hasAnyAuthority('SYSTEM_ADMIN', 'PROCUREMENT_OFFICER', 'ROLE_SYSTEM_ADMIN', 'ROLE_PROCUREMENT_OFFICER')")
+    @PreAuthorize("hasAnyAuthority('SYSTEM_ADMIN', 'PROCUREMENT_OFFICER', 'ROLE_SYSTEM_ADMIN', 'ROLE_PROCUREMENT_OFFICER', 'COMPLIANCE_REVIEWER', 'ROLE_COMPLIANCE_REVIEWER', 'AUDITOR', 'ROLE_AUDITOR')")
     @Operation(summary = "Analytics Overview", description = "Returns aggregated data for the dashboard charts using real SQL queries")
     public ResponseEntity<Map<String, Object>> getOverview() {
         long tendersCount = tenderRepository.count();

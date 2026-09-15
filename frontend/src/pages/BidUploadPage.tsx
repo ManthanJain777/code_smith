@@ -25,7 +25,7 @@ interface FileUploadState {
 
 export const BidUploadPage: React.FC = () => {
   const navigate = useNavigate();
-  const { tenderId: paramTenderId } = useParams();
+  const { tenderId: paramTenderId, bidId: paramBidId } = useParams<{ tenderId?: string; bidId?: string }>();
   const [searchParams] = useSearchParams();
   const queryTenderId = searchParams.get('tenderId');
   const { user, token } = useAuth();
@@ -37,7 +37,7 @@ export const BidUploadPage: React.FC = () => {
   // Form states
   const [tenders, setTenders] = useState<any[]>([]);
   const [tenderId, setTenderId] = useState<string>(paramTenderId || queryTenderId || 'TND-PUMP-001');
-  const [bidId, setBidId] = useState<string>('BID-' + Math.random().toString(36).substring(2, 7).toUpperCase());
+  const [bidId, setBidId] = useState<string>(paramBidId || ('BID-' + Math.random().toString(36).substring(2, 7).toUpperCase()));
   const [vendorName, setVendorName] = useState<string>(user?.fullName || 'Apex Pumps & Motors Pvt Ltd');
   const [vendorGstin, setVendorGstin] = useState<string>('27AAACB5678G1Z5');
   const [vendorPan, setVendorPan] = useState<string>('AAACB5678G');

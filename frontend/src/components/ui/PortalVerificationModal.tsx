@@ -65,7 +65,7 @@ export const PortalVerificationModal: React.FC<PortalVerificationModalProps> = (
           const result = await apiService.verifySinglePortal(sellerId, portal.key);
           aggregatedReport[portal.key] = result;
           
-          if (result && result.matched) {
+          if (result && (result.matched || result.status === 'VERIFIED' || result.status === 'ACTIVE' || result.status === 'CLEAR')) {
             matchedCount++;
           }
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthProvider';
 import { usePermissions } from '../../context/PermissionsContext';
 import { ShieldAlert, Loader2 } from 'lucide-react';
@@ -36,8 +36,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  const userRoleNormalized = (user.role || '').toUpperCase().replace('ROLE_', '');
   const isBlockedFeature = feature && !hasAccess(feature);
-  const isBlockedRole = allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(user.role);
+  const isBlockedRole = allowedRoles && allowedRoles.length > 0 && !allowedRoles.some(r => r.toUpperCase().replace('ROLE_', '') === userRoleNormalized);
   const isBlockedPermission = requiredPermission && !hasPermission(requiredPermission);
 
   if (isBlockedFeature || isBlockedRole || isBlockedPermission) {
@@ -61,43 +62,30 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
         {/* Action Options */}
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs">
-          <a
-            href="/dashboard"
+          <Link
+            to="/dashboard"
             className="inline-flex items-center gap-1.5 px-4 py-2 font-bold text-white bg-[#1B365D] rounded-xl hover:bg-[#152843] transition shadow-sm"
           >
             <span>Return to Dashboard</span>
-          </a>
-          <button
-            type="button"
-            onClick={() => {
-              window.location.href = '/login';
-            }}
-            className="inline-flex items-center gap-1.5 px-4 py-2 font-bold text-slate-700 bg-white hover:bg-slate-50 rounded-xl transition border border-slate-300 shadow-sm cursor-pointer"
-          >
-            <span>Sign In with Authorized Account</span>
-          </button>
-        </div>
-
-        {/* Quick Navigation Links */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs">
-          <a
-            href="/dashboard"
-            className="inline-flex items-center gap-1.5 px-4 py-2 font-bold text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition shadow-sm"
-          >
-            <span>Return to Dashboard</span>
-          </a>
-          <a
-            href="/tenders"
+          </Link>
+          <Link
+            to="/tenders"
             className="inline-flex items-center gap-1.5 px-4 py-2 font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition border border-slate-200"
           >
             <span>Browse Active Tenders</span>
-          </a>
-          <a
-            href="/bids/upload"
+          </Link>
+          <Link
+            to="/bids/upload"
             className="inline-flex items-center gap-1.5 px-4 py-2 font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-xl transition border border-purple-200"
           >
             <span>Submit Bid Dossier</span>
-          </a>
+          </Link>
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-1.5 px-4 py-2 font-bold text-slate-700 bg-white hover:bg-slate-50 rounded-xl transition border border-slate-300 shadow-sm"
+          >
+            <span>Switch Authorized Account</span>
+          </Link>
         </div>
       </div>
     );

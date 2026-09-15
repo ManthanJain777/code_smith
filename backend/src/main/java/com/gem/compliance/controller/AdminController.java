@@ -152,7 +152,7 @@ public class AdminController {
     }
 
     @GetMapping("/calibration")
-    @PreAuthorize("hasAnyAuthority('SYSTEM_ADMIN', 'ROLE_SYSTEM_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYSTEM_ADMIN', 'ROLE_SYSTEM_ADMIN', 'PROCUREMENT_OFFICER', 'ROLE_PROCUREMENT_OFFICER', 'COMPLIANCE_REVIEWER', 'ROLE_COMPLIANCE_REVIEWER', 'AUDITOR', 'ROLE_AUDITOR')")
     @Operation(summary = "Aggregate Confidence Calibration Dashboard", description = "Aggregates override rates against AI confidence using real database joins")
     public ResponseEntity<List<Map<String, Object>>> calibration() {
         List<Review> reviews = reviewRepository.findAll();
