@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "bids")
@@ -73,21 +73,21 @@ public class Bid {
     private String blockchainTx;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private ZonedDateTime createdAt;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private ZonedDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
-        if (createdAt == null) createdAt = LocalDateTime.now();
-        if (updatedAt == null) updatedAt = LocalDateTime.now();
+        if (createdAt == null) createdAt = ZonedDateTime.now();
+        if (updatedAt == null) updatedAt = ZonedDateTime.now();
         if (id == null) id = java.util.UUID.randomUUID().toString();
         if (status == null) status = "SUBMITTED";
     }
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        updatedAt = ZonedDateTime.now();
     }
 }

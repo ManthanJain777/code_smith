@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Send, ShieldCheck, FileText, AlertCircle, User, Bot, Sparkles, Briefcase, Building2, Zap, Lock, ShieldAlert } from 'lucide-react';
 import { apiService, getApiBaseUrl } from '../services/api';
+import { AUTH_TOKEN_KEY } from '../constants/auth';
 import { useAuth } from '../context/AuthProvider';
 import { ComplianceResult, Tender, Bid } from '../types/compliance';
 
@@ -199,7 +200,9 @@ export const CopilotPage: React.FC = () => {
         const res = await apiService.queryCopilot({
           question,
           tender_id: selectedTenderId,
-          bid_id: queryBidId
+          bid_id: queryBidId,
+          role: role,
+          user_name: user?.fullName || user?.email || 'Procurement Officer'
         });
         if (res && res.answer) {
           answerText = res.answer;
@@ -225,7 +228,7 @@ export const CopilotPage: React.FC = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('gem_auth_token') || ''}`
+            'Authorization': `Bearer ${localStorage.getItem(AUTH_TOKEN_KEY) || ''}`
           },
           body: JSON.stringify({
             question,

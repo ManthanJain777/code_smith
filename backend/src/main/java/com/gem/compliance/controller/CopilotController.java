@@ -39,6 +39,13 @@ public class CopilotController {
     private final ObjectMapper objectMapper;
     private final com.gem.compliance.service.GeminiApiService geminiApiService;
 
+    @Value("${app.ai-service.url:http://localhost:8000}")
+    private String aiServiceUrl;
+
+    private final HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(3))
+            .build();
+
     @GetMapping("/config")
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get Copilot Configuration for Current Role", description = "Returns system prompt, persona title, quick questions, and query enablement.")
@@ -146,11 +153,15 @@ public class CopilotController {
 
         // 3. Dispatch to Google Gemini AI Engine with strictly scoped evidence
         var bidResults = complianceResultRepository.findByBidId(effectiveBidId);
-        var mappedResults = bidResults.stream().map(r -> Map.<String, Object>of(
-            "requirement_id", r.getRequirementId() != null ? r.getRequirementId() : "",
-            "status", r.getStatus() != null ? r.getStatus() : "VERIFIED",
-            "reasoning", r.getReasoning() != null ? r.getReasoning() : ""
-        )).toList();
+        var mappedResults = bidResults.stream().map(r -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("requirement_id", r.getRequirementId() != null ? r.getRequirementId() : "");
+            map.put("requirementId", r.getRequirementId() != null ? r.getRequirementId() : "");
+            map.put("status", r.getStatus() != null ? r.getStatus() : "VERIFIED");
+            map.put("reasoning", r.getReasoning() != null ? r.getReasoning() : "");
+            map.put("evidenceIds", r.getEvidenceIds() != null ? r.getEvidenceIds() : "Tender Technical Dossier");
+            return map;
+        }).toList();
 
         Map<String, Object> response = geminiApiService.queryCopilot(
             question,
@@ -165,7 +176,25 @@ public class CopilotController {
     }
 
     @GetMapping("/transcript")
-    public ResponseEntity<List<Map<String, Object>>> getTranscript() {
+    public ResponseEntity<?> getTranscript() {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(aiServiceUrl + "/api/v1/ai/copilot/transcript"))
+                    .timeout(Duration.ofSeconds(3))
+                    .GET()
+                    .build();
+            HttpResponse<String> resp = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() == 200) {
+                var jsonNode = objectMapper.readTree(resp.body());
+                if (jsonNode.has("transcripts") && jsonNode.get("transcripts").isArray() && !jsonNode.get("transcripts").isEmpty()) {
+                    List<?> liveTranscripts = objectMapper.convertValue(jsonNode.get("transcripts"), List.class);
+                    return ResponseEntity.ok(liveTranscripts);
+                }
+            }
+        } catch (Exception e) {
+            log.debug("Live AI copilot transcript fetch fallback to seed: {}", e.getMessage());
+        }
+
         return ResponseEntity.ok(List.of(
             Map.of(
                 "id", "TX-1001",

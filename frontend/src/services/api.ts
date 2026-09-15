@@ -187,7 +187,12 @@ export const apiService = {
   getComplianceResults: async (bidId: string): Promise<ComplianceResult[]> => {
     try {
       const res = await fetchWithAuth(`${API_BASE_URL}/compliance/bid/${bidId}`);
-      return await handleResponseJson<ComplianceResult[]>(res);
+      const data = await handleResponseJson<ComplianceResult[]>(res);
+      // Normalize verificationMethod to lowercase from real backend response
+      return (data || []).map((r: any) => ({
+        ...r,
+        verificationMethod: (r.verificationMethod || 'deterministic').toLowerCase(),
+      }));
     } catch {
       if (bidId === 'BID-GFL-001') {
         return [
@@ -347,7 +352,12 @@ export const apiService = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      return await handleResponseJson<ComplianceResult>(res);
+      const result = await handleResponseJson<ComplianceResult>(res);
+      // Normalize verificationMethod to lowercase from real backend response
+      return {
+        ...result,
+        verificationMethod: (result.verificationMethod || 'human_override').toLowerCase() as any,
+      };
     } catch {
       return {
         id: payload.complianceResultId,
@@ -459,7 +469,9 @@ export const apiService = {
         ...b,
         gstin: b.gstin || b.bidderGstin || 'N/A',
         pan: b.pan || b.bidderPan || 'N/A',
-        submittedAt: b.submittedAt || b.createdAt || new Date().toISOString()
+        // Backend Bid entity uses createdAt (ZonedDateTime), not submittedAt
+        submittedAt: b.submittedAt || b.createdAt || new Date().toISOString(),
+        blockchainTx: b.blockchainTx || b.blockchainTxHash || null,
       }));
     } catch {
       const isSolar = tenderId === 'TND-SOLAR-99088' || tenderId?.includes('SOLAR');
@@ -878,44 +890,12 @@ export const apiService = {
 
   getMyPermissions: async (): Promise<Record<string, string>> => {
     try {
+      // /api/v1/permissions/me — alias endpoint added to AuthController
       const res = await fetchWithAuth(`${API_BASE_URL}/permissions/me`);
       return await handleResponseJson<Record<string, string>>(res);
     } catch {
-      let role = 'PROCUREMENT_OFFICER';
-      try {
-        const storedUser = localStorage.getItem('gem_user');
-        if (storedUser) {
-          const parsed = JSON.parse(storedUser);
-          if (parsed && parsed.role) role = parsed.role;
-        } else {
-          const token = localStorage.getItem(AUTH_TOKEN_KEY);
-          if (token && token.startsWith('demo-jwt-token-')) {
-            role = token.replace('demo-jwt-token-', '');
-          }
-        }
-      } catch {}
-
-      const isVendor = role === 'BIDDER_VENDOR';
-
-      return {
-        admin_dashboard: 'BLOCKED',
-        tender_spec: 'FULL',
-        compliance_matrix: 'FULL',
-        portal_verification: 'FULL',
-        multi_bidder_compare: 'FULL',
-        copilot_query: 'FULL',
-        seller_queue: 'FULL',
-        human_review: 'FULL',
-        compliance_reports: 'FULL',
-        analytics_overview: 'FULL',
-        blockchain_audit: 'FULL',
-        bid_upload: isVendor ? 'FULL' : 'BLOCKED',
-        contradiction_resolve: 'BLOCKED',
-        'TENDER_CREATE': 'ALLOWED',
-        'BID_EVALUATION': 'ALLOWED',
-        'HUMAN_OVERRIDE': 'ALLOWED',
-        'AUDIT_INSPECT': 'ALLOWED'
-      };
+      // Graceful fallback: return empty permissions if backend unavailable
+      return {};
     }
   },
 
@@ -933,7 +913,14 @@ export const apiService = {
     }
   },
 
-  queryCopilot: async (payload: { question: string; tender_id?: string; bid_id?: string }): Promise<any> => {
+  queryCopilot: async (payload: {
+    question: string;
+    tender_id?: string;
+    bid_id?: string;
+    role?: string;
+    user_name?: string;
+    compliance_results?: any[];
+  }): Promise<any> => {
     try {
       const res = await fetchWithAuth(`${API_BASE_URL}/copilot/query`, {
         method: 'POST',

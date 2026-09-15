@@ -5,7 +5,15 @@ export type ComplianceStatus =
   | 'UNVERIFIED'
   | 'NOT_APPLICABLE';
 
-export type VerificationMethod = 'deterministic' | 'ai_language' | 'hybrid' | 'human_override';
+export type VerificationMethod =
+  | 'deterministic'
+  | 'ai_language'
+  | 'hybrid'
+  | 'human_override'
+  | 'DETERMINISTIC'
+  | 'AI_LANGUAGE'
+  | 'HYBRID'
+  | string;
 
 export interface Requirement {
   id: string;

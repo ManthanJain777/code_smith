@@ -364,7 +364,8 @@ public class ComplianceService {
                 .category(category)
                 .bidId(cr.getBidId())
                 .status(cr.getStatus())
-                .verificationMethod(cr.getVerificationMethod())
+                // Normalize to lowercase to match frontend VerificationMethod type
+                .verificationMethod(cr.getVerificationMethod() != null ? cr.getVerificationMethod().toLowerCase() : "deterministic")
                 .reasoning(cr.getReasoning())
                 .confidence(cr.getConfidence())
                 .evidenceIds(cr.getEvidenceIds())
