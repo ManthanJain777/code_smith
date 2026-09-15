@@ -121,6 +121,7 @@ export const DashboardPage: React.FC = () => {
 
   // Vendor specific states
   const [mySellerProfile, setMySellerProfile] = useState<any>(null);
+  const [myBids, setMyBids] = useState<Bid[]>([]);
   const [bidderTenderSearch, setBidderTenderSearch] = useState('');
 
   // Live Service Health State
@@ -276,6 +277,14 @@ export const DashboardPage: React.FC = () => {
         } catch (e) {
           console.log('Failed to fetch seller profile', e);
         }
+        // Load ALL bids submitted by this bidder across every tender so newly
+        // filed bids appear immediately (backend scopes by authenticated email).
+        try {
+          const ownBids = await apiService.getMyBids().catch(() => []);
+          setMyBids(ownBids);
+        } catch (e) {
+          console.log('Failed to fetch my bids', e);
+        }
       }
 
       if (tList.length > 0) {
@@ -418,8 +427,8 @@ export const DashboardPage: React.FC = () => {
           />
           <PrimaryKpiCard
             title="My Submitted Bids"
-            value="2 Active"
-            subtitle="1 Qualified • 1 Awarded"
+            value={myBids.length === 0 ? 'None Yet' : `${myBids.length} Active`}
+            subtitle={myBids.length === 0 ? 'No filings yet' : `Across ${new Set(myBids.map(b => b.tenderId)).size} tender(s)`}
             accent="slate"
             icon={<FileCheck className="w-5 h-5 text-purple-600" />}
             badgeText="VERIFIED"
@@ -454,85 +463,82 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           <div className="divide-y divide-slate-100">
-            {/* Bid 1: Water Pumps (In Evaluation) */}
-            <div className="p-4 hover:bg-slate-50 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-1 max-w-xl">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-mono text-xs font-bold text-purple-800 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
-                    BID-GEM-90125
-                  </span>
-                  <span className="font-mono text-xs text-slate-500">Ref: GEM/2026/B/90125</span>
-                  <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">
-                    QUALIFIED (86% Match)
-                  </span>
-                </div>
-                <h3 className="text-sm font-bold text-slate-900">
-                  Supply & Installation of High-Efficiency Industrial Water Pumps
-                </h3>
-                <div className="flex items-center gap-4 text-xs text-slate-500 flex-wrap">
-                  <span>Quoted: <strong className="text-slate-900 font-mono">₹4,85,16,250</strong> (18% GST)</span>
-                  <span>•</span>
-                  <span>MII: <strong>68% Class-I</strong></span>
-                  <span>•</span>
-                  <span>EMD: <strong>MSME Exempt</strong></span>
-                </div>
+            {myBids.length === 0 && (
+              <div className="p-8 text-center">
+                <FileCheck className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                <p className="text-xs font-semibold text-slate-700">No bids submitted yet</p>
+                <p className="text-[11px] text-slate-500 mt-1">File your first bid dossier to track it here in real time.</p>
+                <Link to="/bids/upload" className="inline-flex items-center gap-1 mt-3 px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-bold transition">
+                  <UploadCloud className="w-3.5 h-3.5" /> Submit Bid Dossier
+                </Link>
               </div>
+            )}
+            {myBids.map((bid) => {
+              const tender = tenders.find(t => t.id === bid.tenderId);
+              const status = (bid.status || 'SUBMITTED').toUpperCase();
+              const badgeClass = status.includes('AWARD') || status === 'ACCEPTED'
+                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                : status.includes('REJECT') || status.includes('DISQUALIF')
+                  ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                  : status.includes('REVIEW') || status.includes('EVALUATION')
+                    ? 'bg-amber-100 text-amber-900 border border-amber-200'
+                    : 'bg-blue-100 text-blue-800 border border-blue-200';
+              const price = (bid as any).quotedPrice ?? bid.totalAmount;
+              return (
+                <div key={bid.id} className="p-4 hover:bg-slate-50 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1 max-w-xl">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-mono text-xs font-bold text-purple-800 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                        {bid.id}
+                      </span>
+                      <span className="font-mono text-xs text-slate-500">Ref: {tender?.tenderNumber || bid.tenderId}</span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${badgeClass}`}>
+                        {status.replace(/_/g, ' ')}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-900">
+                      {tender?.title || 'Tender bid dossier'}
+                    </h3>
+                    <div className="flex items-center gap-4 text-xs text-slate-500 flex-wrap">
+                      {price !== undefined && price !== null && (
+                        <>
+                          <span>Quoted: <strong className="text-slate-900 font-mono">₹{Number(price).toLocaleString('en-IN')}</strong></span>
+                          <span>•</span>
+                        </>
+                      )}
+                      <span>Status: <strong>{status.replace(/_/g, ' ')}</strong></span>
+                      {(bid.blockchainTx || bid.blockchainTxHash) && (
+                        <>
+                          <span>•</span>
+                          <span>EVM Anchored</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
 
-              <div className="flex items-center gap-2 self-start md:self-auto">
-                <Link
-                  to="/compliance?tenderId=TND-PUMP-001"
-                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-xs font-bold transition flex items-center gap-1"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Matrix
-                </Link>
-                <Link
-                  to="/reviews"
-                  className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg text-xs font-bold transition flex items-center gap-1"
-                >
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-600" /> Clarifications
-                </Link>
-                <Link
-                  to="/audit"
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold transition flex items-center gap-1"
-                >
-                  <Link2 className="w-3.5 h-3.5" /> Ledger Proof
-                </Link>
-              </div>
-            </div>
-
-            {/* Bid 2: High-Efficiency Water Pumps (Awarded) */}
-            <div className="p-4 hover:bg-slate-50 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-1 max-w-xl">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-mono text-xs font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                    BID-GEM-90124
-                  </span>
-                  <span className="font-mono text-xs text-slate-500">Ref: GEM/2026/B/90124</span>
-                  <span className="text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded flex items-center gap-1">
-                    🏆 CONTRACT AWARDED (L1 Winner)
-                  </span>
+                  <div className="flex items-center gap-2 self-start md:self-auto">
+                    <Link
+                      to={`/compliance?tenderId=${bid.tenderId}&bidId=${bid.id}`}
+                      className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-xs font-bold transition flex items-center gap-1"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Matrix
+                    </Link>
+                    <Link
+                      to="/reviews"
+                      className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg text-xs font-bold transition flex items-center gap-1"
+                    >
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-600" /> Clarifications
+                    </Link>
+                    <Link
+                      to="/audit"
+                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold transition flex items-center gap-1"
+                    >
+                      <Link2 className="w-3.5 h-3.5" /> Ledger Proof
+                    </Link>
+                  </div>
                 </div>
-                <h3 className="text-sm font-bold text-slate-900">
-                  Supply & Installation of High-Efficiency Water Pumps
-                </h3>
-                <div className="flex items-center gap-4 text-xs text-slate-500 flex-wrap">
-                  <span>Award Value: <strong className="text-emerald-700 font-mono font-bold">₹4,78,00,000</strong></span>
-                  <span>•</span>
-                  <span>Authority: <strong>Central Water Commission</strong></span>
-                  <span>•</span>
-                  <span>Status: <strong>Order Placed / EVM Anchored</strong></span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 self-start md:self-auto">
-                <Link
-                  to="/tenders/GEM-2026-B-90124/results"
-                  className="px-3.5 py-1.5 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-xs"
-                >
-                  <Award className="w-3.5 h-3.5" /> View Award Standings
-                </Link>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
 

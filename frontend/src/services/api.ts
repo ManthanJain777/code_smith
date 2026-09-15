@@ -501,6 +501,21 @@ export const apiService = {
     }
   },
 
+  getMyBids: async (): Promise<Bid[]> => {
+    try {
+      const res = await fetchWithAuth(`${API_BASE_URL}/bids/my-bids`);
+      const data = await handleResponseJson<any[]>(res);
+      return (data || []).map((b: any) => ({
+        ...b,
+        gstin: b.gstin || b.bidderGstin || 'N/A',
+        pan: b.pan || b.bidderPan || 'N/A',
+        submittedAt: b.submittedAt || b.createdAt || new Date().toISOString()
+      }));
+    } catch {
+      return [];
+    }
+  },
+
   getBlockchainProof: async (txHash: string): Promise<any> => {
     try {
       const res = await fetchWithAuth(`${API_BASE_URL}/audit/proof/${txHash}`);
