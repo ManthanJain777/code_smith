@@ -27,6 +27,7 @@ public class AuthController {
 
     private final JwtTokenProvider tokenProvider;
     private final UserService userService;
+    private final com.gem.compliance.service.TokenDenylistService tokenDenylistService;
 
     @Data
     @NoArgsConstructor
@@ -108,10 +109,15 @@ public class AuthController {
     }
 
     @PostMapping("/auth/logout")
-    @Operation(summary = "Logout user", description = "Acknowledges client-side stateless token invalidation.")
-    public ResponseEntity<?> logout() {
+    @Operation(summary = "Logout user", description = "Revokes server-side JWT and clears security context.")
+    public ResponseEntity<?> logout(jakarta.servlet.http.HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            tokenDenylistService.denylistToken(token);
+        }
         SecurityContextHolder.clearContext();
-        return ResponseEntity.ok(Map.of("message", "Successfully logged out. Client token invalidated."));
+        return ResponseEntity.ok(Map.of("message", "Successfully logged out. JWT token revoked and invalidated on server."));
     }
 
     @PostMapping("/auth/refresh")

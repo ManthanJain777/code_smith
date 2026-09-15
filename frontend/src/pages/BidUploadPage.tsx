@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthProvider';
 import { AUTH_TOKEN_KEY } from '../constants/auth';
 import { BlockchainProofBadge } from '../components/ui/BlockchainProofBadge';
 import { GemStarLogo } from '../components/ui/GemStarLogo';
-import { getApiBaseUrl } from '../services/api';
+import { getApiBaseUrl, getAiServiceUrl } from '../services/api';
 
 interface FileUploadState {
   file: File;
@@ -24,29 +24,30 @@ interface FileUploadState {
 }
 
 export const BidUploadPage: React.FC = () => {
-  const { bidId: paramBidId } = useParams<{ bidId: string }>();
+  const navigate = useNavigate();
+  const { tenderId: paramTenderId } = useParams();
   const [searchParams] = useSearchParams();
   const queryTenderId = searchParams.get('tenderId');
-  const navigate = useNavigate();
-  const { token, user } = useAuth();
-  const isAdmin = user?.role === 'SYSTEM_ADMIN' || user?.role === 'ROLE_SYSTEM_ADMIN';
+  const { user, token } = useAuth();
+  const isAdmin = user?.role === 'SYSTEM_ADMIN';
 
-  const [activeStep, setActiveStep] = useState<1 | 2 | 3 | 4>(1);
+  // Step state (1: Metadata & Entity, 2: Commercial BoQ, 3: Document Dossier, 4: Sealed Receipt)
+  const [activeStep, setActiveStep] = useState<number>(1);
 
-  // Step 1: Statutory & Vendor Profile
-  const [bidId, setBidId] = useState(paramBidId || `BID-GEM-${Math.floor(10000 + Math.random() * 90000)}`);
-  const [tenderId, setTenderId] = useState(queryTenderId || 'TND-PUMP-001');
-  const [tenders, setTenders] = useState<{ id: string; title: string; tenderNumber: string }[]>([]);
-  const [vendorName, setVendorName] = useState(user?.fullName || 'Apex Pumps & Motors Pvt Ltd');
-  const [vendorGstin, setVendorGstin] = useState('27AAACB5678G1Z5');
-  const [vendorPan, setVendorPan] = useState('AAACB5678G');
-  const [udyamNumber, setUdyamNumber] = useState('UDYAM-MH-03-0019284');
-  const [emdExemption, setEmdExemption] = useState<'MSME_EXEMPT' | 'STARTUP_EXEMPT' | 'BANK_GUARANTEE'>('MSME_EXEMPT');
-  const [localContentPercent, setLocalContentPercent] = useState<number>(68);
+  // Form states
+  const [tenders, setTenders] = useState<any[]>([]);
+  const [tenderId, setTenderId] = useState<string>(paramTenderId || queryTenderId || 'TND-PUMP-001');
+  const [bidId, setBidId] = useState<string>('BID-' + Math.random().toString(36).substring(2, 7).toUpperCase());
+  const [vendorName, setVendorName] = useState<string>(user?.fullName || 'Apex Pumps & Motors Pvt Ltd');
+  const [vendorGstin, setVendorGstin] = useState<string>('27AAACB5678G1Z5');
+  const [vendorPan, setVendorPan] = useState<string>('AAACB5678G');
+  const [localContentPercent, setLocalContentPercent] = useState<number>(72);
+  const [emdExemption, setEmdExemption] = useState<string>('UDYAM_MSME_EXEMPTED');
+  const [udyamNumber, setUdyamNumber] = useState<string>('UDYAM-MH-03-0029182');
 
-  // Step 2: Commercial BoQ Quote
-  const [unitQuantity, setUnitQuantity] = useState<number>(24);
-  const [unitBasePrice, setUnitBasePrice] = useState<number>(1712500); // 17.125L base
+  // Step 2: Commercial Quotation (BoQ)
+  const [unitQuantity, setUnitQuantity] = useState<number>(20);
+  const [unitBasePrice, setUnitBasePrice] = useState<number>(245000);
   const [gstRate, setGstRate] = useState<number>(18);
   const subtotal = unitQuantity * unitBasePrice;
   const gstAmount = Math.round((subtotal * gstRate) / 100);
@@ -65,6 +66,8 @@ export const BidUploadPage: React.FC = () => {
     submittedAt: string;
     dscSerial: string;
     blockchainTx: string;
+    blockchainStatus: string;
+    isSimulatedDsc: boolean;
   } | null>(null);
 
   useEffect(() => {
@@ -191,7 +194,7 @@ export const BidUploadPage: React.FC = () => {
     setOverallProgress(10);
 
     const apiBaseUrl = getApiBaseUrl();
-    const aiServiceUrl = apiBaseUrl;
+    const aiServiceUrl = getAiServiceUrl();
     const authToken = token || localStorage.getItem(AUTH_TOKEN_KEY);
 
     let activeBidId = bidId;
@@ -255,6 +258,7 @@ export const BidUploadPage: React.FC = () => {
 
         const res = await fetch(`${aiServiceUrl}/ai/documents/upload-async`, {
           method: 'POST',
+          headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {},
           body: formData,
         });
 
@@ -268,7 +272,9 @@ export const BidUploadPage: React.FC = () => {
           while (attempts < 10) {
             attempts++;
             await new Promise(r => setTimeout(r, 400));
-            const pollRes = await fetch(`${aiServiceUrl}/ai/jobs/${fileItem.jobId}`);
+            const pollRes = await fetch(`${aiServiceUrl}/ai/jobs/${fileItem.jobId}`, {
+              headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
+            });
             if (pollRes.ok) {
               const jobData = await pollRes.json();
               fileItem.progress = jobData.progress_percent || 80;
@@ -301,12 +307,15 @@ export const BidUploadPage: React.FC = () => {
 
     // Set Acknowledgment Receipt
     const now = new Date();
+    const isConfirmed = Boolean(realTxHash && realTxHash.startsWith('0x'));
     const mockTx = '0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('');
     setAckReceipt({
       ackNumber: `GEM/ACK/2026/${activeBidId}`,
       submittedAt: now.toLocaleDateString('en-IN') + ' ' + now.toLocaleTimeString('en-IN'),
-      dscSerial: user?.dscSerial || '88B1-44A2-990C-1144',
+      dscSerial: user?.dscSerial || 'DSC-IND-2026-APEX-8891',
       blockchainTx: realTxHash || mockTx,
+      blockchainStatus: isConfirmed ? 'ON_CHAIN_CONFIRMED' : 'OFFLINE_DEMO_HASH',
+      isSimulatedDsc: true,
     });
 
     setIsProcessing(false);
@@ -899,17 +908,19 @@ export const BidUploadPage: React.FC = () => {
               <div className="flex items-center justify-between text-slate-400 border-b border-slate-800 pb-2">
                 <span className="flex items-center gap-1.5 text-amber-400 font-bold">
                   <ShieldCheck className="w-4 h-4" />
-                  Class-3 Digital Signature & EVM Blockchain Anchor
+                  Simulated Class-3 DSC & EVM Hardhat Anchor
                 </span>
-                <span className="text-emerald-400 font-bold">VERIFIED ON CHAIN</span>
+                <span className={ackReceipt.blockchainStatus === 'ON_CHAIN_CONFIRMED' ? "text-emerald-400 font-bold" : "text-amber-400 font-bold"}>
+                  {ackReceipt.blockchainStatus === 'ON_CHAIN_CONFIRMED' ? 'ON_CHAIN_CONFIRMED' : 'OFFLINE_DEMO_HASH'}
+                </span>
               </div>
               <div className="flex flex-col sm:flex-row justify-between gap-2 pt-1">
                 <div>
-                  <span className="text-slate-500 block text-[10px]">DSC SERIAL:</span>
-                  <span className="text-slate-300">{ackReceipt.dscSerial}</span>
+                  <span className="text-slate-500 block text-[10px]">SIMULATED DSC TOKEN:</span>
+                  <span className="text-slate-300">{ackReceipt.dscSerial} (Software Simulation)</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block text-[10px]">EVM HARDHAT TX HASH (CHAIN ID 31337):</span>
+                  <span className="text-slate-500 block text-[10px]">EVM AUDIT PROOF DIGEST:</span>
                   <span className="text-amber-400 truncate max-w-xs block">{ackReceipt.blockchainTx}</span>
                 </div>
               </div>

@@ -42,8 +42,8 @@ public class BidController {
     @PostMapping("/upload")
     @Transactional
     @PreAuthorize("hasAnyAuthority('SYSTEM_ADMIN', 'BIDDER_VENDOR', 'BIDDER', 'ROLE_SYSTEM_ADMIN', 'ROLE_BIDDER_VENDOR', 'ROLE_BIDDER')")
-    public ResponseEntity<Map<String, Object>> createBid(@RequestBody Map<String, String> payload) {
-        String tenderId = payload.get("tenderId");
+    public ResponseEntity<Map<String, Object>> createBid(@RequestBody Map<String, Object> payload) {
+        String tenderId = payload.get("tenderId") != null ? payload.get("tenderId").toString() : null;
         if (tenderId == null || tenderId.isBlank()) {
             throw new ValidationException("Tender ID is required to submit a bid.");
         }
@@ -59,16 +59,16 @@ public class BidController {
         }
 
         var currentUser = userService.getCurrentUser();
-        String bidderName = payload.get("bidderName");
-        if (bidderName == null || bidderName.isBlank()) {
-            bidderName = currentUser.map(com.gem.compliance.domain.User::getFullName).orElse("Registered Bidder");
+        if (currentUser.isEmpty()) {
+            throw new AccessDeniedException("401 Unauthorized: Bidding requires an authenticated account.");
         }
 
-        String email = payload.getOrDefault("email", "");
-        if (email.isBlank() && currentUser.isPresent()) {
-            email = currentUser.get().getEmail();
-        }
-        if (email.isBlank()) {
+        var user = currentUser.get();
+        // Server-owned bidder identity strictly derived from authenticated account (Fix Issue 11)
+        String bidderName = user.getFullName() != null && !user.getFullName().isBlank() ? user.getFullName() : "Verified Supplier";
+        String email = user.getEmail();
+
+        if (email == null || email.isBlank()) {
             throw new ValidationException("Bidder email is required to associate and isolate bid records.");
         }
 
@@ -80,14 +80,37 @@ public class BidController {
             throw new ValidationException("Duplicate bid detected: A bid from " + email + " for tender " + tenderId + " has already been submitted.");
         }
 
-        String gstin = payload.get("gstin");
-        String pan = payload.get("pan");
+        // Bind GSTIN / PAN: prioritize verified organization profile on authenticated user
+        String gstin = (user.getOrganizationId() != null && user.getOrganizationId().length() >= 15)
+            ? user.getOrganizationId()
+            : (payload.get("gstin") != null ? payload.get("gstin").toString().trim().toUpperCase() : "27AAACB5678G1Z5");
+
+        String pan = gstin.length() >= 12
+            ? gstin.substring(2, 12)
+            : (payload.get("pan") != null ? payload.get("pan").toString().trim().toUpperCase() : "AAACB5678G");
+
+        // Parse statutory & commercial fields (Fix Issue F-10)
+        BigDecimal quotedPrice = null;
+        if (payload.get("quotedPrice") != null) {
+            try {
+                quotedPrice = new BigDecimal(payload.get("quotedPrice").toString().replaceAll("[^0-9.]", ""));
+            } catch (Exception ignored) {}
+        }
+
+        Integer localContentPercent = null;
+        if (payload.get("localContentPercent") != null) {
+            try {
+                localContentPercent = Integer.valueOf(payload.get("localContentPercent").toString().replaceAll("[^0-9]", ""));
+            } catch (Exception ignored) {}
+        }
+
+        String emdStatus = payload.get("emdStatus") != null ? payload.get("emdStatus").toString() : "EXEMPT_MSME";
 
         // 3. Run debarment check BEFORE bid creation
         DebarmentService.DebarmentResult debarment = debarmentService.check(bidderName, gstin, pan, null);
         log.info("Debarment check evaluated for bidder '{}': status={}", bidderName, debarment.status());
 
-        String id = payload.get("id");
+        String id = payload.get("id") != null ? payload.get("id").toString() : null;
         if (id == null || id.isBlank()) {
             id = "BID-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         }
@@ -99,8 +122,11 @@ public class BidController {
             .bidderGstin(gstin)
             .bidderPan(pan)
             .bidderEmail(email)
-            .bidderPhone(payload.getOrDefault("phone", ""))
-            .bidderAddress(payload.getOrDefault("address", ""))
+            .bidderPhone(payload.get("phone") != null ? payload.get("phone").toString() : "")
+            .bidderAddress(payload.get("address") != null ? payload.get("address").toString() : "")
+            .quotedPrice(quotedPrice)
+            .localContentPercent(localContentPercent)
+            .emdStatus(emdStatus)
             .status(debarment.status() == DebarmentService.DebarmentStatus.FLAGGED ? "UNDER_REVIEW" : "SUBMITTED")
             .debarmentStatus(debarment.status().name())
             .riskScore(BigDecimal.valueOf(debarment.status() == DebarmentService.DebarmentStatus.FLAGGED ? 85.0 : 10.0))
@@ -109,7 +135,7 @@ public class BidController {
 
         bidRepository.save(bid);
 
-        // 4. Anchor bid creation on blockchain synchronously (graceful fallback if node is offline)
+        // 4. Anchor bid creation on blockchain synchronously
         String txHash = null;
         try {
             var receipt = blockchainService.anchorAuditEventSync(bid.getId(), "BID_SUBMITTED", bidderName);
@@ -127,6 +153,9 @@ public class BidController {
         resp.put("status", bid.getStatus());
         resp.put("debarmentStatus", bid.getDebarmentStatus());
         resp.put("riskScore", bid.getRiskScore());
+        resp.put("quotedPrice", bid.getQuotedPrice());
+        resp.put("localContentPercent", bid.getLocalContentPercent());
+        resp.put("emdStatus", bid.getEmdStatus());
         resp.put("blockchainTx", txHash);
         return ResponseEntity.ok(resp);
     }

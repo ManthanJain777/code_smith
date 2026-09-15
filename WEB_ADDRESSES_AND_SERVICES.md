@@ -41,13 +41,13 @@ This document records the exact web addresses, ports, environments, and deployme
 ---
 
 ### 4. Blockchain Ledger Service
-*Ethereum Virtual Machine (EVM) Consortium Immutable Audit Anchor*
+*Ethereum Virtual Machine (EVM) Prototype Audit Anchor (Hardhat Local Node)*
 
 | Environment | Web Address | Status | Notes |
 |---|---|---|---|
-| **Local Hardhat EVM** | `http://localhost:8545` | **ONLINE** | Chain ID: `31337` |
+| **Local Hardhat EVM** | `http://localhost:8545` | **ONLINE** | Chain ID: `31337` (EVM Prototype) |
 | **Smart Contract** | `ComplianceAuditLedger.sol` | **DEPLOYED** | Address: `0x5FbDB2315678afecb367f032d93F642f64180aa3` |
-| **Testnet Target** | Polygon Amoy / Sepolia | **CONFIGURED** | Remote RPC configured in `hardhat.config.js` |
+| **Testnet Target** | Polygon Amoy / Sepolia | **CONFIGURED** | Remote RPC configured in `hardhat.config.js` (Production Roadmap) |
 
 ---
 

@@ -18,6 +18,9 @@ import org.springframework.web.multipart.MultipartFile;
 public class DocumentController {
 
     private final DocumentProcessingService documentProcessingService;
+    private final com.gem.compliance.repository.BidRepository bidRepository;
+    private final com.gem.compliance.repository.TenderRepository tenderRepository;
+    private final com.gem.compliance.service.UserService userService;
     private static final java.util.Set<String> ALLOWED_EXTENSIONS = java.util.Set.of(".pdf", ".doc", ".docx", ".xls", ".xlsx");
     private static final long MAX_FILE_SIZE = 50 * 1024 * 1024L; // 50MB
 
@@ -29,6 +32,35 @@ public class DocumentController {
             @RequestParam(value = "bidId", required = false) String bidId,
             @RequestParam(value = "tenderId", required = false) String tenderId
     ) {
+        // Enforce strict bidder and tender ownership validation (Fix Issue 10 - IDOR)
+        var currentUser = userService.getCurrentUser();
+        if (currentUser.isEmpty()) {
+            throw new org.springframework.security.access.AccessDeniedException("401 Unauthorized: Document upload requires an authenticated session.");
+        }
+
+        String role = currentUser.get().getRole() != null ? currentUser.get().getRole().toUpperCase() : "";
+        String userEmail = currentUser.get().getEmail();
+
+        if (bidId != null && !bidId.isBlank()) {
+            var bidOpt = bidRepository.findById(bidId);
+            if (bidOpt.isEmpty()) {
+                throw new com.gem.compliance.exception.ResourceNotFoundException("Bid not found with ID: " + bidId);
+            }
+            if (role.contains("BIDDER")) {
+                String ownerEmail = bidOpt.get().getBidderEmail();
+                if (ownerEmail != null && !ownerEmail.equalsIgnoreCase(userEmail)) {
+                    throw new org.springframework.security.access.AccessDeniedException(
+                        "403 Forbidden: Mismatched ownership. Bid " + bidId + " does not belong to authenticated account " + userEmail
+                    );
+                }
+            }
+        } else if (tenderId != null && !tenderId.isBlank()) {
+            if (role.contains("BIDDER")) {
+                throw new org.springframework.security.access.AccessDeniedException(
+                    "403 Forbidden: Bidders cannot upload tender-level specifications. Please associate your upload with a valid bidId."
+                );
+            }
+        }
         if (file.isEmpty()) {
             throw new com.gem.compliance.exception.ValidationException("Uploaded file cannot be empty.");
         }

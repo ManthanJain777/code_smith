@@ -19,5 +19,13 @@ public class BidComplianceScoreDTO {
     private int unverifiedCount;
     private int notApplicableCount;
     private int pendingHumanReviewCount;
+    private Double overallScore;
+    private Double riskScore;
+    private Double technicalScore;
+    private Double financialScore;
+    private Double statutoryScore;
+    private String status;
+    private String recommendation;
+    private String disqualificationReason;
     private ZonedDateTime computedAt;
 }

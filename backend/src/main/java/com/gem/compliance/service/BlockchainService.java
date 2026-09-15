@@ -125,7 +125,11 @@ public class BlockchainService {
         return 31337L;
     }
 
-    public record AnchorReceipt(String txHash, Long blockNumber) {}
+    public record AnchorReceipt(String txHash, Long blockNumber, String status) {
+        public AnchorReceipt(String txHash, Long blockNumber) {
+            this(txHash, blockNumber, "ON_CHAIN_CONFIRMED");
+        }
+    }
 
     /**
      * Submits a real on-chain transaction to the ComplianceAuditLedger smart contract on Hardhat node.
@@ -178,7 +182,7 @@ public class BlockchainService {
                     ));
 
                     log.info("Real on-chain transaction anchored successfully: auditId={} txHash={} block=#{}", auditId, realTxHash, blockNumber);
-                    return new AnchorReceipt(realTxHash, blockNumber);
+                    return new AnchorReceipt(realTxHash, blockNumber, "ON_CHAIN_CONFIRMED");
                 } else {
                     log.warn("Hardhat eth_sendTransaction response failed: {}", res.body());
                 }
@@ -197,8 +201,8 @@ public class BlockchainService {
             Instant.now().getEpochSecond(), fallbackTxHash, blockNumber
         ));
 
-        log.info("Blockchain anchor record created: auditId={} txHash={} block={}", auditId, fallbackTxHash, blockNumber);
-        return new AnchorReceipt(fallbackTxHash, blockNumber);
+        log.info("Blockchain anchor record created (offline mode): auditId={} txHash={} block={}", auditId, fallbackTxHash, blockNumber);
+        return new AnchorReceipt(fallbackTxHash, blockNumber, "OFFLINE");
     }
 
     private Long fetchReceiptBlockNumber(String txHash) {
@@ -301,7 +305,8 @@ public class BlockchainService {
 
                 return new BlockchainProof(
                     true, txHash, minedBlock, ts, evType, act,
-                    "Live Hardhat Node Verified (EVM Chain ID: 31337 / Block #" + minedBlock + ")"
+                    "Live Hardhat Node Verified (EVM Chain ID: 31337 / Block #" + minedBlock + ")",
+                    "ON_CHAIN_CONFIRMED"
                 );
             }
         } catch (Exception e) {
@@ -310,26 +315,18 @@ public class BlockchainService {
 
         // 2. Check cached/seeded entries
         for (MockChainEntry entry : mockLedger.values()) {
-            if (entry.txHash.equalsIgnoreCase(txHash) || entry.eventHash.equalsIgnoreCase(txHash) || txHash.contains(entry.txHash.substring(0, 16))) {
+            if (entry.txHash.equalsIgnoreCase(txHash) || entry.eventHash.equalsIgnoreCase(txHash)) {
                 return new BlockchainProof(
                     true, entry.txHash, entry.blockNumber,
                     entry.timestamp, entry.eventType, entry.actorId,
-                    networkDesc
+                    networkDesc,
+                    "MOCK_OFFLINE"
                 );
             }
         }
 
-        // 3. Fallback for valid hex tx hashes
-        if (txHash.startsWith("0x") && txHash.length() >= 32) {
-            long blk = liveBlock != null ? liveBlock : 1000042L;
-            return new BlockchainProof(
-                true, txHash, blk,
-                Instant.now().getEpochSecond(), "COMPLIANCE_AUDIT_ANCHOR", "USR-OFFICER-01",
-                networkDesc
-            );
-        }
-
-        return new BlockchainProof(false, txHash, null, null, null, null, "Transaction not found in ledger");
+        // Fix Issue F-12: Reject unknown or unproven transaction hashes
+        return new BlockchainProof(false, txHash, null, null, null, null, "Transaction not found in live EVM or local ledger", "UNVERIFIED");
     }
 
     /**
@@ -365,6 +362,11 @@ public class BlockchainService {
         Long timestamp,
         String eventType,
         String actorId,
-        String network
-    ) {}
+        String network,
+        String status
+    ) {
+        public BlockchainProof(boolean verified, String txHash, Long blockNumber, Long timestamp, String eventType, String actorId, String network) {
+            this(verified, txHash, blockNumber, timestamp, eventType, actorId, network, verified ? "ON_CHAIN_CONFIRMED" : "UNVERIFIED");
+        }
+    }
 }

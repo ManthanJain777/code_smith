@@ -136,15 +136,47 @@ class ComplianceReasoningEngine:
                     citations=citations
                 )
 
-        # Rule 4: Qualitative Text Requirement Verification (AI Language Reasoning)
-        return ComplianceEvaluateResponse(
-            result_id=result_id,
-            requirement_id=requirement.requirement_id,
-            bid_id=bid_id,
-            status=ComplianceStatus.COMPLIANT,
-            verification_method=VerificationMethod.AI_LANGUAGE,
-            reasoning=f"Bidder submission context aligns with qualitative requirement text '{requirement.text_raw}'.",
-            confidence=0.88,
-            evidence_ids=evidence_ids,
-            citations=citations
-        )
+        # Rule 4: Qualitative Text Requirement Verification (Strict Evidence-Backed Guard)
+        # Avoid false positives: return UNVERIFIED unless substantial semantic overlap is proven.
+        stop_words = {
+            "shall", "should", "must", "submit", "submitted", "required", "requirement",
+            "minimum", "provide", "provided", "under", "clause", "valid", "tender",
+            "bidder", "bidders", "with", "from", "that", "this", "have", "been", "will"
+        }
+        req_substantive = {w.strip(".,;:()") for w in requirement.text_raw.lower().split() if len(w) > 3 and w not in stop_words}
+
+        strong_matches = []
+        for e in evidences:
+            if not e.raw_snippet:
+                continue
+            snippet_words = {w.strip(".,;:()") for w in e.raw_snippet.lower().split()}
+            matched_words = req_substantive.intersection(snippet_words)
+            overlap_ratio = len(matched_words) / len(req_substantive) if req_substantive else 0
+            if (len(matched_words) >= 3 or overlap_ratio >= 0.6) and len(matched_words) > 0:
+                strong_matches.append((e, matched_words))
+
+        if strong_matches:
+            matched_ev, matched_terms = strong_matches[0]
+            return ComplianceEvaluateResponse(
+                result_id=result_id,
+                requirement_id=requirement.requirement_id,
+                bid_id=bid_id,
+                status=ComplianceStatus.COMPLIANT,
+                verification_method=VerificationMethod.AI_LANGUAGE,
+                reasoning=f"Evidence passage verified: matches required terms {list(matched_terms)[:4]} in document '{matched_ev.document_name}'.",
+                confidence=0.92,
+                evidence_ids=evidence_ids,
+                citations=citations
+            )
+        else:
+            return ComplianceEvaluateResponse(
+                result_id=result_id,
+                requirement_id=requirement.requirement_id,
+                bid_id=bid_id,
+                status=ComplianceStatus.UNVERIFIED,
+                verification_method=VerificationMethod.AI_LANGUAGE,
+                reasoning=f"Qualitative condition '{requirement.text_raw}' lacks sufficient verified evidence in submitted documents. Referred to Human Reviewer under GFR 2017 Rule 173.",
+                confidence=0.60,
+                evidence_ids=evidence_ids,
+                citations=citations
+            )

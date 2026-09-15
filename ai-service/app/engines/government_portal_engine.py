@@ -15,6 +15,10 @@ class PortalCheckResult(BaseModel):
     risk_contribution: float  # 0.0 (no risk) to 1.0 (maximum risk)
     key_data: Dict[str, Any]
     verified_at: str
+    is_simulated: bool = True
+    adapter_mode: str = "SIMULATED_PROTOTYPE"
+    source_url: Optional[str] = "https://gem.gov.in/api/simulated/statutory"
+    request_id: Optional[str] = None
 
 
 class PortalVerificationReport(BaseModel):
@@ -27,6 +31,8 @@ class PortalVerificationReport(BaseModel):
     risk_level: str          # LOW, MEDIUM, HIGH, CRITICAL
     portal_results: List[PortalCheckResult]
     generated_at: str
+    is_simulated: bool = True
+    disclaimer: str = "13 statutory verification adapters are simulated in this SIH prototype; production build integrates authenticated government API endpoints."
 
 
 def _now() -> str:

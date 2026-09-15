@@ -134,11 +134,10 @@ public class SecurityConfig {
             "https://*.gov.in",
             "https://*.vercel.app",
             "https://code-smith-frontend.vercel.app",
-            "https://*.onrender.com",
-            "*"
+            "https://*.onrender.com"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With", "Origin"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

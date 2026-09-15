@@ -5,12 +5,27 @@
 ---
 
 ## Overview
-The SIH26100 Platform delivers an enterprise-grade, role-based compliance verification and decision support ecosystem for high-value government procurement. It enforces strict separation of duties, commercial confidentiality under GFR Rule 173, explainable AI with deterministic supremacy, and an immutable Ethereum EVM blockchain audit trail.
+The SIH26100 Platform delivers an enterprise-grade, role-based compliance verification and decision support ecosystem for high-value government procurement. It enforces strict separation of duties, commercial confidentiality under GFR Rule 173, explainable AI with deterministic supremacy, and an EVM blockchain audit anchor prototype.
+
+---
+
+## Prototype-Readiness Matrix
+
+| Subsystem / Capability | Status | Current SIH Prototype Implementation | Production Roadmap / Gap |
+| :--- | :--- | :--- | :--- |
+| **Deterministic Compliance Engine** | **Implemented** | Mathematical turnover comparison vs threshold, unit normalization, citation linkage, rule versioning. | Automated NIT clause-to-rule parsing, tender policy packs. |
+| **Qualitative Clause Adjudication** | **Implemented** | Unresolved qualitative requirements default to `UNVERIFIED` with referral under GFR 173. | Domain-specific legal semantic evaluation models with human oversight. |
+| **Role-Based Access Control (RBAC)** | **Implemented** | 5 distinct roles, server-side JWT authentication, SecurityContext principal derivation, data-scoping filters. | National Single Sign-On (Jan Parichay / Parichay SSO) OAuth2 integration. |
+| **Document Ownership & IDOR Protection** | **Implemented** | Server-side bidder ownership validation for uploaded bid documents, tender-level upload protection. | S3 / Object store signed URLs with immutable SHA-256 hash verification. |
+| **Statutory Verification Adapters** | **Simulated** | 13 statutory registries (GST, PAN, MCA, Udyam, DPIIT, EPFO, ESIC, etc.) with explicit `[SIMULATED]` contracts. | Authenticated Open APIs (e.g. GSTN Sandbox, MCA21 V3, EPFO APIs) with signed responses. |
+| **EVM Audit Anchoring** | **Implemented (Prototype)** | Local Hardhat node, `ComplianceAuditLedger.sol` smart contract, explicit `ON_CHAIN_CONFIRMED` vs `OFFLINE` status. | Permissioned consortium network (e.g. Hyperledger Besu), Merkle batching, HSM managed keys. |
+| **AI Extraction & Grounded Copilot** | **Partially Integrated** | FastAPI / Ollama / Gemini with dynamic citations derived from evidence documents; refusal on unsupported claims. | Formal source-span verification, adversarial robustness benchmarks, automated citation check. |
+| **Digital Signatures (DSC)** | **Simulated** | Explicit `Simulated Class-3 DSC` signing UI with cryptographic payload digest generation. | eMudhra / Capricorn browser PKI token extension integration for hardware DSC cryptographic signing. |
 
 ---
 
 ## 3-Layer Role-Based Access Control (RBAC)
-Every platform feature is enforced across three distinct, tamper-proof layers:
+Every platform feature is enforced across three distinct layers:
 1. **Frontend Route Guards (`ProtectedRoute.tsx`):** Prevents direct URL bypassing.
 2. **Backend Endpoint Security (`SecurityConfig.java` & Controller `@PreAuthorize`):** Rejects unauthorized REST calls with `HTTP 403 Forbidden`.
 3. **Data-Scoping Filters:** Server-side principal injection guarantees that vendors never access competitor data and committee members inspect only authorized queues.

@@ -2,15 +2,31 @@
 ## Comprehensive End-to-End User Experience, Multi-Role Audit & Resolution Report
 
 **Evaluation Authority:** Ministry of Petroleum & Natural Gas | Smart India Hackathon (SIH26100)  
-**Standard of Execution:** The Garry Tan Founder Standard (Ruthless craft, zero friction, enterprise authenticity)  
-**Date of Audit & Certification:** September 2026  
-**Platform Version:** GeM 10.0 Sovereign AI & EVM Blockchain Edition  
+**Evaluation Authority:** Ministry of Petroleum & Natural Gas | Smart India Hackathon (SIH26100)  
+**Standard of Execution:** SIH Prototype Readiness & Integration Audit  
+**Date of Audit:** September 2026  
+**Platform Version:** GeM AI Compliance Prototype (SIH Edition)  
+
+---
+
+## Prototype-Readiness Matrix
+
+| Subsystem / Capability | Status | Current SIH Prototype Implementation | Production Roadmap / Gap |
+| :--- | :--- | :--- | :--- |
+| **Deterministic Compliance Engine** | **Implemented** | Mathematical turnover comparison vs threshold, unit normalization, citation linkage, rule versioning. | Automated NIT clause-to-rule parsing, tender policy packs. |
+| **Qualitative Clause Adjudication** | **Implemented** | Unresolved qualitative requirements default to `UNVERIFIED` with referral under GFR 173. | Domain-specific legal semantic evaluation models with human oversight. |
+| **Role-Based Access Control (RBAC)** | **Implemented** | 5 distinct roles, server-side JWT authentication, SecurityContext principal derivation, data-scoping filters. | National Single Sign-On (Jan Parichay / Parichay SSO) OAuth2 integration. |
+| **Document Ownership & IDOR Protection** | **Implemented** | Server-side bidder ownership validation for uploaded bid documents, tender-level upload protection. | S3 / Object store signed URLs with immutable SHA-256 hash verification. |
+| **Statutory Verification Adapters** | **Simulated** | 13 statutory registries (GST, PAN, MCA, Udyam, DPIIT, EPFO, ESIC, etc.) with explicit `[SIMULATED]` contracts. | Authenticated Open APIs (e.g. GSTN Sandbox, MCA21 V3, EPFO APIs) with signed responses. |
+| **EVM Audit Anchoring** | **Implemented (Prototype)** | Local Hardhat node, `ComplianceAuditLedger.sol` smart contract, explicit `ON_CHAIN_CONFIRMED` vs `OFFLINE` status. | Permissioned consortium network (e.g. Hyperledger Besu), Merkle batching, HSM managed keys. |
+| **AI Extraction & Grounded Copilot** | **Partially Integrated** | FastAPI / Ollama / Gemini with dynamic citations derived from evidence documents; refusal on unsupported claims. | Formal source-span verification, adversarial robustness benchmarks, automated citation check. |
+| **Digital Signatures (DSC)** | **Simulated** | Explicit `Simulated Class-3 DSC` signing UI with cryptographic payload digest generation. | eMudhra / Capricorn browser PKI token extension integration for hardware DSC cryptographic signing. |
 
 ---
 
 ## Executive Overview & Accomplishment Summary
 
-In accordance with the latest directives, the platform underwent an exhaustive design overhaul, bug remediation sweep, and complete browser-based verification across all five operational user roles. 
+In accordance with the latest audit directives, the platform underwent an exhaustive design overhaul, bug remediation sweep, and complete browser-based verification across all five operational user roles. 
 
 ### Key Highlights of This Cycle:
 1. **Replacement of Generic Banners with 5 Flagship Celebration Banners:**

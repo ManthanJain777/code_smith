@@ -3,35 +3,70 @@ import { AUTH_TOKEN_KEY } from '../constants/auth';
 
 export const getApiBaseUrl = (): string => {
   const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl && !envUrl.includes('placeholder')) {
+    return envUrl;
+  }
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     // On local development, connect to local backend port 8080
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return envUrl || 'http://localhost:8080/api/v1';
+      return 'http://localhost:8080/api/v1';
     }
-    // On cloud (e.g. Vercel, Render), if envUrl is missing or set to localhost, use Render backend
-    if (!envUrl || envUrl.includes('localhost') || envUrl.includes('127.0.0.1')) {
-      return 'https://code-smith-iy3z.onrender.com/api/v1';
-    }
-    return envUrl;
+    return `${window.location.origin}/api/v1`;
   }
-  return envUrl || 'https://code-smith-iy3z.onrender.com/api/v1';
+  return 'http://localhost:8080/api/v1';
+};
+
+export const getAiServiceUrl = (): string => {
+  const envAi = import.meta.env.VITE_AI_SERVICE_URL;
+  if (envAi && !envAi.includes('placeholder')) {
+    return envAi;
+  }
+  return getApiBaseUrl();
 };
 
 export const API_BASE_URL = getApiBaseUrl();
+
+export class ApiError extends Error {
+  status: number;
+  kind: 'AUTH' | 'FORBIDDEN' | 'VALIDATION' | 'CONFLICT' | 'SERVER' | 'NETWORK';
+  details?: any;
+
+  constructor(status: number, message: string, details?: any) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.details = details;
+    if (status === 401) this.kind = 'AUTH';
+    else if (status === 403) this.kind = 'FORBIDDEN';
+    else if (status === 400 || status === 422) this.kind = 'VALIDATION';
+    else if (status === 409) this.kind = 'CONFLICT';
+    else if (status >= 500) this.kind = 'SERVER';
+    else this.kind = 'NETWORK';
+  }
+}
+
+export const isDemoFallbackEnabled = (): boolean => {
+  return import.meta.env.VITE_DEMO_MODE === 'true';
+};
+
+export function shouldFallback(err: any): boolean {
+  if (!isDemoFallbackEnabled()) return false;
+  return !(err instanceof ApiError);
+}
 
 // Robust authenticated fetch with clean session expiry handling
 async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
   const token = localStorage.getItem(AUTH_TOKEN_KEY);
 
   const headers = new Headers(options.headers || {});
-  if (token) {
+  if (token && !token.startsWith('demo-jwt-token-')) {
     headers.set('Authorization', `Bearer ${token}`);
   }
 
   const res = await fetch(url, { ...options, headers });
 
-  if (res.status === 401 && !url.includes('/auth/login') && !url.includes('/health') && !token?.startsWith('demo-jwt-token-')) {
+  if (res.status === 401 && !url.includes('/auth/login') && !url.includes('/health')) {
     console.warn(`[fetchWithAuth] 401 received from ${url} — clearing token and redirecting to login`);
     localStorage.removeItem(AUTH_TOKEN_KEY);
     if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
@@ -46,8 +81,10 @@ async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Re
 async function handleResponseJson<T = any>(res: Response): Promise<T> {
   if (!res.ok) {
     let errorMsg = `API Error ${res.status}: ${res.statusText}`;
+    let details: any = null;
     try {
       const errorJson = await res.json();
+      details = errorJson;
       if (errorJson.message) {
         errorMsg = errorJson.message;
       } else if (errorJson.error) {
@@ -56,7 +93,7 @@ async function handleResponseJson<T = any>(res: Response): Promise<T> {
     } catch {
       // Body is not JSON
     }
-    throw new Error(errorMsg);
+    throw new ApiError(res.status, errorMsg, details);
   }
   return await res.json();
 }
@@ -796,7 +833,7 @@ export const apiService = {
       if (!res.ok) throw new Error(`Health Check Error ${res.status}`);
       return await res.json();
     } catch {
-      return { status: 'UP', service: 'gem-ai-compliance-resilient', mode: 'autonomous-fallback' };
+      return { status: 'DOWN', service: 'gem-ai-compliance-backend', mode: 'offline-unreachable' };
     }
   },
 

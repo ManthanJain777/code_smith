@@ -53,12 +53,24 @@ public class Bid {
     @Column(name = "forgery_risk", precision = 5, scale = 3)
     private BigDecimal forgeryRisk;
 
-    @Column(name = "collusion_flags", columnDefinition = "TEXT")
-    private String collusionFlags;
-
     @Column(name = "debarment_status", length = 20)
     @Builder.Default
     private String debarmentStatus = "CLEAR";
+
+    @Column(name = "collusion_flags", columnDefinition = "TEXT")
+    private String collusionFlags;
+
+    @Column(name = "quoted_price", precision = 15, scale = 2)
+    private BigDecimal quotedPrice;
+
+    @Column(name = "local_content_percent")
+    private Integer localContentPercent;
+
+    @Column(name = "emd_status", length = 30)
+    private String emdStatus;
+
+    @Column(name = "blockchain_tx", length = 66)
+    private String blockchainTx;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

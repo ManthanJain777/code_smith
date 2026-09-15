@@ -18,13 +18,14 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider tokenProvider;
+    private final com.gem.compliance.service.TokenDenylistService tokenDenylistService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String token = getJwtFromRequest(request);
 
-        if (StringUtils.hasText(token) && tokenProvider.validateToken(token)) {
+        if (StringUtils.hasText(token) && !tokenDenylistService.isDenylisted(token) && tokenProvider.validateToken(token)) {
             Authentication authentication = tokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }

@@ -66,12 +66,14 @@ export const CreateTenderModal: React.FC<CreateTenderModalProps> = ({
 
       // Run real AI PDF extraction if PDF file is provided
       if (file) {
-        const aiFormData = new FormData();
-        aiFormData.append('file', file);
-        aiFormData.append('tender_id', tenderNumber);
         try {
+          const aiFormData = new FormData();
+          aiFormData.append('file', file);
+          aiFormData.append('tender_id', tenderNumber);
+          const authToken = token || localStorage.getItem(AUTH_TOKEN_KEY);
           const aiRes = await fetch(`${API_BASE_URL}/ai/tender/upload-pdf`, {
             method: 'POST',
+            headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {},
             body: aiFormData,
           });
           if (aiRes.ok) {

@@ -738,10 +738,10 @@ export const ComplianceMatrixPage: React.FC = () => {
                               <div className="flex items-center justify-between text-slate-800 font-semibold">
                                 <span className="flex items-center gap-1.5 text-slate-800 font-sans font-bold">
                                   <FileText className="w-3.5 h-3.5 text-slate-600" />
-                                  {cit.documentName}
+                                  {cit.documentName || (cit as any).document_name || 'Submitted Document'}
                                 </span>
                                 <span className="bg-slate-100 text-slate-700 border border-slate-200 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold">
-                                  {lang === 'HI' ? `पृष्ठ ${cit.pageNum}` : `Page ${cit.pageNum}`}
+                                  {lang === 'HI' ? `पृष्ठ ${cit.pageNum || (cit as any).page || 1}` : `Page ${cit.pageNum || (cit as any).page || 1}`}
                                 </span>
                               </div>
                               {cit.snippet && (

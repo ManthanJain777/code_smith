@@ -185,27 +185,42 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(null);
   };
 
-  const switchRole = (newRole: string) => {
-    const roleProfiles: Record<string, { userId: string; fullName: string; email: string; role: string; organizationId: string; dscSerial?: string }> = {
-      'BIDDER_VENDOR': { userId: 'USR-BIDDER-001', fullName: 'Apex Pumps & Motors Pvt Ltd', email: 'bidder.demo@gembid.local', role: 'BIDDER_VENDOR', organizationId: 'SLR-APEX-001', dscSerial: 'DSC-IND-2026-APEX-8891' },
-      'PROCUREMENT_OFFICER': { userId: 'USR-OFFICER-001', fullName: 'Sh. Rajesh Sharma', email: 'procurement.demo@gembid.local', role: 'PROCUREMENT_OFFICER', organizationId: 'ORG-GEM-01', dscSerial: 'DSC-GOV-2026-SHARMA-001' },
-      'COMPLIANCE_REVIEWER': { userId: 'USR-REVIEWER-001', fullName: 'Smt. Priya Verma', email: 'reviewer.demo@gembid.local', role: 'COMPLIANCE_REVIEWER', organizationId: 'ORG-GEM-01', dscSerial: 'DSC-GOV-2026-VERMA-002' },
-      'AUDITOR': { userId: 'USR-AUDITOR-001', fullName: 'CAG Audit Directorate', email: 'auditor.demo@gembid.local', role: 'AUDITOR', organizationId: 'ORG-CAG-01', dscSerial: 'DSC-CAG-2026-AUDIT-003' },
-      'SYSTEM_ADMIN': { userId: 'USR-ADMIN-001', fullName: 'Dr. Amit Patel', email: 'admin.demo@gembid.local', role: 'SYSTEM_ADMIN', organizationId: 'ORG-GEM-ADMIN', dscSerial: 'DSC-NIC-2026-ADMIN-ROOT' },
+  const switchRole = async (newRole: string) => {
+    const roleCredentials: Record<string, { email: string; pass: string; profile: any }> = {
+      'BIDDER_VENDOR': { email: 'bidder.demo@gembid.local', pass: 'Password123!', profile: { userId: 'USR-DEMO-BID', fullName: 'Apex Pumps Vendor Representative', email: 'bidder.demo@gembid.local', role: 'BIDDER_VENDOR', organizationId: 'ORG-001', dscSerial: 'DSC-IND-2026-APEX-8891' } },
+      'PROCUREMENT_OFFICER': { email: 'procurement.demo@gembid.local', pass: 'Password123!', profile: { userId: 'USR-DEMO-PROC', fullName: 'Rajesh Kumar (Procurement Officer Demo)', email: 'procurement.demo@gembid.local', role: 'PROCUREMENT_OFFICER', organizationId: 'ORG-001', dscSerial: 'DSC-GOV-2026-SHARMA-001' } },
+      'COMPLIANCE_REVIEWER': { email: 'reviewer.demo@gembid.local', pass: 'Password123!', profile: { userId: 'USR-DEMO-REV', fullName: 'Anita Sharma (Compliance Reviewer Demo)', email: 'reviewer.demo@gembid.local', role: 'COMPLIANCE_REVIEWER', organizationId: 'ORG-001', dscSerial: 'DSC-GOV-2026-VERMA-002' } },
+      'AUDITOR': { email: 'auditor.demo@gembid.local', pass: 'Password123!', profile: { userId: 'USR-DEMO-AUD', fullName: 'Vikram Sethi (Auditor Demo)', email: 'auditor.demo@gembid.local', role: 'AUDITOR', organizationId: 'ORG-001', dscSerial: 'DSC-CAG-2026-AUDIT-003' } },
+      'SYSTEM_ADMIN': { email: 'admin.demo@gembid.local', pass: 'Password123!', profile: { userId: 'USR-DEMO-ADMIN', fullName: 'System Admin (Demo)', email: 'admin.demo@gembid.local', role: 'SYSTEM_ADMIN', organizationId: 'ORG-001', dscSerial: 'DSC-NIC-2026-ADMIN-ROOT' } },
     };
-    const profile = roleProfiles[newRole] || roleProfiles['PROCUREMENT_OFFICER'];
-    const dummyToken = 'demo-jwt-token-' + profile.role;
-    localStorage.setItem(AUTH_TOKEN_KEY, dummyToken);
-    setToken(dummyToken);
-    setUser({
-      userId: profile.userId,
-      email: profile.email,
-      fullName: profile.fullName,
-      role: profile.role,
-      organizationId: profile.organizationId,
-      permissions: ['ALL'],
-      dscSerial: profile.dscSerial,
-    });
+    const target = roleCredentials[newRole] || roleCredentials['PROCUREMENT_OFFICER'];
+    try {
+      const res = await login(target.email, target.pass);
+      if (!res.success) {
+        // If login failed (e.g. backend down and demo mode enabled), set isolated session
+        const p = target.profile;
+        setUser({
+          userId: p.userId,
+          email: p.email,
+          fullName: p.fullName,
+          role: p.role,
+          organizationId: p.organizationId,
+          permissions: ['ALL'],
+          dscSerial: p.dscSerial,
+        });
+      }
+    } catch {
+      const p = target.profile;
+      setUser({
+        userId: p.userId,
+        email: p.email,
+        fullName: p.fullName,
+        role: p.role,
+        organizationId: p.organizationId,
+        permissions: ['ALL'],
+        dscSerial: p.dscSerial,
+      });
+    }
   };
 
   const hasPermission = (permission: string): boolean => {

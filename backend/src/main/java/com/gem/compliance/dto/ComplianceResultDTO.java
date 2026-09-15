@@ -21,5 +21,9 @@ public class ComplianceResultDTO {
     private BigDecimal confidence;
     private String evidenceIds;
     private String reviewStatus;
+    private Boolean humanOverridden;
+    private String reviewerNotes;
+    private String blockchainTxHash;
+    private java.util.List<java.util.Map<String, Object>> evidenceCitations;
     private ZonedDateTime createdAt;
 }
